@@ -50,6 +50,3 @@ Thumbs.db
 *.old
 *.generated.cpp
 *.generated.h
-
-# binaries
-main
