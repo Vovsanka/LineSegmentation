@@ -9,10 +9,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # Add the include directory
 include_directories(include)
 
+# Find OpenCV
+find_package(OpenCV REQUIRED)
+
 # Add the executable
 add_executable(${PROJECT_NAME}
     src/main.cpp
 )
 
-# Example: link external libraries (optional)
-# target_link_libraries(${PROJECT_NAME} PRIVATE SomeLibrary)
+# Include directories
+target_include_directories(${PROJECT_NAME} PRIVATE ${OpenCV_INCLUDE_DIRS})
+
+# Link libraries
+target_link_libraries(${PROJECT_NAME} PRIVATE ${OpenCV_LIBS})
