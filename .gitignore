@@ -1,0 +1,55 @@
+# ---- Build artifacts ----
+build/
+cmake-build*/
+out/
+bin/
+obj/
+*.o
+*.obj
+*.a
+*.so
+*.dll
+*.dylib
+*.exe
+*.out
+
+# ---- CMake ----
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Testing/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+
+# ---- VS Code ----
+.vscode/
+.history/
+*.code-workspace
+
+# ---- System files ----
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.tmp
+*.log
+
+# ---- IDEs / Editors ----
+.idea/
+*.user
+*.sln
+*.vcxproj*
+*.xcodeproj
+*.launch
+
+# ---- Other temporary / generated files ----
+*.bak
+*.old
+*.generated.cpp
+*.generated.h
+
+# binaries
+main
