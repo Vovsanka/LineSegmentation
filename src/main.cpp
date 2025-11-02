@@ -11,7 +11,7 @@ int main() {
     const int SOBEL_KSIZE = 3; // kernel size of the sobel filter
     double SIGMA = 1.0; // standard deviation of the Gaussian
     cv::Size NEIGHBORHOOD = cv::Size(3, 3); // neighborhood for the Gausssian smoothing
-    double THRESHOLD_EIGENVALUE = 0.01; // *max_eigenvalue (determine large/small)
+    double THRESHOLD_EIGENVALUE = 0.2; // *mean_eigenvalue1 (determine large/small)
     // Configuration end
 
     // Load a grayscale image
@@ -57,21 +57,20 @@ int main() {
     }
 
     // classify edges and corners
-    double maxL1, minL1;
-    cv::minMaxLoc(L1, &minL1, &maxL1);
-    double threshold = THRESHOLD_EIGENVALUE * maxL1;
+    cv::Scalar meanL1 = cv::mean(L1);
+    double threshold = THRESHOLD_EIGENVALUE * meanL1[0];
     cv::Mat E(image.size(), CV_64F);
     for (int y = 0; y < Jxx.rows; y++) {
         for (int x = 0; x < Jxx.cols; x++) {
             double l1 = L1.at<double>(y, x);
             double l2 = L2.at<double>(y, x);
             if (l1 > threshold) { // edge or corner
-                // if (l2 > threshold) { // corner
-                //     E.at<double>(y,x) = 2;
-                // } else {
-                //     E.at<double>(y,x) = 1;
-                // }
-                E.at<double>(y,x) = 1;
+                if (l2 > threshold) { // corner
+                    E.at<double>(y,x) = 5;
+                } else {
+                    E.at<double>(y,x) = 1;
+                }
+                // E.at<double>(y,x) = 1;
             } else {
                 E.at<double>(y,x) = 0;
             }
