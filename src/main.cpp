@@ -4,51 +4,45 @@
 #include <cmath>
 
 
-void showMat(const cv::Mat &M) {
-    cv::Mat mNorm;
-    cv::normalize(M, mNorm, 0, 255, cv::NORM_MINMAX);
-    mNorm.convertTo(mNorm, CV_8U);
-    cv::imshow("Matrix", mNorm);
+// Configuration start
+const int SOBEL_KSIZE = 3; // kernel size of the sobel filter
+const double SIGMA = 1.0; // standard deviation of the Gaussian
+const cv::Size NEIGHBORHOOD = cv::Size(3, 3); // neighborhood for the Gausssian smoothing
+const double THRESHOLD_EIGENVALUE = 0.25; // *mean_eigenvalue1 (determine large/small)
+// Configuration end
+
+void showImage(const cv::Mat &F) {
+    cv::Mat fNorm;
+    cv::normalize(F, fNorm, 0, 255, cv::NORM_MINMAX);
+    fNorm.convertTo(fNorm, CV_8U);
+    cv::imshow("Matrix", fNorm);
     cv::waitKey(0);
 }
 
-
-
-
-int main() {
-    
-    // Configuration start
-    const int SOBEL_KSIZE = 3; // kernel size of the sobel filter
-    double SIGMA = 1.0; // standard deviation of the Gaussian
-    cv::Size NEIGHBORHOOD = cv::Size(3, 3); // neighborhood for the Gausssian smoothing
-    double THRESHOLD_EIGENVALUE = 0.25; // *mean_eigenvalue1 (determine large/small)
-    // Configuration end
-
-    // Load a grayscale image
-    cv::Mat image = cv::imread("../images/table.png", cv::IMREAD_GRAYSCALE);
-
+std::tuple<cv::Mat, cv::Mat, cv::Mat> computeStructureTensorComponents(const cv::Mat &F) {
     // Compute image gradients (Sobel filter)
     cv::Mat Ix, Iy;
-    cv::Sobel(image, Ix, CV_64F, 1, 0, SOBEL_KSIZE); // dI/dx
-    cv::Sobel(image, Iy, CV_64F, 0, 1, SOBEL_KSIZE); // dI/dy
-    
+    cv::Sobel(F, Ix, CV_64F, 1, 0, SOBEL_KSIZE); // dI/dx
+    cv::Sobel(F, Iy, CV_64F, 0, 1, SOBEL_KSIZE); // dI/dy
     // Compute structure tensor components
     cv::Mat Ix2 = Ix.mul(Ix);     // Ix^2
     cv::Mat Iy2 = Iy.mul(Iy);     // Iy^2
     cv::Mat Ixy = Ix.mul(Iy);     // Ix*Iy
-    
-    // Apply Gaussian smoothing to each product
+    // Apply Gaussian smoothing to component
     cv::Mat Jxx, Jyy, Jxy;
-
     cv::GaussianBlur(Ix2, Jxx, NEIGHBORHOOD, SIGMA);
     cv::GaussianBlur(Iy2, Jyy, NEIGHBORHOOD, SIGMA);
     cv::GaussianBlur(Ixy, Jxy, NEIGHBORHOOD, SIGMA);
+    // return the structure tensor components
+    return std::make_tuple(Jxx, Jyy, Jxy);
+}
 
-    // build the structure tensors for each pixel and compute the eigenvalues
-    cv::Mat L1(image.size(), CV_64F);
-    cv::Mat L2(image.size(), CV_64F);
-    for (int y = 0; y < image.rows; y++) {
-        for (int x = 0; x < image.cols; x++) {
+std::tuple<cv::Mat, cv::Mat> computeStructureTensorEigenvalues(const cv::Mat &Jxx, const cv::Mat &Jyy, const cv::Mat &Jxy) {
+    // build the structure tensors for each pixel and compute the eigenvalues  
+    cv::Mat L1(Jxx.size(), CV_64F);
+    cv::Mat L2(Jxx.size(), CV_64F);
+    for (int y = 0; y < Jxx.rows; y++) {
+        for (int x = 0; x < Jxx.cols; x++) {
             // build the structure tensor for the pixel
             cv::Mat J = (cv::Mat_<double>(2, 2) <<
                 Jxx.at<double>(y, x), Jxy.at<double>(y, x),
@@ -65,48 +59,78 @@ int main() {
             L2.at<double>(y, x) = l2;
         }
     }
+    return std::make_tuple(L1, L2);
+}
 
+cv::Mat classifyPixels(const cv::Mat &L1, const cv::Mat &L2) {
     // classify edges and corners
+    cv::Mat T(L1.size(), CV_64F);
     cv::Scalar meanL1 = cv::mean(L1);
     double threshold = THRESHOLD_EIGENVALUE * meanL1[0];
-    cv::Mat E(image.size(), CV_64F);
-    for (int y = 0; y < image.rows; y++) {
-        for (int x = 0; x < image.cols; x++) {
+    for (int y = 0; y < L1.rows; y++) {
+        for (int x = 0; x < L1.cols; x++) {
             double l1 = L1.at<double>(y, x);
             double l2 = L2.at<double>(y, x);
+            int pixelType = 0;
             if (l1 > threshold) { // edge or corner
-                if (l2 > threshold) { // corner
-                    E.at<double>(y,x) = 2;
+                if (l2 > threshold) {
+                    pixelType = 255; // corner
                 } else {
-                    E.at<double>(y,x) = 1;
+                    pixelType = 100; // edge
                 }
-                // E.at<double>(y,x) = 1;
-            } else {
-                E.at<double>(y,x) = 0;
             }
+            T.at<double>(y,x) = pixelType;
         }
     }
+    return T;
+}
+
+
+
+int main() {
+    
+    // Load a grayscale image
+    cv::Mat F = cv::imread("../images/table.png", cv::IMREAD_GRAYSCALE);
+
+    // showImage(F);
+
+    // Process the image
+    cv::Mat Jxx, Jyy, Jxy;
+    std::tie(Jxx, Jyy, Jxy) = computeStructureTensorComponents(F);
+
+    cv::Mat L1, L2;
+    std::tie(L1, L2) = computeStructureTensorEigenvalues(Jxx, Jyy, Jxy);
+
+    cv::Mat T = classifyPixels(L1, L2);
+
+    showImage(T);
 
     // Direction projection and score example
-    double yNorm = 1.0, xNorm = 0; // normal unit vector for a direction
-    cv::Mat S(image.size(), CV_64F);
-    for (int y = 0; y < image.rows; y++) {
-        for (int x = 0; x < image.cols; x++) {
-            double jxx = Jxx.at<double>(y, x);
-            double jyy = Jyy.at<double>(y, x);
-            double jxy = Jxy.at<double>(y, x);
-            double l1 = L1.at<double>(y, x);
-            double l2 = L2.at<double>(y, x);
-            double e = E.at<double>(y, x);
-            double score = 0;
-            if (e > 0) {
-                double pr = yNorm*yNorm*jxx + 2*yNorm*xNorm*jxy + xNorm*xNorm*jyy;
-                score = pr / l1;
-            }
-            S.at<double>(y, x) = score;
-        }
-    }
-    showMat(S);
+    // std::pair<int, int> r;
+    // std::pair<double, double> n = {1.0, 0}; // normal unit vector for a direction
+    // double score = computeScore(Jxx, Jyy, Jxy, L1, T, r, n);
+    // showImage(S);
+
+    // // Direction projection and score example
+    // double yNorm = 1.0, xNorm = 0; // normal unit vector for a direction
+    // cv::Mat S(image.size(), CV_64F);
+    // for (int y = 0; y < image.rows; y++) {
+    //     for (int x = 0; x < image.cols; x++) {
+    //         double jxx = Jxx.at<double>(y, x);
+    //         double jyy = Jyy.at<double>(y, x);
+    //         double jxy = Jxy.at<double>(y, x);
+    //         double l1 = L1.at<double>(y, x);
+    //         double l2 = L2.at<double>(y, x);
+    //         double e = E.at<double>(y, x);
+    //         double score = 0;
+    //         if (e > 0) {
+    //             double pr = yNorm*yNorm*jxx + 2*yNorm*xNorm*jxy + xNorm*xNorm*jyy;
+    //             score = (pr - l2) / (l1 - l2);
+    //         }
+    //         S.at<double>(y, x) = score;
+    //     }
+    // }
+    // showMat(S);
     
     return 0;
 }
