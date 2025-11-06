@@ -13,7 +13,7 @@ const double R = 3; // radius for the interesting pixels
 const double T = 1; // edge thickness
 // Configuration end
 
-void showImage(const cv::Mat &F) {
+void showMatrix(const cv::Mat &F) {
     cv::Mat fNorm;
     cv::normalize(F, fNorm, 0, 255, cv::NORM_MINMAX);
     fNorm.convertTo(fNorm, CV_8U);
@@ -21,11 +21,18 @@ void showImage(const cv::Mat &F) {
     cv::waitKey(0);
 }
 
+void showImage(const cv::Mat &F) {
+    // Show the image
+    cv::imshow("Image", F);
+    cv::waitKey(0);
+}
+
 double computeScore(const cv::Mat &F, int yPixel, int xPixel, double unitNormY, double unitNormX) {
     const int R_LOWER = std::floor(R);
     // consider only the pixels s.t. their pixel center (y, x) is on/in the circle with radius R
     int count1 = 0, count2 = 0;
-    int sum1 = 0, sum2 = 0;
+    int r1, g1, b1, r2, b2, g2;
+    r1 = g1 = b1 = r2 = b2 = g2 = 0;
     for (int y = std::max(0, yPixel - R_LOWER); y <= std::min(F.rows, yPixel + R_LOWER); y++) {
         // solve the quadratic inequation for x: (y - yPixel)^2 + (x - xPixel)^2 <= 0
         double D = 4*(R*R - (y - yPixel)*(y - yPixel));
@@ -40,19 +47,24 @@ double computeScore(const cv::Mat &F, int yPixel, int xPixel, double unitNormY, 
             double signedDist = dy*unitNormY + dx*unitNormX;
             if (abs(signedDist) <= T/2) continue; // too close to the line
             // add pixel to the corresponding half-circle
+            const cv::Vec3b pixel = F.at<cv::Vec3b>(y, x);
             if (signedDist >= 0) {
                 count1++; // the half-circle of the normal vector
-                sum1 += F.at<uchar>(y, x);
+                b1 += pixel[0];
+                g1 += pixel[1];
+                r1 += pixel[2];
             } else {
                 count2++; // the half-circle opposite to the normal vector
-                sum2 += F.at<uchar>(y, x);
+                b2 += pixel[0];
+                g2 += pixel[1];
+                r2 += pixel[2];
             }
         }
     }
     // compute the score
     double area1 = 1e-6, area2 = 1e-6; // very small 
-    if (count1) area1 += sum1 / count1;
-    if (count2) area2 += sum2 / count2;
+    if (count1) area1 += (r1 + g1 + b1) / count1;
+    if (count2) area2 += (r2 + g2 + b2) / count2;
     return 1.0 - std::min(area1/area2, area2/area1);
 }
 
@@ -71,7 +83,6 @@ std::vector<cv::Mat> computeAllScores(const cv::Mat &F) {
                 SCORE.at<double>(y, x) = computeScore(F, y, x, unitY, unitX);
             }
         }
-        showImage(SCORE);
         S.emplace_back(SCORE);
     }
     return S;
@@ -80,15 +91,16 @@ std::vector<cv::Mat> computeAllScores(const cv::Mat &F) {
 
 int main() {
     
-    // Load a grayscale image
-    cv::Mat F = cv::imread("../images/table.png", cv::IMREAD_GRAYSCALE);
+    // Load an RGB image
+    cv::Mat F = cv::imread("../images/table.png", cv::IMREAD_COLOR);
     
+    // compute the score for every pixel and every direction
     std::vector<cv::Mat> S = computeAllScores(F);
     
-    // showImage(F);
-    // for (auto &directionScore : S) {
-    //     showImage(directionScore);
-    // }
+    showImage(F);
+    for (auto &directionScore : S) {
+        showMatrix(directionScore);
+    }
 
     return 0;
 }
