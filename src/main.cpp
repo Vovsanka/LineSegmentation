@@ -8,9 +8,10 @@
 const double PI = std::acos(-1.0);
 
 // Configuration start
-const int DIRECTIONS = 10;
-const double R = 2; // radius for the interesting pixels
-const double CAND_SCORE = 0.9;
+const int DIRECTIONS = 30;
+const double R = 2.5; // radius for the interesting pixels
+const double OFFSET = 500; // pixel offset
+const double CAND_SCORE = 0.9; // candidate score threshold
 // Configuration end
 
 void showMatrix(const cv::Mat &F) {
@@ -30,7 +31,6 @@ void showImage(const cv::Mat &F) {
 double computeScore(const cv::Mat &F, int yPixel, int xPixel, double unitNormY, double unitNormX) {
     const int R_LOWER = std::floor(R);
     // consider only the pixels s.t. their pixel center (y, x) is on/in the circle with radius R
-    int count1 = 0, count2 = 0;
     double r1, g1, b1, r2, b2, g2;
     r1 = g1 = b1 = r2 = b2 = g2 = 0;
     double minR, minG, minB;
@@ -41,41 +41,62 @@ double computeScore(const cv::Mat &F, int yPixel, int xPixel, double unitNormY, 
         int x1 = std::ceil((2*xPixel - sqrt(D)) / 2); // round up to the next integer
         int x2 = std::floor((2*xPixel + sqrt(D)) / 2); // round down to the next integer
         for (int x = std::max(0, x1); x <= std::min(F.cols, x2); x++) {
-            // skip the pixels on the line
             int dy = (y - yPixel), dx = (x - xPixel);
             if (!(dx*dx + dy*dy <= R*R)) {
                 throw "Assertion failed: pixel outside the cirle!!!";
             }
             double signedDist = dy*unitNormY + dx*unitNormX;
             double dist = std::abs(signedDist);
+            // skip the pixels on the line
             if (dist < 0.1) continue;
             // add pixel to the corresponding half-circle
             const cv::Vec3b pixel = F.at<cv::Vec3b>(y, x);
             double b = pixel[0], g = pixel[1], r = pixel[2];
-            // double w = R - sqrt(dx*dx + dy*dy);
+            double w = R - sqrt(dx*dx + dy*dy);
             minR = std::min(minR, r);
             minG = std::min(minG, g);
             minB = std::min(minB, b);
-            if (signedDist >= 0) {
-                count1++; // the half-circle of the normal vector
-                b1 += b;
-                g1 += g;
-                r1 += r;
-            } else {
-                count2++; // the half-circle opposite to the normal vector
-                b2 += b;
-                g2 += g;
-                r2 += r;
+            if (signedDist >= 0) { // the half-circle of the normal vector
+                b1 += w*b;
+                g1 += w*g;
+                r1 += w*r;
+            } else { // the half-circle opposite to the normal vector
+                b2 += w*b;
+                g2 += w*g;
+                r2 += w*r;
             }
         }
     }
-    // compute the score (equalize intensive and non-intensive colors)
-    double area1 = 1e-6, area2 = 1e-6; // very small 
-    if (count1) area1 += (r1 + g1 + b1) / count1 - (minR + minG + minB);
-    if (count2) area2 += (r2 + g2 + b2) / count2 - (minR + minG + minB);
-    // compute ratio and score
+    // equalize intensive and non-intensive colors
+    for (int y = std::max(0, yPixel - R_LOWER); y <= std::min(F.rows, yPixel + R_LOWER); y++) {
+        // solve the quadratic inequation for x: (y - yPixel)^2 + (x - xPixel)^2 <= 0
+        double D = 4*(R*R - (y - yPixel)*(y - yPixel));
+        int x1 = std::ceil((2*xPixel - sqrt(D)) / 2); // round up to the next integer
+        int x2 = std::floor((2*xPixel + sqrt(D)) / 2); // round down to the next integer
+        for (int x = std::max(0, x1); x <= std::min(F.cols, x2); x++) {
+            int dy = (y - yPixel), dx = (x - xPixel);
+            double signedDist = dy*unitNormY + dx*unitNormX;
+            double dist = std::abs(signedDist);
+            // skip the pixels on the line
+            if (dist < 0.1) continue;
+            // add pixel to the corresponding half-circle
+            double w = R - sqrt(dx*dx + dy*dy);
+            if (signedDist >= 0) {
+                b1 += w*(-minB);
+                g1 += w*(-minG);
+                r1 += w*(-minR);
+            } else { // the half-circle opposite to the normal vector
+                b2 += w*(-minB);
+                g2 += w*(-minG);
+                r2 += w*(-minR);
+            }
+        }
+    }
+    // compute the score (add offset to reduce the noise sensitivity)
+    double area1 = r1 + g1 + b1 + OFFSET;
+    double area2 = r2 + g2 + b2 + OFFSET;
     double ratio = std::max(area1/area2, area2/area1);
-    return 1.0 - (1/ratio);
+    return 1.0 - std::pow(1/ratio, 8);
 }
 
 std::tuple<cv::Mat, cv::Mat> computeBestScores(const cv::Mat &F) {
