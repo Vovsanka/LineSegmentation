@@ -1,24 +1,19 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.18)
 
-# Project name and C++ standard
-project(LineSegmentation VERSION 1.0 LANGUAGES CXX)
+project(LineSegmentation VERSION 1.0 LANGUAGES CXX CUDA)
+
+set(CMAKE_CUDA_ARCHITECTURES 86)
+set(CMAKE_CUDA_RUNTIME_LIBRARY Shared)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_CUDA_STANDARD 17)
 
-# Add the include directory
-include_directories(include)
-
-# Find OpenCV
 find_package(OpenCV REQUIRED)
 
-# Add the executable
 add_executable(${PROJECT_NAME}
     src/main.cpp
 )
 
-# Include directories
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 target_include_directories(${PROJECT_NAME} PRIVATE ${OpenCV_INCLUDE_DIRS})
-
-# Link libraries
 target_link_libraries(${PROJECT_NAME} PRIVATE ${OpenCV_LIBS})

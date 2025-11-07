@@ -1,3 +1,3 @@
 # LineSegmentation
 
-On Linux: g++, cmake, opencv
+On Linux: g++, cmake, opencv (with CUDA support)

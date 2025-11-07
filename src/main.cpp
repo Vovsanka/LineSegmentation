@@ -1,4 +1,5 @@
 #include <opencv2/opencv.hpp>
+#include <opencv2/core/cuda.hpp>
 
 #include <iostream>
 #include <stdexcept> // for standard exception types
@@ -137,19 +138,22 @@ cv::Mat chooseCandiates(const cv::Mat &S) {
 
 int main() {
     
-    // Load an RGB image
-    cv::Mat F = cv::imread("../images/table.png", cv::IMREAD_COLOR);
-    
-    // compute the best scores for every pixel
-    cv::Mat S, D;
-    std::tie(S, D) = computeBestScores(F);
+    int cudaCount = cv::cuda::getCudaEnabledDeviceCount();
+    std::cout << "CUDA devices: " << cudaCount << std::endl;
 
-    // choose the candidates
-    cv::Mat C = chooseCandiates(S);
+    // // Load an RGB image
+    // cv::Mat F = cv::imread("../images/table.png", cv::IMREAD_COLOR);
     
-    showImage(F);
-    showMatrix(S);
-    showMatrix(C);
+    // // compute the best scores for every pixel
+    // cv::Mat S, D;
+    // std::tie(S, D) = computeBestScores(F);
+
+    // // choose the candidates
+    // cv::Mat C = chooseCandiates(S);
+    
+    // showImage(F);
+    // showMatrix(S);
+    // showMatrix(C);
 
     return 0;
 }
