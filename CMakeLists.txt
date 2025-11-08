@@ -11,7 +11,7 @@ set(CMAKE_CUDA_STANDARD 17)
 find_package(OpenCV REQUIRED)
 
 add_executable(${PROJECT_NAME}
-    src/main.cpp
+    src/main.cu
 )
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
