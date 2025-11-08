@@ -11,6 +11,7 @@
 const int DIRECTIONS = 360;
 const double R = 1.5; // radius for the interesting pixels
 const double OFFSET = 40; // pixel offset
+const double THICKNESS = 0.2// line thickness
 const double CAND_SCORE = 0.95; // candidate score threshold
 // Configuration end
 
@@ -28,27 +29,16 @@ void showImage(const cv::Mat &F) {
     cv::waitKey(0);
 }
 
-template <typename T>
-__host__ __device__ T max(T a, T b) {
-    return (a > b) ? a : b;
-}
-
-template <typename T>
-__host__ __device__ T min(T a, T b) {
-    return (a > b) ? a : b;
-}
-
-__host__ __device__ double computeScore(const uchar* F,
-                                        int yPixel, int xPixel,
+__device__ double computeScore(const uchar* F,
+                                        double yPixel, double xPixel,
                                         double unitNormY, double unitNormX,
                                         int width, int height) {
-    const int R_LOWER = std::floor(R);
     // consider only the pixels s.t. their pixel center (y, x) is on/in the circle with radius R
     int r1, g1, b1, r2, b2, g2;
     r1 = g1 = b1 = r2 = b2 = g2 = 0;
     int minR, minG, minB;
     minR = minG = minB = 255;
-    for (int y = max(0, yPixel - R_LOWER); y <= min(height, yPixel + R_LOWER); y++) {
+    for (int y = max(0, (int)ceilf(yPixel - R)); y <= min(height, (int)floorf(yPixel + R)); y++) {
         // solve the quadratic inequation for x: (y - yPixel)^2 + (x - xPixel)^2 <= 0
         double D = 4*(R*R - (y - yPixel)*(y - yPixel));
         int x1 = ceil((2*xPixel - sqrt(D)) / 2); // round up to the next integer
@@ -56,9 +46,9 @@ __host__ __device__ double computeScore(const uchar* F,
         for (int x = max(0, x1); x <= min(width, x2); x++) {
             int dy = (y - yPixel), dx = (x - xPixel);
             double signedDist = dy*unitNormY + dx*unitNormX;
-            double dist = std::abs(signedDist);
+            double dist = abs(signedDist);
             // skip the pixels on the line
-            if (dist < 0.1) continue;
+            if (dist < THICKNESS/2) continue;
             // add pixel to the corresponding half-circle
             int idx = (y * width + x) * 3;
             int b = (int)F[idx];
@@ -80,15 +70,15 @@ __host__ __device__ double computeScore(const uchar* F,
         }
     }
     // equalize intensive and non-intensive colors
-    for (int y = max(0, yPixel - R_LOWER); y <= min(height, yPixel + R_LOWER); y++) {
+    for (int y = max(0, (int)ceilf(yPixel - R)); y <= min(height, (int)floorf(yPixel + R)); y++) {
         // solve the quadratic inequation for x: (y - yPixel)^2 + (x - xPixel)^2 <= 0
         double D = 4*(R*R - (y - yPixel)*(y - yPixel));
-        int x1 = std::ceil((2*xPixel - sqrt(D)) / 2); // round up to the next integer
-        int x2 = std::floor((2*xPixel + sqrt(D)) / 2); // round down to the next integer
+        int x1 = ceilf((2*xPixel - sqrt(D)) / 2); // round up to the next integer
+        int x2 = floorf((2*xPixel + sqrt(D)) / 2); // round down to the next integer
         for (int x = max(0, x1); x <= min(width, x2); x++) {
             int dy = (y - yPixel), dx = (x - xPixel);
             double signedDist = dy*unitNormY + dx*unitNormX;
-            double dist = std::abs(signedDist);
+            double dist = abs(signedDist);
             // skip the pixels on the line
             if (dist < 0.1) continue;
             // add pixel to the corresponding half-circle
@@ -114,7 +104,7 @@ __host__ __device__ double computeScore(const uchar* F,
 
 __global__ void bestScoreKernel(const uchar* F, double* S, int* D,
                                 int width, int height) {
-    const double PI = std::acos(-1.0);
+    const double PI = acos(-1.0);
 
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
