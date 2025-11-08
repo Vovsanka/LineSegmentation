@@ -9,9 +9,9 @@
 
 // Configuration start
 const int DIRECTIONS = 360;
-const double R = 2.5; // radius for the interesting pixels
-const double OFFSET = 500; // pixel offset
-const double CAND_SCORE = 0.9; // candidate score threshold
+const double R = 1.5; // radius for the interesting pixels
+const double OFFSET = 40; // pixel offset
+const double CAND_SCORE = 0.95; // candidate score threshold
 // Configuration end
 
 void showMatrix(const cv::Mat &F) {
@@ -108,11 +108,12 @@ __host__ __device__ double computeScore(const uchar* F,
     double area1 = r1 + g1 + b1 + OFFSET;
     double area2 = r2 + g2 + b2 + OFFSET;
     double ratio = max(area1/area2, area2/area1); // avoid div!
-    return 1.0 - 1/(ratio*ratio*ratio);
+    double sqrRatio = ratio*ratio;
+    return 1.0 - 1/(sqrRatio*sqrRatio);
 }
 
 __global__ void bestScoreKernel(const uchar* F, double* S, int* D,
-                                int width, int height, int directions) {
+                                int width, int height) {
     const double PI = std::acos(-1.0);
 
     int x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -123,8 +124,8 @@ __global__ void bestScoreKernel(const uchar* F, double* S, int* D,
     double bestScore = -1;
     double bestDir = 0;
 
-    for (int d = 0; d < directions; ++d) {
-        double rad = d * (PI / directions);
+    for (int d = 0; d < DIRECTIONS; ++d) {
+        double rad = d * (PI / DIRECTIONS);
         double unitY = sin(rad);
         double unitX = cos(rad);
 
@@ -140,15 +141,16 @@ __global__ void bestScoreKernel(const uchar* F, double* S, int* D,
     D[idx] = bestDir;
 }
 
-cv::Mat chooseCandiates(const cv::Mat &S) {
-    cv::Mat C(S.size(), CV_64F);
-    for (int y = 0; y < S.rows; y++) {
-        for (int x = 0; x < S.cols; x++) {
-            double score = S.at<double>(y, x);
-            C.at<double>(y, x) = (score >= CAND_SCORE) ? 1 : 0;
-        }
-    }
-    return C;
+__global__ void candidateKernel(const double *S, uchar *C,
+                                int width, int height) {
+                                    
+    int x = blockIdx.x * blockDim.x + threadIdx.x;
+    int y = blockIdx.y * blockDim.y + threadIdx.y;
+    if (x >= width || y >= height) return;
+    
+    int idx = y * width + x;
+    double score = S[idx];
+    C[idx] = (score >= CAND_SCORE) ? 1 : 0;
 }
 
 
@@ -174,22 +176,25 @@ int main() {
     cv::cuda::GpuMat D(F.size(), CV_32S);
     bestScoreKernel<<<grid, block>>>(
         F.ptr<uchar>(), S.ptr<double>(), D.ptr<int>(),
-        F.cols, F.rows, DIRECTIONS
+        F.cols, F.rows
     );
 
     // choose the candidates
-    // cv::Mat C = chooseCandiates(S);
+    cv::cuda::GpuMat C(F.size(), CV_8U);
+    candidateKernel<<<grid, block>>>(
+        S.ptr<double>(), C.ptr<uchar>(),
+        F.cols, F.rows
+    );
     
     // download the matrices to CPU
     cv::Mat cpuS, cpuC;
     S.download(cpuS);
-    // C.download(cpuC);
+    C.download(cpuC);
 
     // show the images
     showImage(cpuF);
     showMatrix(cpuS);
-    // showMatrix(cpuC);
-
+    showMatrix(cpuC);
 
     return 0;
 }
