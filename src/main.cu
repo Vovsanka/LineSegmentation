@@ -29,25 +29,24 @@ void showImage(const cv::Mat &F) {
 }
 
 template <typename T>
-__device__ T max(T a, T b) {
+__host__ __device__ T max(T a, T b) {
     return (a > b) ? a : b;
 }
 
 template <typename T>
-__device__ T min(T a, T b) {
+__host__ __device__ T min(T a, T b) {
     return (a > b) ? a : b;
 }
 
-__device__ double computeScore(const float* F,
-                               int yPixel, int xPixel,
-                               double unitNormY, double unitNormX,
-                               int width, int height) {
+__host__ __device__ double computeScore(const uchar* F,
+                                        int yPixel, int xPixel,
+                                        double unitNormY, double unitNormX,
+                                        int width, int height) {
     const int R_LOWER = std::floor(R);
-    int idx = (yPixel * width + xPixel) * 3;
     // consider only the pixels s.t. their pixel center (y, x) is on/in the circle with radius R
-    double r1, g1, b1, r2, b2, g2;
+    int r1, g1, b1, r2, b2, g2;
     r1 = g1 = b1 = r2 = b2 = g2 = 0;
-    double minR, minG, minB;
+    int minR, minG, minB;
     minR = minG = minB = 255;
     for (int y = max(0, yPixel - R_LOWER); y <= min(height, yPixel + R_LOWER); y++) {
         // solve the quadratic inequation for x: (y - yPixel)^2 + (x - xPixel)^2 <= 0
@@ -61,8 +60,11 @@ __device__ double computeScore(const float* F,
             // skip the pixels on the line
             if (dist < 0.1) continue;
             // add pixel to the corresponding half-circle
-            double b = F[idx], g = F[idx + 1], r = F[idx + 2];
-            double w = R*R - (dx*dx + dy*dy);
+            int idx = (y * width + x) * 3;
+            int b = (int)F[idx];
+            int g = (int)F[idx + 1];
+            int r = (int)F[idx + 2];
+            int w = R*R - (dx*dx + dy*dy);
             minR = min(minR, r);
             minG = min(minG, g);
             minB = min(minB, b);
@@ -90,7 +92,7 @@ __device__ double computeScore(const float* F,
             // skip the pixels on the line
             if (dist < 0.1) continue;
             // add pixel to the corresponding half-circle
-            double w = R*R - (dx*dx + dy*dy);
+            int w = R*R - (dx*dx + dy*dy);
             if (signedDist >= 0) {
                 b1 += w*(-minB);
                 g1 += w*(-minG);
@@ -105,11 +107,11 @@ __device__ double computeScore(const float* F,
     // compute the score (add offset to reduce the noise sensitivity)
     double area1 = r1 + g1 + b1 + OFFSET;
     double area2 = r2 + g2 + b2 + OFFSET;
-    double ratio = max(area1/area2, area2/area1);
+    double ratio = max(area1/area2, area2/area1); // avoid div!
     return 1.0 - 1/(ratio*ratio*ratio);
 }
 
-__global__ void bestScoreKernel(const float* F, double* S, double* D,
+__global__ void bestScoreKernel(const uchar* F, double* S, int* D,
                                 int width, int height, int directions) {
     const double PI = std::acos(-1.0);
 
@@ -126,7 +128,7 @@ __global__ void bestScoreKernel(const float* F, double* S, double* D,
         double unitY = sin(rad);
         double unitX = cos(rad);
 
-        double score = computeScore(F, x, y, unitX, unitY, width, height);
+        double score = computeScore(F, y, x, unitX, unitY, width, height);
         if (score > bestScore) {
             bestScore = score;
             bestDir = d;
@@ -165,27 +167,29 @@ int main() {
 
     // GPU threads for each pixel
     dim3 block(16, 16); // 256
-    dim3 grid((F.cols + 15) / 16, (F.rows + 15) / 16); // round up to cover the whole image
+    dim3 grid((F.cols + block.x - 1) / block.x, (F.rows + block.y - 1) / block.y); // round up to cover the whole image
     
     // compute the best scores for every pixel
     cv::cuda::GpuMat S(F.size(), CV_64F);
-    cv::cuda::GpuMat D(F.size(), CV_64F);
+    cv::cuda::GpuMat D(F.size(), CV_32S);
     bestScoreKernel<<<grid, block>>>(
-        F.ptr<float>(), S.ptr<double>(), D.ptr<double>(),
+        F.ptr<uchar>(), S.ptr<double>(), D.ptr<int>(),
         F.cols, F.rows, DIRECTIONS
     );
 
-    // // choose the candidates
+    // choose the candidates
     // cv::Mat C = chooseCandiates(S);
     
-    // download the images to CPU
-    cv::Mat cpuS;
-    // S.download(cpuS);
+    // download the matrices to CPU
+    cv::Mat cpuS, cpuC;
+    S.download(cpuS);
+    // C.download(cpuC);
 
     // show the images
     showImage(cpuF);
-    // showMatrix(cpuS);
+    showMatrix(cpuS);
     // showMatrix(cpuC);
+
 
     return 0;
 }

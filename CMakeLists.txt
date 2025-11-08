@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.18)
 
+if(POLICY CMP0146)
+  cmake_policy(SET CMP0146 OLD)
+endif()
+
 project(LineSegmentation VERSION 1.0 LANGUAGES CXX CUDA)
 
 set(CMAKE_CUDA_ARCHITECTURES 86)
