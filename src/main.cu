@@ -1,6 +1,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/cuda.hpp>
 #include <cuda_runtime.h>
+#include <thrust/pair.h>
 
 #include <iostream>
 #include <cmath>
@@ -10,7 +11,7 @@
 // Configuration start
 const int DIRECTIONS = 360;
 const double R = 1.5; // radius for the interesting pixels
-const double OFFSET = 40; // pixel offset
+const double OFFSET = 40; // pixel offset to reduce the noise
 const double THICKNESS = 0.2; // line thickness
 const double CAND_SCORE = 0.95; // candidate score threshold
 // Configuration end
@@ -29,7 +30,13 @@ void showImage(const cv::Mat &F) {
     cv::waitKey(0);
 }
 
-__device__ double computeScore(const uchar* F,
+__host__ __device__ thrust::pair<double,double> directionNormalUnitVector(int d) {
+    const double PI = acos(-1.0);
+    double rad = d * (PI / DIRECTIONS);
+    return thrust::make_pair(sin(rad), cos(rad));
+}
+
+__host__ __device__ double computeScore(const uchar* F,
                                         double yPixel, double xPixel,
                                         double unitNormY, double unitNormX,
                                         int width, int height) {
@@ -104,7 +111,6 @@ __device__ double computeScore(const uchar* F,
 
 __global__ void bestScoreKernel(const uchar* F, double* S, int* D,
                                 int width, int height) {
-    const double PI = acos(-1.0);
 
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -115,10 +121,7 @@ __global__ void bestScoreKernel(const uchar* F, double* S, int* D,
     double bestDir = 0;
 
     for (int d = 0; d < DIRECTIONS; ++d) {
-        double rad = d * (PI / DIRECTIONS);
-        double unitY = sin(rad);
-        double unitX = cos(rad);
-
+        auto [unitY, unitX] = directionNormalUnitVector(d);
         double score = computeScore(F, y, x, unitX, unitY, width, height);
         if (score > bestScore) {
             bestScore = score;
@@ -131,8 +134,8 @@ __global__ void bestScoreKernel(const uchar* F, double* S, int* D,
     D[idx] = bestDir;
 }
 
-__global__ void candidateKernel(const double *S, uchar *C,
-                                int width, int height) {
+__global__ void candidateThresholdKernel(const double *S, const uchar *D, uchar *C,
+                                         int width, int height) {
                                     
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -141,6 +144,39 @@ __global__ void candidateKernel(const double *S, uchar *C,
     int idx = y * width + x;
     double score = S[idx];
     C[idx] = (score >= CAND_SCORE) ? 1 : 0;
+}
+
+__host__ std::pair<double,double> findFractionalCandidate(const cv::Mat &F,
+                                                        int y, int x, int d) {
+    auto [unitY, unitX] = directionNormalUnitVector(d);
+    const double step = 0.1;
+    // TODO: iterate over fractional coordinates (-1, + 1) in both x- and y-direction
+    return std::make_pair(y, x);
+}
+
+__host__ std::pair<cv::Mat, cv::Mat> candidateIterativeSearch(const cv::Mat &F,
+                                                              const cv::Mat &S,
+                                                              const cv::Mat &D) {
+    // sort the threshold candidates
+    std::vector<std::tuple<double, int, int>> bestPixels; 
+    for (int y = 0; y < F.rows; y++) {
+        for (int x = 0; x < F.cols; x++) {
+            double score = S.at<double>(y, x);
+            if (score >= CAND_SCORE) {
+                bestPixels.push_back(std::make_tuple(-score, y, x)); // - to sort descending
+            }
+        }
+    }
+    std::sort(std::begin(bestPixels), std::end(bestPixels));
+    // compute the candidate pixels and directions
+    cv::Mat CI(F.size(), CV_64F);
+    cv::Mat DI(F.size(), CV_32S);
+    for (auto& [score, y, x] : bestPixels) {
+        int d = D.at<int>(y, x);
+        auto [startY, startX] = findFractionalCandidate(F, y, x, d);
+        // TODO: iterative search from the fractional candidate
+    }
+    return std::make_pair(CI, DI);
 }
 
 
@@ -169,22 +205,32 @@ int main() {
         F.cols, F.rows
     );
 
+    // download the matrices to CPU
+    cv::Mat cpuS, cpuD;
+    S.download(cpuS);
+    D.download(cpuD);
+
     // choose the candidates
     cv::cuda::GpuMat C(F.size(), CV_8U);
-    candidateKernel<<<grid, block>>>(
-        S.ptr<double>(), C.ptr<uchar>(),
+    candidateThresholdKernel<<<grid, block>>>(
+        S.ptr<double>(), D.ptr<uchar>(), C.ptr<uchar>(),
         F.cols, F.rows
     );
-    
+
     // download the matrices to CPU
-    cv::Mat cpuS, cpuC;
-    S.download(cpuS);
+    cv::Mat cpuC;    
     C.download(cpuC);
 
-    // show the images
+    // show the images 
     showImage(cpuF);
     showMatrix(cpuS);
     showMatrix(cpuC);
+
+    // // choose the candiates upgraded
+    // cv::Mat cpuCI, cpuDI;
+    // std::tie(cpuCI, cpuDI) = candidateIterativeSearch(cpuF, cpuS, cpuD);
+
+    // showMatrix(cpuCI);
 
     return 0;
 }
