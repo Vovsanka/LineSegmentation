@@ -19,7 +19,10 @@ find_package(OpenCV REQUIRED)
 set(SOURCES
     src/main.cpp
     src/color.cu
-    src/kernels.cu
+    src/score.cu
+    src/show.cu
+    src/iterative.cu
+    src/best.cu
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

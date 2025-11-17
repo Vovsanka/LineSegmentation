@@ -1,0 +1,37 @@
+#include "iterative.hpp"
+
+
+__host__ 
+std::pair<double,double> findFractionalCandidate(const cv::Mat &F,
+                                                        int y, int x, int d) {
+    auto [unitY, unitX] = directionNormalUnitVector(d);
+    const double step = 0.1;
+    // TODO: iterate over fractional coordinates (-1, + 1) in both x- and y-direction
+    return std::make_pair(y, x);
+}
+
+__host__
+std::pair<cv::Mat, cv::Mat> candidateIterativeSearch(const cv::Mat &F,
+                                                              const cv::Mat &S,
+                                                              const cv::Mat &D) {
+    // sort the threshold candidates
+    std::vector<std::tuple<double, int, int>> bestPixels; 
+    for (int y = 0; y < F.rows; y++) {
+        for (int x = 0; x < F.cols; x++) {
+            double score = S.at<double>(y, x);
+            if (score >= CAND_SCORE) {
+                bestPixels.push_back(std::make_tuple(-score, y, x)); // - to sort descending
+            }
+        }
+    }
+    std::sort(std::begin(bestPixels), std::end(bestPixels));
+    // compute the candidate pixels and directions
+    cv::Mat CI(F.size(), CV_64F);
+    cv::Mat DI(F.size(), CV_32S);
+    for (auto& [score, y, x] : bestPixels) {
+        int d = D.at<int>(y, x);
+        auto [startY, startX] = findFractionalCandidate(F, y, x, d);
+        // TODO: iterative search from the fractional candidate
+    }
+    return std::make_pair(CI, DI);
+}
