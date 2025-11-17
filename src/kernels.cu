@@ -52,10 +52,7 @@ double computeScore(const uchar* F,
             // skip the pixels on the line
             if (dist < THICKNESS/2) continue;
             // add pixel to the corresponding half-circle
-            int idx = (y * width + x) * 3;
-            int b = (int)F[idx];
-            int g = (int)F[idx + 1];
-            int r = (int)F[idx + 2];
+            auto [r, g, b] = getRgbColors(F, y, x, width, height);
             int w = R*R - (dx*dx + dy*dy);
             minR = min(minR, r);
             minG = min(minG, g);

@@ -11,6 +11,8 @@
 #include <cuda_runtime.h>
 #include <thrust/pair.h>
 
+#include "color.hpp"
+
 
 void showMatrix(const cv::Mat &F);
 
