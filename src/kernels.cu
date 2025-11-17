@@ -1,11 +1,4 @@
-#include <opencv2/opencv.hpp>
-#include <opencv2/core/cuda.hpp>
-#include <cuda_runtime.h>
-#include <thrust/pair.h>
-
-#include <iostream>
-#include <cmath>
-#include <vector>
+#include "kernels.hpp"
 
 
 // Configuration start
@@ -30,13 +23,15 @@ void showImage(const cv::Mat &F) {
     cv::waitKey(0);
 }
 
-__host__ __device__ thrust::pair<double,double> directionNormalUnitVector(int d) {
+__host__ __device__ 
+thrust::pair<double,double> directionNormalUnitVector(int d) {
     const double PI = acos(-1.0);
     double rad = d * (PI / DIRECTIONS);
     return thrust::make_pair(sin(rad), cos(rad));
 }
 
-__host__ __device__ double computeScore(const uchar* F,
+__host__ __device__ 
+double computeScore(const uchar* F,
                                         double yPixel, double xPixel,
                                         double unitNormY, double unitNormX,
                                         int width, int height) {
@@ -109,7 +104,8 @@ __host__ __device__ double computeScore(const uchar* F,
     return 1.0 - 1/(sqrRatio*sqrRatio);
 }
 
-__global__ void bestScoreKernel(const uchar* F, double* S, int* D,
+__global__ 
+void bestScoreKernel(const uchar* F, double* S, int* D,
                                 int width, int height) {
 
     int x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -134,7 +130,8 @@ __global__ void bestScoreKernel(const uchar* F, double* S, int* D,
     D[idx] = bestDir;
 }
 
-__global__ void candidateThresholdKernel(const double *S, const uchar *D, uchar *C,
+__global__ 
+void candidateThresholdKernel(const double *S, const uchar *D, uchar *C,
                                          int width, int height) {
                                     
     int x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -146,7 +143,8 @@ __global__ void candidateThresholdKernel(const double *S, const uchar *D, uchar 
     C[idx] = (score >= CAND_SCORE) ? 1 : 0;
 }
 
-__host__ std::pair<double,double> findFractionalCandidate(const cv::Mat &F,
+__host__ 
+std::pair<double,double> findFractionalCandidate(const cv::Mat &F,
                                                         int y, int x, int d) {
     auto [unitY, unitX] = directionNormalUnitVector(d);
     const double step = 0.1;
@@ -154,7 +152,8 @@ __host__ std::pair<double,double> findFractionalCandidate(const cv::Mat &F,
     return std::make_pair(y, x);
 }
 
-__host__ std::pair<cv::Mat, cv::Mat> candidateIterativeSearch(const cv::Mat &F,
+__host__
+std::pair<cv::Mat, cv::Mat> candidateIterativeSearch(const cv::Mat &F,
                                                               const cv::Mat &S,
                                                               const cv::Mat &D) {
     // sort the threshold candidates
@@ -179,9 +178,8 @@ __host__ std::pair<cv::Mat, cv::Mat> candidateIterativeSearch(const cv::Mat &F,
     return std::make_pair(CI, DI);
 }
 
-
-int main() {
-    
+__host__ 
+void rgbRun() {
     // Check the CUDA devices
     int cudaCount = cv::cuda::getCudaEnabledDeviceCount();
     std::cout << "CUDA devices: " << cudaCount << std::endl;
@@ -231,6 +229,4 @@ int main() {
     // std::tie(cpuCI, cpuDI) = candidateIterativeSearch(cpuF, cpuS, cpuD);
 
     // showMatrix(cpuCI);
-
-    return 0;
 }
