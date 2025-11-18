@@ -19,7 +19,7 @@
 //     for (int y = 0; y < F.rows; y++) {
 //         for (int x = 0; x < F.cols; x++) {
 //             double score = S.at<double>(y, x);
-//             if (score >= LOGISTIC_MID) {
+//             if (score >= THRESHOLD) {
 //                 bestPixels.push_back(std::make_tuple(-score, y, x)); // - to sort descending
 //             }
 //         }

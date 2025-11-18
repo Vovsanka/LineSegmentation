@@ -5,7 +5,7 @@ __host__ __device__
 thrust::tuple<uchar,uchar,uchar> bicubicInterpolation(const uchar* F,
                                                       double y, double x,
                                                       int width, int height) {
-    // (clamp‑to‑edge strategy)
+    // clamp‑to‑edge strategy for out of range subpixels
     int x0 = static_cast<int>(floor(x));
     int y0 = static_cast<int>(floor(y));
     double dx = x - x0;
@@ -57,11 +57,13 @@ thrust::tuple<uchar,uchar,uchar> getRgbColors(const uchar* F,
                                               int width, int height) {
     int rY = round(y);
     int rX = round(x);
-    // integer pixel case (no need to compute)
-    if (fabs(y - rY) <= TOL && fabs(x - rX) <= TOL) {
+    // image integer pixel case (no need to compute)
+    if (0 <= rY && rY < height &&
+        0 <= rX && rX < width &&
+        fabs(y - rY) <= TOL && fabs(x - rX) <= TOL) {
         int idx = (rY * width + rX) * 3;
         return thrust::make_tuple(F[idx + 2], F[idx + 1], F[idx]);
     }
-    // determine the color of the sub-pixel with the bicubic interpolation
+    // determine the color of the sub-pixel with the bicubic interpolation (possibly out of range)
     return bicubicInterpolation(F, y, x, width, height);
 }

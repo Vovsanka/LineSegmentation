@@ -7,7 +7,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/cuda.hpp>
 
-#include <cuda_runtime.h>
+// #include <cuda_runtime.h>
 #include <thrust/tuple.h>
 
 #include "config.hpp"
@@ -27,7 +27,5 @@ __global__
 void candidateThresholdKernel(const double *S, const uchar *D, uchar *C,
                               int width, int height);
 
-__host__ 
-void rgbRun();
 
 #endif
