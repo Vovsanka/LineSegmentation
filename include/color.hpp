@@ -1,8 +1,6 @@
 #ifndef COLOR_HPP
 #define COLOR_HPP
 
-#include <cmath>
-
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/cuda.hpp>
 

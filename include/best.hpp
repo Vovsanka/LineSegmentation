@@ -2,14 +2,13 @@
 #define BEST_HPP
 
 #include <iostream>
-#include <cmath>
 #include <vector>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/cuda.hpp>
 
 #include <cuda_runtime.h>
-#include <thrust/pair.h>
+#include <thrust/tuple.h>
 
 #include "config.hpp"
 #include "score.hpp"

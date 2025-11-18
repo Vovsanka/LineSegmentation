@@ -33,9 +33,9 @@ thrust::tuple<uchar,uchar,uchar> bicubicInterpolation(const uchar* F,
             int yj = min(max(y0+j-1,0), height-1);
             int idx = (yj*width + xi)*3;
 
-            uchar r = F[idx+0];
+            uchar b = F[idx+0];
             uchar g = F[idx+1];
-            uchar b = F[idx+2];
+            uchar r = F[idx+2];
 
             double wxy = wx[i]*wy[j];
             R += r * wxy;

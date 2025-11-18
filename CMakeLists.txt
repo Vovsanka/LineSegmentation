@@ -17,7 +17,7 @@ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --extended-lambda")
 find_package(OpenCV REQUIRED)
 
 set(SOURCES
-    src/main.cpp
+    src/main.cu
     src/color.cu
     src/score.cu
     src/show.cu
@@ -38,3 +38,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ${OpenCV_LIBS})
 set_target_properties(${PROJECT_NAME} PROPERTIES
     CUDA_SEPARABLE_COMPILATION ON
 )
+
+
