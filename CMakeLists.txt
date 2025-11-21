@@ -18,6 +18,7 @@ find_package(OpenCV REQUIRED)
 
 set(SOURCES
     src/main.cu
+    src/resize.cu
     src/color.cu
     src/score.cu
     src/show.cu

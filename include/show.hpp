@@ -4,10 +4,13 @@
 #include <opencv2/opencv.hpp>
 
 __host__
-void showMatrix(const cv::Mat &F);
+cv::Mat downloadToCpu(const cv::cuda::GpuMat& gpuF);
 
 __host__
-void showImage(const cv::Mat &F);
+void showMatrix(const cv::cuda::GpuMat& gpuF);
+
+__host__
+void showImage(const cv::cuda::GpuMat& gpuF);
 
 
 #endif

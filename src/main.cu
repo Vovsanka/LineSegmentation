@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "resize.hpp"
 #include "best.hpp"
 
 
@@ -11,53 +12,38 @@ int main() {
     std::cout << "CUDA devices: " << cudaCount << std::endl;
 
     // Load an RGB image
-    cv::Mat cpuF = cv::imread("../images/table.png", cv::IMREAD_COLOR);
-
-    // Score demo (also for subpixels)
-    for (double y = 100.0; y <= 101.0; y += 0.1) {
-        thrust::tuple<uchar,uchar,uchar> rgb = getRgbColors(cpuF.ptr(), y, 100, cpuF.cols, cpuF.rows);
-        int r = thrust::get<0>(rgb);
-        int g = thrust::get<1>(rgb);
-        int b = thrust::get<2>(rgb);
-        std::cout << y << ": " << r << " " << g << " " << b << " " << computeScore(cpuF.ptr(), y, 100.0, 0, cpuF.cols, cpuF.rows) << std::endl;
-    }
+    cv::Mat originalF = cv::imread("../images/table.png", cv::IMREAD_COLOR);
 
     // Upload the image to GPU
     cv::cuda::GpuMat F;
-    F.upload(cpuF);
+    F.upload(originalF);
+
+    // Resize the image (interpolate for every half-pixel)
+    cv::cuda::GpuMat zF = resize(F);
 
     // GPU threads for each pixel
     dim3 block(16, 16); // 256
-    dim3 grid((F.cols + block.x - 1) / block.x, (F.rows + block.y - 1) / block.y); // round up to cover the whole image
+    dim3 grid((zF.cols + block.x - 1) / block.x, (zF.rows + block.y - 1) / block.y); // round up to cover the whole image
     
     // compute the best scores for every pixel
-    cv::cuda::GpuMat S(F.size(), CV_64F);
-    cv::cuda::GpuMat D(F.size(), CV_32S);
+    cv::cuda::GpuMat S(zF.size(), CV_64F);
+    cv::cuda::GpuMat D(zF.size(), CV_32S);
     bestScoreKernel<<<grid, block>>>(
-        F.ptr<uchar>(), S.ptr<double>(), D.ptr<int>(),
-        F.cols, F.rows
+        zF.ptr<uchar>(), S.ptr<double>(), D.ptr<int>(),
+        zF.cols, zF.rows
     );
-
-    // download the matrices to CPU
-    cv::Mat cpuS, cpuD;
-    S.download(cpuS);
-    D.download(cpuD);
 
     // choose the candidates
-    cv::cuda::GpuMat C(F.size(), CV_8U);
+    cv::cuda::GpuMat C(zF.size(), CV_8U);
     candidateThresholdKernel<<<grid, block>>>(
         S.ptr<double>(), D.ptr<uchar>(), C.ptr<uchar>(),
-        F.cols, F.rows
+        zF.cols, zF.rows
     );
 
-    // // download the matrices to CPU
-    cv::Mat cpuC;    
-    C.download(cpuC);
-
-    // show the images 
-    showImage(cpuF);
-    showMatrix(cpuS);
-    showMatrix(cpuC);
+    // show the image and the normalized matrices
+    showImage(zF);
+    showMatrix(S);
+    showMatrix(C);
 
     // // choose the candiates upgraded
     // cv::Mat cpuCI, cpuDI;
