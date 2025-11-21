@@ -14,9 +14,13 @@ int main() {
     // Load an RGB image
     cv::Mat originalF = cv::imread("../images/table.png", cv::IMREAD_COLOR);
 
+    // Convert the image to LAB 
+    cv::Mat labF;
+    cv::cvtColor(originalF, labF, cv::COLOR_BGR2Lab);
+
     // Upload the image to GPU
     cv::cuda::GpuMat F;
-    F.upload(originalF);
+    F.upload(labF);
 
     // Resize the image (interpolate for every half-pixel)
     cv::cuda::GpuMat zF = resize(F);
@@ -41,6 +45,8 @@ int main() {
     );
 
     // show the image and the normalized matrices
+    showImage(originalF);
+    showImage(labF);
     showImage(zF);
     showMatrix(S);
     showMatrix(C);

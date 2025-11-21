@@ -23,3 +23,10 @@ void showImage(const cv::cuda::GpuMat& gpuF) {
     cv::imshow("Image", F);
     cv::waitKey(0);
 }
+
+__host__
+void showImage(const cv::Mat& F) {
+    cv::imshow("Image", F);
+    cv::waitKey(0);
+}
+

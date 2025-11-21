@@ -12,5 +12,8 @@ void showMatrix(const cv::cuda::GpuMat& gpuF);
 __host__
 void showImage(const cv::cuda::GpuMat& gpuF);
 
+__host__
+void showImage(const cv::Mat& F); 
+
 
 #endif
