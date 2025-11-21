@@ -26,35 +26,35 @@ thrust::tuple<uchar,uchar,uchar> bicubicInterpolation(const uchar* F,
         wy[i] = cubicWeight(dy - (i-1));
     }
 
-    double R=0, G=0, B=0;
+    double C[3] = {0, 0, 0};
     for (int j=0; j<4; j++) {
         for (int i=0; i<4; i++) {
             int xi = min(max(x0+i-1,0), width-1);
             int yj = min(max(y0+j-1,0), height-1);
             int idx = (yj*width + xi)*3;
 
-            uchar b = F[idx+0];
-            uchar g = F[idx+1];
-            uchar r = F[idx+2];
+            uchar c0 = F[idx+0];
+            uchar c1 = F[idx+1];
+            uchar c2 = F[idx+2];
 
             double wxy = wx[i]*wy[j];
-            R += r * wxy;
-            G += g * wxy;
-            B += b * wxy;
+            C[0] += c0 * wxy;
+            C[1] += c1 * wxy;
+            C[2] += c2 * wxy;
         }
     }
 
-    uchar rOut = static_cast<uchar>(max(0.0, min(255.0, round(R))));
-    uchar gOut = static_cast<uchar>(max(0.0, min(255.0, round(G))));
-    uchar bOut = static_cast<uchar>(max(0.0, min(255.0, round(B))));
+    uchar c0norm = static_cast<uchar>(max(0.0, min(255.0, round(C[0]))));
+    uchar c1norm = static_cast<uchar>(max(0.0, min(255.0, round(C[1]))));
+    uchar c2norm = static_cast<uchar>(max(0.0, min(255.0, round(C[2]))));
 
-    return thrust::make_tuple(rOut, gOut, bOut);
+    return thrust::make_tuple(c0norm, c1norm, c2norm);
 }
 
 __host__ __device__
-thrust::tuple<uchar,uchar,uchar> getRgbColors(const uchar* F,
-                                              double y, double x,
-                                              int width, int height) {
+thrust::tuple<uchar,uchar,uchar> getColorChannels(const uchar* F,
+                                                  double y, double x,
+                                                  int width, int height) {
     int rY = round(y);
     int rX = round(x);
     // image integer pixel case (no need to compute)
@@ -62,7 +62,7 @@ thrust::tuple<uchar,uchar,uchar> getRgbColors(const uchar* F,
         0 <= rX && rX < width &&
         fabs(y - rY) <= TOL && fabs(x - rX) <= TOL) {
         int idx = (rY * width + rX) * 3;
-        return thrust::make_tuple(F[idx + 2], F[idx + 1], F[idx]);
+        return thrust::make_tuple(F[idx + 0], F[idx + 1], F[idx + 2]);
     }
     // determine the color of the sub-pixel with the bicubic interpolation (possibly out of range)
     return bicubicInterpolation(F, y, x, width, height);

@@ -9,14 +9,13 @@ thrust::tuple<double,double> directionNormalUnitVector(int d) {
 }
 
 __host__ __device__
-double computeScore(const uchar* F,
-                    double yPixel, double xPixel,
-                    int direction, 
-                    int width, int height) {
-    double r1, g1, b1, r2, b2, g2;
-    r1 = g1 = b1 = r2 = b2 = g2 = 0;
-    int minR, minG, minB;
-    minR = minG = minB = 255;
+double computeLabScore(const uchar* F,
+                       double yPixel, double xPixel,
+                       int direction, 
+                       int width, int height) {
+    double area1 = 0, area2 = 0;
+    int minL = 255, minA = 255, minB = 255;
+    double ABW = (1.0 - LW)/2.0;
     //
     thrust::tuple<double,double> unitNorm = directionNormalUnitVector(direction);
     double unitNormY = thrust::get<0>(unitNorm);
@@ -35,12 +34,12 @@ double computeScore(const uchar* F,
             // skip the pixels on the line
             if (dist < THICKNESS*SCALE/2) continue;
             //
-            thrust::tuple<uchar,uchar,uchar> rgb = getRgbColors(F, y, x, width, height);
-            int r = thrust::get<0>(rgb);
-            int g = thrust::get<1>(rgb);
-            int b = thrust::get<2>(rgb);
-            minR = min(minR, r);
-            minG = min(minG, g);
+            thrust::tuple<uchar,uchar,uchar> lab = getColorChannels(F, y, x, width, height);
+            int l = thrust::get<0>(lab);
+            int a = thrust::get<1>(lab);
+            int b = thrust::get<2>(lab);
+            minL = min(minL, l);
+            minA = min(minA, a);
             minB = min(minB, b);
         }
     }
@@ -57,29 +56,21 @@ double computeScore(const uchar* F,
             //
             double w =  1.0 - sqrt(dx*dx + dy*dy)/R;
             //
-            thrust::tuple<uchar,uchar,uchar> rgb = getRgbColors(F, y, x, width, height);
-            int r = thrust::get<0>(rgb);
-            int g = thrust::get<1>(rgb);
-            int b = thrust::get<2>(rgb);
-            minR = min(minR, r);
-            minG = min(minG, g);
-            minB = min(minB, b);
+            thrust::tuple<uchar,uchar,uchar> lab = getColorChannels(F, y, x, width, height);
+            int l = thrust::get<0>(lab);
+            int a = thrust::get<1>(lab);
+            int b = thrust::get<2>(lab);
+            //
+            double contribution = LW*w*(l - minL + OFFSET) + ABW*w*((a - minA + OFFSET) + (b - minB + OFFSET));
             // equalize intensive and non-intensive colors
             if (signedDist > 0) { // the half-circle of the normal vector
-                b1 += w*(b - minB + OFFSET);
-                g1 += w*(g - minG + OFFSET);
-                r1 += w*(r - minR + OFFSET);
+                area1 += contribution;
             } else { // the half-circle opposite to the normal vector
-                b2 += w*(b - minB + OFFSET);
-                g2 += w*(g - minG + OFFSET);
-                r2 += w*(r - minR + OFFSET);
+                area2 += contribution;
             }
         }
     }
-
-    double area1 = r1 + g1 + b1;
-    double area2 = r2 + g2 + b2;
-    double ratio = max(area1/area2, area2/area1);
     // compute the score (using the logistic function)
+    double ratio = max(area1/area2, area2/area1);
     return 1.0 / (1.0 + exp(-(ratio - CAND_RATIO)));
 }

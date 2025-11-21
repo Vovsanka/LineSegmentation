@@ -14,9 +14,9 @@ __host__ __device__
 thrust::tuple<double,double> directionNormalUnitVector(int d);
 
 __host__ __device__
-double computeScore(const uchar* F,
-                    double yPixel, double xPixel,
-                    int direction,
-                    int width, int height);
+double computeLabScore(const uchar* F,
+                       double yPixel, double xPixel,
+                       int direction, 
+                       int width, int height); 
 
 #endif
