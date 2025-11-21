@@ -1,7 +1,7 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
-const int DIRECTIONS = 8;
+const int DIRECTIONS = 180;
 const double R = 5.0; // radius for the circle of interesting pixels
 const double STEP = 0.2; // (R/STEP = INT!) step size for the discrete subpixels in the circle
 const double OFFSET = 5; // score offset to reduce the noise sensitivity
