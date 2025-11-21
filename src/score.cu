@@ -13,9 +13,8 @@ double computeLabScore(const uchar* F,
                        double yPixel, double xPixel,
                        int direction, 
                        int width, int height) {
-    double area1 = 0, area2 = 0;
+    double l1 = 0, l2 = 0, ab1 = 0, ab2 = 0;
     int minL = 255, minA = 255, minB = 255;
-    double ABW = (1.0 - LW)/2.0;
     //
     thrust::tuple<double,double> unitNorm = directionNormalUnitVector(direction);
     double unitNormY = thrust::get<0>(unitNorm);
@@ -61,16 +60,20 @@ double computeLabScore(const uchar* F,
             int a = thrust::get<1>(lab);
             int b = thrust::get<2>(lab);
             //
-            double contribution = LW*w*(l - minL + OFFSET) + ABW*w*((a - minA + OFFSET) + (b - minB + OFFSET));
+            double lContribution = w*(l - minL + OFFSET);
+            double abContribution = w*((a - minA + OFFSET) + (b - minB + OFFSET));
             // equalize intensive and non-intensive colors
             if (signedDist > 0) { // the half-circle of the normal vector
-                area1 += contribution;
+                l1 += lContribution;
+                ab1 += abContribution;
             } else { // the half-circle opposite to the normal vector
-                area2 += contribution;
+                l2 += lContribution;
+                ab2 += abContribution;
             }
         }
     }
     // compute the score (using the logistic function)
-    double ratio = max(area1/area2, area2/area1);
-    return 1.0 / (1.0 + exp(-(ratio - CAND_RATIO)));
+    double lRatio = max(l1/l2, l2/l1);
+    double abRatio = max(ab1/ab2, ab2/ab1);
+    return 1.0 / (1.0 + exp(-(max(lRatio, abRatio) - CAND_RATIO)));
 }
