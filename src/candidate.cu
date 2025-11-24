@@ -1,4 +1,4 @@
-#include "best.hpp"
+#include "candidate.hpp"
 
 
 // __device__

@@ -9,6 +9,8 @@
 #include "config.hpp"
 #include "color.hpp"
 
+__host__ __device__
+inline double getPi();
 
 __host__ __device__
 thrust::tuple<double,double> getUnitVector(double rad);
@@ -21,5 +23,10 @@ double computeLabScore(const uchar* F,
                        double yPixel, double xPixel,
                        double dirRad, 
                        int width, int height); 
+
+__host__ __device__
+thrust::tuple<double,double> bestPossibleScore(const uchar* F,
+                                               double yPixel, double xPixel,
+                                               int width, int height);
 
 #endif

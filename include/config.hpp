@@ -10,5 +10,8 @@ const double OFFSET = 7; // score offset to reduce the noise sensitivity
 const double THICKNESS = 1; // line thickness 
 const double CAND_RATIO = 1.8; // candidate ratio
 const double THRESHOLD = 0.5; // candidate threshold (the logistic middle)
+//
+const double UP_STEP = 0.1; // step size for the candidate upgrade
+const int UP_COUNT = 14; // sqrt(2)/UP_STEP
 
 #endif

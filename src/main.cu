@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "resize.hpp"
-#include "best.hpp"
+#include "candidate.hpp"
 
 
 

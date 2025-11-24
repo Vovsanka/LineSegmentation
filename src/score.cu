@@ -1,15 +1,18 @@
 #include "score.hpp"
 
+__host__ __device__
+inline double getPi() {
+    return acos(-1.0);
+}
+
 __host__ __device__ 
 inline thrust::tuple<double,double> getUnitVector(double rad) {
     return thrust::make_tuple(sin(rad), cos(rad));
 }
 
-
 __host__ __device__
 double getRad(int direction) {
-    const double PI = acos(-1.0);
-    return direction*(PI / DIRECTIONS);
+    return direction*(getPi() / DIRECTIONS);
 }
 
 __host__ __device__
@@ -80,4 +83,12 @@ double computeLabScore(const uchar* F,
     double lRatio = max(l1/l2, l2/l1);
     double abRatio = max(ab1/ab2, ab2/ab1);
     return 1.0 / (1.0 + exp(-(max(lRatio, abRatio) - CAND_RATIO)));
+}
+
+__host__ __device__
+thrust::tuple<double,double> bestPossibleScore(const uchar* F,
+                                               double yPixel, double xPixel,
+                                               int width, int height) {
+    double l = 0 , r = getPi();
+                                                   
 }

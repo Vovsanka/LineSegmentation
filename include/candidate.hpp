@@ -7,7 +7,6 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/cuda.hpp>
 
-// #include <cuda_runtime.h>
 #include <thrust/tuple.h>
 
 #include "config.hpp"

@@ -23,7 +23,7 @@ set(SOURCES
     src/score.cu
     src/show.cu
     src/iterative.cu
-    src/best.cu
+    src/candidate.cu
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
