@@ -23,7 +23,8 @@ void bestScoreKernel(const uchar* F, double* S, int* D,
     double bestDir = 0;
 
     for (int d = 0; d < DIRECTIONS; d++) {
-        double score = computeLabScore(F, y, x, d, width, height);
+        double dirRad = getRad(d);
+        double score = computeLabScore(F, y, x, dirRad, width, height);
         if (score > bestScore) {
             bestScore = score;
             bestDir = d;

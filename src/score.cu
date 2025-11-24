@@ -1,22 +1,26 @@
 #include "score.hpp"
 
-
 __host__ __device__ 
-thrust::tuple<double,double> directionNormalUnitVector(int d) {
-    const double PI = acos(-1.0);
-    double rad = d * (PI / DIRECTIONS);
+inline thrust::tuple<double,double> getUnitVector(double rad) {
     return thrust::make_tuple(sin(rad), cos(rad));
+}
+
+
+__host__ __device__
+double getRad(int direction) {
+    const double PI = acos(-1.0);
+    return direction*(PI / DIRECTIONS);
 }
 
 __host__ __device__
 double computeLabScore(const uchar* F,
                        double yPixel, double xPixel,
-                       int direction, 
+                       double dirRad, 
                        int width, int height) {
     double l1 = 0, l2 = 0, ab1 = 0, ab2 = 0;
     int minL = 255, minA = 255, minB = 255;
     //
-    thrust::tuple<double,double> unitNorm = directionNormalUnitVector(direction);
+    thrust::tuple<double,double> unitNorm = getUnitVector(dirRad);
     double unitNormY = thrust::get<0>(unitNorm);
     double unitNormX = thrust::get<1>(unitNorm); 
     //

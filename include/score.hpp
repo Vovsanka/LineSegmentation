@@ -11,12 +11,15 @@
 
 
 __host__ __device__
-thrust::tuple<double,double> directionNormalUnitVector(int d);
+thrust::tuple<double,double> getUnitVector(double rad);
+
+__host__ __device__
+double getRad(int direction);
 
 __host__ __device__
 double computeLabScore(const uchar* F,
                        double yPixel, double xPixel,
-                       int direction, 
+                       double dirRad, 
                        int width, int height); 
 
 #endif
