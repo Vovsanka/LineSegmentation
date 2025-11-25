@@ -85,10 +85,39 @@ double computeLabScore(const uchar* F,
     return 1.0 / (1.0 + exp(-(max(lRatio, abRatio) - CAND_RATIO)));
 }
 
-__host__ __device__
+__host__ /*__device__*/
 thrust::tuple<double,double> bestPossibleScore(const uchar* F,
                                                double yPixel, double xPixel,
                                                int width, int height) {
-    double l = 0 , r = getPi();
-                                                   
+    // n-search
+    double l = 0, r = getPi();
+    while (r - l > DIR_PRECISION) {
+        double m[N + 1];
+        m[0] = l;
+        m[N] = r;
+        // only for points in between
+        for (int j = 1; j < N - 1; j++) {
+            m[j] = l + (j + 1)*(r - l)/N;
+        }
+        // only for points in between
+        double s[N];
+        int bestJ = 1;
+        for (int j = 1; j < N - 1; j++) {
+            s[j] = computeLabScore(F, yPixel, xPixel, m[j], width, height);
+            if (s[j] > s[bestJ]) {
+                bestJ = j;
+            }
+        }
+        // update the range of the directions
+        l = m[bestJ - 1];
+        r = m[bestJ + 1];
+        //
+        std::cout << l << " " << r << std::endl;
+    }
+    //
+    double bestDir = (l + r)/2;
+    double bestScore = computeLabScore(F, yPixel, xPixel, bestDir, width, height);
+    std::cout << "Best direction: " << bestDir << std::endl;
+    std::cout << "Best score: " << bestScore << std::endl;
+    return thrust::make_tuple(bestScore, bestDir);
 }

@@ -23,7 +23,8 @@ int main() {
     F.upload(labF);
 
     // Resize the image (interpolate for every half-pixel)
-    cv::cuda::GpuMat zF = resize(F);
+    // cv::cuda::GpuMat zF = resize(F);
+    cv::cuda::GpuMat zF = F;
 
     // GPU threads for each pixel
     dim3 block(16, 16); // 256
@@ -51,6 +52,16 @@ int main() {
     showMatrix(S);
     showMatrix(C);
 
+    ///////////
+    cv::Mat cpuF;
+    zF.download(cpuF);
+    bestPossibleScore(cpuF.ptr(), 220, 388, cpuF.cols, cpuF.rows); 
+
+    cv::Mat cpuS;
+    S.download(cpuS);
+    std::cout << cpuS.at<double>(220, 388) << std::endl;
+
+    /////////
     // // choose the candiates upgraded
     // cv::Mat cpuCI, cpuDI;
     // std::tie(cpuCI, cpuDI) = candidateIterativeSearch(cpuF, cpuS, cpuD);

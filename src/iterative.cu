@@ -19,6 +19,9 @@ thrust::tuple<double,double,double> upgradeCandidate(const uchar* F,
             double unitNormX = thrust::get<1>(unitNorm);
         }
     }
+
+    //
+    return thrust::make_tuple(0,0,0);
 }
 
 

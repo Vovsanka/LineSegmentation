@@ -24,7 +24,7 @@ double computeLabScore(const uchar* F,
                        double dirRad, 
                        int width, int height); 
 
-__host__ __device__
+__host__ /*__device__*/
 thrust::tuple<double,double> bestPossibleScore(const uchar* F,
                                                double yPixel, double xPixel,
                                                int width, int height);
