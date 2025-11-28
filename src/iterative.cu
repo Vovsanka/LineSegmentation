@@ -10,18 +10,24 @@ thrust::tuple<double,double,double> upgradeCandidate(const uchar* F,
     double unitNormY = thrust::get<0>(unitNorm);
     double unitNormX = thrust::get<1>(unitNorm);
     //
+    double bestScore = -1;
+    double bestY = 0, bestX = 0;
     for (int i = -UP_COUNT; i <= UP_COUNT; i++) {
         for (int j = -UP_COUNT; j <= UP_COUNT; j++) {
             double y = yPixel + i*UP_STEP*unitNormY;
             double x = xPixel + i*UP_STEP*unitNormX;
             thrust::tuple<double,double> newScoreDir = bestPossibleScore(F, y, x, width, height);
-            double unitNormY = thrust::get<0>(unitNorm);
-            double unitNormX = thrust::get<1>(unitNorm);
+            double newScore = thrust::get<0>(newScoreDir);
+            double newDir = thrust::get<1>(newScoreDir);
+            if (newScore > bestScore) {
+                bestScore = newScore;
+                bestY = y;
+                bestX = x;
+            }
         }
     }
-
     //
-    return thrust::make_tuple(0,0,0);
+    return thrust::make_tuple(bestScore, bestY, bestX);
 }
 
 
