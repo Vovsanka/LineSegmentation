@@ -16,13 +16,19 @@ thrust::tuple<double,double,double> upgradeCandidate(const uchar* F,
                                                      double dirRad, 
                                                      int width, int height);
 
-// __host__
-// std::pair<double,double> findFractionalCandidate(const cv::Mat &F,
-//                                                  int y, int x, int d);
+__host__
+std::vector<std::tuple<double,double,double>> sortThresholdCandidates(const double *S, int width, int height);
 
-// __host__
-// std::pair<cv::Mat, cv::Mat> candidateIterativeSearch(const cv::Mat &F,
-//                                                      const cv::Mat &S,
-//                                                      const cv::Mat &D);
+
+__host__
+void candidateIterativeSearch(const uchar* F, const double *S) {
+    std::vector<std::tuple<double,double,double>> tCand = sortThresholdCandidates(S);
+    for (std::tuple<double,double,double> start: tCand) {
+        double startY = std::get<1>(start);
+        double startX = std::get<2>(start);
+    }
+}
+
+
 
 #endif
