@@ -12,8 +12,7 @@
 
 __host__ __device__
 thrust::tuple<double,double,double> upgradeCandidate(const uchar* F,
-                                                     double yPixel, double xPixel,
-                                                     double dirRad, 
+                                                     thrust::tuple<double,double,double>,
                                                      int width, int height);
 
 __host__
@@ -21,13 +20,7 @@ std::vector<std::tuple<double,double,double>> sortThresholdCandidates(const doub
 
 
 __host__
-void candidateIterativeSearch(const uchar* F, const double *S) {
-    std::vector<std::tuple<double,double,double>> tCand = sortThresholdCandidates(S);
-    for (std::tuple<double,double,double> start: tCand) {
-        double startY = std::get<1>(start);
-        double startX = std::get<2>(start);
-    }
-}
+void candidateIterativeSearch(const uchar* F, const double *S, const double *D, int width, int height);
 
 
 
