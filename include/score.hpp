@@ -10,7 +10,7 @@
 #include "color.hpp"
 
 __host__ __device__
-inline double getPi();
+double getPi();
 
 __host__ __device__
 thrust::tuple<double,double> getUnitVector(double rad);

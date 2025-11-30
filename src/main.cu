@@ -2,6 +2,7 @@
 
 #include "resize.hpp"
 #include "candidate.hpp"
+#include "iterative.hpp"
 
 
 
@@ -44,7 +45,7 @@ int main() {
     // choose the candidates
     cv::cuda::GpuMat C(zF.size(), CV_8U);
     candidateThresholdKernel<<<grid, block>>>(
-        S.ptr<double>(), D.ptr<uchar>(), C.ptr<uchar>(),
+        S.ptr<double>(), D.ptr<int>(), C.ptr<uchar>(),
         zF.cols, zF.rows
     );
 
@@ -56,11 +57,14 @@ int main() {
     showMatrix(C);
 
     /////////
-    // // choose the candiates upgraded
-    // cv::Mat cpuCI, cpuDI;
-    // std::tie(cpuCI, cpuDI) = candidateIterativeSearch(cpuF, cpuS, cpuD);
-
-    // showMatrix(cpuCI);
+    cv::Mat CI = candidateIterativeSearch(
+        downloadToCpu(zF).ptr<uchar>(),
+        downloadToCpu(S).ptr<double>(),
+        downloadToCpu(D).ptr<int>(),
+        zF.cols, zF.rows
+    );
+ 
+    showMatrix(CI);
 
     return 0;
 }

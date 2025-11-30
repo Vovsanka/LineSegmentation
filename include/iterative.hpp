@@ -20,8 +20,22 @@ std::vector<std::tuple<double,double,double>> sortThresholdCandidates(const doub
 
 
 __host__
-void candidateIterativeSearch(const uchar* F, const double *S, const double *D, int width, int height);
+cv::Mat candidateIterativeSearch(const uchar* F, const double *S, const int *D, int width, int height);
 
 
+__host__
+void candidateExpand(
+    const uchar *F, uchar *CI, 
+    double startY, double startX,
+    double dirRad, 
+    int width, int height);
+
+
+__host__ 
+bool setCandidates(
+    const uchar *F, uchar *CI, 
+    double y, double x,
+    double dirRad, 
+    int width, int height);
 
 #endif

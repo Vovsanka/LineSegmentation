@@ -53,8 +53,9 @@ std::vector<std::tuple<double,double,double>> sortThresholdCandidates(const doub
 }
 
 __host__
-void candidateIterativeSearch(const uchar* F, const double *S, const double *D, int width, int height) {
+cv::Mat candidateIterativeSearch(const uchar* F, const double *S, const int *D, int width, int height) {
     std::vector<std::tuple<double,double,double>> tCand = sortThresholdCandidates(S, width, height);
+    cv::Mat CI(height, width, CV_8U, cv::Scalar(0));
     for (std::tuple<double,double,double> start: tCand) {
         double startY = std::get<1>(start);
         double startX = std::get<2>(start);
@@ -64,8 +65,96 @@ void candidateIterativeSearch(const uchar* F, const double *S, const double *D, 
         for (int k = 0; k < UP_ITERATIONS; k++) {
             cand = upgradeCandidate(F, cand, width, height);
         }
-        // TODO: move along the edge (defined by the normal vector)
-        // and check the integer pixels (>= MIN_THRESHOLD)
-        // MIN_THRESHOLD may not be a good idea...   
+        //
+        startY = thrust::get<0>(cand);
+        startX = thrust::get<1>(cand);
+        direction = thrust::get<2>(cand);
+        candidateExpand(F, CI.ptr(), startY, startX, direction, width, height); 
     }
+    return CI;
+}
+
+
+__host__
+void candidateExpand(
+    const uchar *F, uchar *CI, 
+    double startY, double startX,
+    double dirRad, 
+    int width, int height) {
+    //
+    thrust::tuple<double,double> unitEdge = getUnitVector(dirRad + getPi()/2.0);
+    double unitEdgeY = thrust::get<0>(unitEdge);
+    double unitEdgeX = thrust::get<1>(unitEdge);
+    //
+    for (int k = 0; ; k++) {
+        double y1 = startY + k*unitEdgeY;
+        double x1 = startX + k*unitEdgeX;
+        double y2 = startY + k*unitEdgeY;
+        double x2 = startX + k*unitEdgeX;
+        if (
+            !setCandidates(F, CI, y1, x1, dirRad, width, height)
+            &&
+            !setCandidates(F, CI, y2, x2, dirRad, width, height)
+        ) break;
+    }
+    return;
+}
+
+
+__host__ 
+bool setCandidates(
+    const uchar *F, uchar *CI, 
+    double y, double x,
+    double dirRad, 
+    int width, int height) {
+    //
+    if (
+        y < 0 || y >= height ||
+        x < 0 || x >= width
+    ) return false;
+    //
+    int downY = floor(y);
+    int downX = floor(x);
+    int upY = ceil(y);
+    int upX = ceil(x);
+    //
+    bool isSet = false;
+    //
+    if (downY >= 0 && downX >= 0) {
+        double score = computeLabScore(F, downY, downX, dirRad, width, height);
+        if (score >= THRESHOLD) {
+            int idx = downY*width + downX;
+            CI[idx] = 1;
+            isSet = true;
+        }
+    }
+    //
+    if (downY >= 0 && upX < width) {
+        double score = computeLabScore(F, downY, upX, dirRad, width, height);
+        if (score >= THRESHOLD) {
+            int idx = downY*width + upX;
+            CI[idx] = 1;
+            isSet = true;
+        }
+    }
+    //
+    if (upY < height && downX >= 0) {
+        double score = computeLabScore(F, upY, downX, dirRad, width, height);
+        if (score >= THRESHOLD) {
+            int idx = upY*width + downX;
+            CI[idx] = 1;
+            isSet = true;
+        }
+    }
+    //
+    if (upY < height && upX < width) {
+        double score = computeLabScore(F, upY, upX, dirRad, width, height);
+        if (score >= THRESHOLD) {
+            int idx = upY*width + upX;
+            CI[idx] = 1;
+            isSet = true;
+        }
+    }
+    //
+    return isSet;
 }

@@ -37,7 +37,7 @@ void bestScoreKernel(const uchar* F, double* S, int* D,
 }
 
 __global__ 
-void candidateThresholdKernel(const double *S, const uchar *D, uchar *C,
+void candidateThresholdKernel(const double *S, const int *D, uchar *C,
                                          int width, int height) {
                                     
     int x = blockIdx.x * blockDim.x + threadIdx.x;

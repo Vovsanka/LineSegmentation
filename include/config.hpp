@@ -18,7 +18,7 @@ const int UP_ITERATIONS = 5; // candidate upgrade iterations
 const int N = 180; // (N >= 3) N-search
 const double DIR_PRECISION = 1e-6; // best direction precision
 //
-const double START_THRESHOLD = 0.7;
-const double MIN_THRESHOLD = 0.3;
+const double START_THRESHOLD = 0.9;
+const double MIN_THRESHOLD = 0.5;
 
 #endif

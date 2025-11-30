@@ -1,7 +1,7 @@
 #include "score.hpp"
 
 __host__ __device__
-inline double getPi() {
+double getPi() {
     return acos(-1.0);
 }
 
@@ -112,13 +112,11 @@ thrust::tuple<double,double> bestPossibleScore(const uchar* F,
         // update the range of the directions
         l = m[bestJ - 1];
         r = m[bestJ + 1];
-        //
-        std::cout << l << " " << r << std::endl;
     }
     //
     double bestDir = (l + r)/2;
     double bestScore = computeLabScore(F, yPixel, xPixel, bestDir, width, height);
-    std::cout << "Best direction: " << bestDir << std::endl;
-    std::cout << "Best score: " << bestScore << std::endl;
+    // std::cout << "Best direction: " << bestDir << std::endl;
+    // std::cout << "Best score: " << bestScore << std::endl;
     return thrust::make_tuple(bestScore, bestDir);
 }
