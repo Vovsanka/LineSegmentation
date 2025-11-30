@@ -79,10 +79,11 @@ double computeLabScore(const uchar* F,
             }
         }
     }
-    // compute the score (using the logistic function)
+    // compute the score
     double lRatio = max(l1/l2, l2/l1);
     double abRatio = max(ab1/ab2, ab2/ab1);
-    return 1.0 / (1.0 + exp(-(max(lRatio, abRatio) - CAND_RATIO)));
+    double ratio = max(lRatio, abRatio);
+    return 1.0 - std::pow(1.0/ratio, SCORE_EXP);
 }
 
 __host__ /*__device__*/

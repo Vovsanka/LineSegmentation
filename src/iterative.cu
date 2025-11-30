@@ -43,7 +43,7 @@ std::vector<std::tuple<double,double,double>> sortThresholdCandidates(const doub
         for (int x = 0; x < width; x++) {
             int idx = y * width + x;
             double score = S[idx];
-            if (score >= THRESHOLD) {
+            if (score >= START_THRESHOLD) {
                 tCand.push_back(std::make_tuple(-score, y, x));
             }
         }
@@ -64,6 +64,8 @@ void candidateIterativeSearch(const uchar* F, const double *S, const double *D, 
         for (int k = 0; k < UP_ITERATIONS; k++) {
             cand = upgradeCandidate(F, cand, width, height);
         }
-        
+        // TODO: move along the edge (defined by the normal vector)
+        // and check the integer pixels (>= MIN_THRESHOLD)
+        // MIN_THRESHOLD may not be a good idea...   
     }
 }
