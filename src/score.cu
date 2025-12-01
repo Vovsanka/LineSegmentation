@@ -38,7 +38,7 @@ double computeLabScore(const uchar* F,
             double signedDist = dy*unitNormY + dx*unitNormX;
             double dist = abs(signedDist);
             // skip the pixels on the line
-            if (dist < THICKNESS*SCALE/2) continue;
+            if (dist < THICKNESS/2) continue;
             //
             thrust::tuple<uchar,uchar,uchar> lab = getColorChannels(F, y, x, width, height);
             int l = thrust::get<0>(lab);
@@ -58,7 +58,7 @@ double computeLabScore(const uchar* F,
             double signedDist = dy*unitNormY + dx*unitNormX;
             double dist = abs(signedDist);
             // skip the pixels on the line
-            if (dist < THICKNESS*SCALE/2) continue;
+            if (dist < THICKNESS/2) continue;
             //
             double w =  1.0 - sqrt(dx*dx + dy*dy)/R;
             //

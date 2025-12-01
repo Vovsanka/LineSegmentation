@@ -16,10 +16,9 @@ thrust::tuple<double,double,double> upgradeCandidate(const uchar* F,
     double bestScore = -1;
     double bestDir = 0;
     double bestY = 0, bestX = 0;
-    for (int i = -UP_COUNT; i <= UP_COUNT; i++) {
-        for (int j = -UP_COUNT; j <= UP_COUNT; j++) {
-            double y = yPixel + i*UP_STEP*unitNormY;
-            double x = xPixel + i*UP_STEP*unitNormX;
+    for (int k = -UP_COUNT; k <= UP_COUNT; k++) {
+            double y = yPixel + k*UP_STEP*unitNormY;
+            double x = xPixel + k*UP_STEP*unitNormX;
             thrust::tuple<double,double> newScoreDir = bestPossibleScore(F, y, x, width, height);
             double newScore = thrust::get<0>(newScoreDir);
             double newDir = thrust::get<1>(newScoreDir);
@@ -30,7 +29,6 @@ thrust::tuple<double,double,double> upgradeCandidate(const uchar* F,
                 bestX = x;
 
             }
-        }
     }
     //
     return thrust::make_tuple(bestY, bestX, bestDir);
@@ -70,6 +68,8 @@ cv::Mat candidateIterativeSearch(const uchar* F, const double *S, const int *D, 
         startX = thrust::get<1>(cand);
         direction = thrust::get<2>(cand);
         candidateExpand(F, CI.ptr(), startY, startX, direction, width, height); 
+        //
+        showMatrix(CI);
     }
     return CI;
 }
@@ -89,8 +89,8 @@ void candidateExpand(
     for (int k = 0; ; k++) {
         double y1 = startY + k*unitEdgeY;
         double x1 = startX + k*unitEdgeX;
-        double y2 = startY + k*unitEdgeY;
-        double x2 = startX + k*unitEdgeX;
+        double y2 = startY - k*unitEdgeY;
+        double x2 = startX - k*unitEdgeX;
         if (
             !setCandidates(F, CI, y1, x1, dirRad, width, height)
             &&
@@ -122,7 +122,7 @@ bool setCandidates(
     //
     if (downY >= 0 && downX >= 0) {
         double score = computeLabScore(F, downY, downX, dirRad, width, height);
-        if (score >= THRESHOLD) {
+        if (score >= MIN_THRESHOLD) {
             int idx = downY*width + downX;
             CI[idx] = 1;
             isSet = true;
@@ -140,7 +140,7 @@ bool setCandidates(
     //
     if (upY < height && downX >= 0) {
         double score = computeLabScore(F, upY, downX, dirRad, width, height);
-        if (score >= THRESHOLD) {
+        if (score >= MIN_THRESHOLD) {
             int idx = upY*width + downX;
             CI[idx] = 1;
             isSet = true;
@@ -149,12 +149,15 @@ bool setCandidates(
     //
     if (upY < height && upX < width) {
         double score = computeLabScore(F, upY, upX, dirRad, width, height);
-        if (score >= THRESHOLD) {
+        if (score >= MIN_THRESHOLD) {
             int idx = upY*width + upX;
             CI[idx] = 1;
             isSet = true;
         }
     }
     //
+    if (isSet) {
+        std::cout << "Set candidates for: y=" << y << " x=" << x  << std::endl;
+    }
     return isSet;
 }

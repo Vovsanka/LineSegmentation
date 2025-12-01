@@ -8,6 +8,7 @@
 
 #include "config.hpp"
 #include "score.hpp"
+#include "show.hpp"
 
 
 __host__ __device__
