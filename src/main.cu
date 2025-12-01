@@ -24,12 +24,12 @@ int main() {
 
     // // Filter the noise keeping the edges
     cv::Mat filteredF;
-    bilateralFilter(originalF, filteredF, 9, 75, 75);
+    bilateralFilter(originalF, filteredF, 5, 20, 20);
     showImage(filteredF);
 
     // Convert the image to LAB 
     cv::Mat labF;
-    cv::cvtColor(originalF, labF, cv::COLOR_BGR2Lab);
+    cv::cvtColor(filteredF, labF, cv::COLOR_BGR2Lab);
     showImage(labF);
 
     // Upload the image to GPU
