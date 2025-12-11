@@ -11,7 +11,6 @@
 
 #include "config.hpp"
 #include "score.hpp"
-#include "show.hpp"
 
 // Configuration start
 

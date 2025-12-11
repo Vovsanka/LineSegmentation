@@ -1,0 +1,33 @@
+#ifndef OPERATIONS_HPP
+#define OPERATIONS_HPP
+
+#include <opencv2/opencv.hpp>
+#include <opencv2/cudafilters.hpp>
+#include <opencv2/cudaimgproc.hpp>
+
+__host__
+cv::cuda::GpuMat uploadToGPU(const cv::Mat& cpuF);
+
+__host__
+cv::Mat downloadToCPU(const cv::cuda::GpuMat& gpuF);
+
+__host__
+cv::Mat convertBGRtoLab(const cv::Mat& cpuF);
+
+__host__
+cv::Mat filterNoise(const cv::Mat& cpuF);
+
+__host__
+void showImage(const cv::Mat& cpuF);
+
+__host__
+void showImage(const cv::cuda::GpuMat& gpuF);
+
+__host__
+void showMatrix(const cv::Mat &cpuF);
+
+__host__
+void showMatrix(const cv::cuda::GpuMat& gpuF);
+
+
+#endif

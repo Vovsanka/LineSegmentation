@@ -16,16 +16,7 @@ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --extended-lambda")
 
 find_package(OpenCV REQUIRED)
 
-set(SOURCES
-    src/main.cu
-    src/resize.cu
-    src/color.cu
-    src/score.cu
-    src/show.cu
-    src/iterative.cu
-    src/candidate.cu
-)
-
+file(GLOB SOURCES "src/*.cu")
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
