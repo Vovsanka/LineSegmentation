@@ -3,6 +3,7 @@
 #include <opencv2/opencv.hpp>
 
 #include "operations.hpp"
+#include "score.hpp"
 // #include "candidate.hpp"
 // #include "iterative.hpp"
 
@@ -39,29 +40,14 @@ int main() {
     std::cout << "Scale factor: " << scale << std::endl;
     std::cout << "Scaled image size: " << scaledF.cols << "x" << scaledF.rows << std::endl; 
     showImage(scaledF);
+
+    ///// debug start
+    std::cout << computeLabScore(scaledF.ptr<uchar>(), 100, 100, 6, scaledF.cols, scaledF.rows) << std::endl;;
+    ///// debug end
     
     // Upload the image to GPU
     cv::cuda::GpuMat F = uploadToGPU(scaledF);
     showImage(F);
-
-    // Filter the noise (keeping the edges)
-    
-
-    // // // Resize the image (interpolate for every half-pixel)
-    // // cv::cuda::GpuMat zF = resize(F);
-    // // cv::cuda::GpuMat zF = F;
-
-    // ////////////
-    // for (int y = 15; y < 20; y++) {
-    //     for (int x = 15; x < 20; x++) {
-    //         thrust::tuple<uchar,uchar,uchar> lab = getColorChannels(labF.ptr(), y, x, F.cols, F.rows);
-    //         int l = thrust::get<0>(lab);
-    //         int a = thrust::get<1>(lab);
-    //         int b = thrust::get<2>(lab);
-    //         std::cout << l << " " << a << " " << b << std::endl;
-    //     }
-    // }
-    // std::cout << computeLabScore(labF.ptr(), 17, 17, 0, F.cols, F.rows) << std::endl;
 
     // // GPU threads for each pixel
     // dim3 block(16, 16); // 256

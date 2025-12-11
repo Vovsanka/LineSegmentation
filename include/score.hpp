@@ -19,12 +19,14 @@ thrust::tuple<float,float> getUnitVector(float rad);
 __host__ __device__ 
 thrust::tuple<float,float> getOrthogonalUnitVector(float rad);
 
+__host__ __device__
+float emd(const int* arr1, const int* arr2);
 
 __host__ __device__
 float computeLabScore(
     const uchar* F,
     float yPixel, float xPixel,
-    float dirRad, 
+    int dir, 
     int width, int height
 ); 
 
