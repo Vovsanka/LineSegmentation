@@ -9,24 +9,28 @@
 #include "config.hpp"
 #include "color.hpp"
 
-__host__ __device__
-float getPi();
-
-__host__ __device__
-thrust::tuple<float,float> getUnitVector(float rad);
 
 __host__ __device__
 float getRad(int direction);
 
 __host__ __device__
-float computeLabScore(const uchar* F,
-                       float yPixel, float xPixel,
-                       float dirRad, 
-                       int width, int height); 
+thrust::tuple<float,float> getUnitVector(float rad);
 
-__host__ /*__device__*/
-thrust::tuple<float,float> bestPossibleScore(const uchar* F,
-                                               float yPixel, float xPixel,
-                                               int width, int height);
+__host__ __device__ 
+thrust::tuple<float,float> getOrthogonalUnitVector(float rad);
+
+
+__host__ __device__
+float computeLabScore(
+    const uchar* F,
+    float yPixel, float xPixel,
+    float dirRad, 
+    int width, int height
+); 
+
+// __host__ /*__device__*/
+// thrust::tuple<float,float> bestPossibleScore(const uchar* F,
+//                                                float yPixel, float xPixel,
+//                                                int width, int height);
 
 #endif

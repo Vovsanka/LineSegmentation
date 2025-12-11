@@ -2,16 +2,18 @@
 
 
 __host__ __device__
-thrust::tuple<uchar,uchar,uchar> bicubicInterpolation(const uchar* F,
-                                                      float y, float x,
-                                                      int width, int height) {
+thrust::tuple<uchar,uchar,uchar> bicubicInterpolation(
+    const uchar* F,
+    float y, float x,
+    int width, int height
+) {
     // clamp‑to‑edge strategy for out of range subpixels
     int x0 = static_cast<int>(floor(x));
     int y0 = static_cast<int>(floor(y));
     float dx = x - x0;
     float dy = y - y0;
 
-    // Inline cubic weight function (Catmull-Rom spline, a = -0.5)
+    // atmull-Rom spline, a = -0.5
     auto cubicWeight = [] __host__ __device__ (float t) {
         const float a = -0.5;
         t = fabs(t);
@@ -52,15 +54,17 @@ thrust::tuple<uchar,uchar,uchar> bicubicInterpolation(const uchar* F,
 }
 
 __host__ __device__
-thrust::tuple<uchar,uchar,uchar> getColorChannels(const uchar* F,
-                                                  float y, float x,
-                                                  int width, int height) {
+thrust::tuple<uchar,uchar,uchar> getColorChannels(
+    const uchar* F,
+    float y, float x,
+    int width, int height
+) {
     int rY = round(y);
     int rX = round(x);
     // image integer pixel case (no need to compute)
     if (0 <= rY && rY < height &&
         0 <= rX && rX < width &&
-        fabs(y - rY) <= TOL && fabs(x - rX) <= TOL) {
+        fabsf(y - rY) <= TOL && fabsf(x - rX) <= TOL) {
         int idx = (rY * width + rX) * 3;
         return thrust::make_tuple(F[idx + 0], F[idx + 1], F[idx + 2]);
     }

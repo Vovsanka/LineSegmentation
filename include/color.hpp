@@ -11,13 +11,17 @@ const float TOL = 1e-6;
 
 
 __host__ __device__
-thrust::tuple<uchar,uchar,uchar> bicubicInterpolation(const uchar* F,
-                                                      float y, float x,
-                                                      int width, int height);
+thrust::tuple<uchar,uchar,uchar> bicubicInterpolation(
+    const uchar* F,
+    float y, float x,
+    int width, int height
+);
 
 __host__ __device__
-thrust::tuple<uchar,uchar,uchar> getColorChannels(const uchar* F,
-                                                  float y, float x,
-                                                  int width, int height);
+thrust::tuple<uchar,uchar,uchar> getColorChannels(
+    const uchar* F,
+    float y, float x,
+    int width, int height
+);
 
 #endif
