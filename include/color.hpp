@@ -7,17 +7,17 @@
 #include <thrust/tuple.h>
 
 
-const double TOL = 1e-6;
+const float TOL = 1e-6;
 
 
 __host__ __device__
 thrust::tuple<uchar,uchar,uchar> bicubicInterpolation(const uchar* F,
-                                                      double y, double x,
+                                                      float y, float x,
                                                       int width, int height);
 
 __host__ __device__
 thrust::tuple<uchar,uchar,uchar> getColorChannels(const uchar* F,
-                                                  double y, double x,
+                                                  float y, float x,
                                                   int width, int height);
 
 #endif

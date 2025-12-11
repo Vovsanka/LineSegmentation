@@ -18,11 +18,11 @@
 
 
 __global__
-void bestScoreKernel(const uchar* F, double* S, int* D,
+void bestScoreKernel(const uchar* F, float* S, int* D,
                      int width, int height);
 
 __global__
-void candidateThresholdKernel(const double *S, const int *D, uchar *C,
+void candidateThresholdKernel(const float *S, const int *D, uchar *C,
                               int width, int height);
 
 

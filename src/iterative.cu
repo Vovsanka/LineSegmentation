@@ -2,26 +2,26 @@
 
 
 // __host__ __device__
-// thrust::tuple<double,double,double> upgradeCandidate(const uchar* F,
-//                                                      thrust::tuple<double,double,double> cand,
+// thrust::tuple<float,float,float> upgradeCandidate(const uchar* F,
+//                                                      thrust::tuple<float,float,float> cand,
 //                                                      int width, int height) {
-//     double yPixel = thrust::get<0>(cand);
-//     double xPixel = thrust::get<1>(cand);
-//     double dirRad = thrust::get<2>(cand);
+//     float yPixel = thrust::get<0>(cand);
+//     float xPixel = thrust::get<1>(cand);
+//     float dirRad = thrust::get<2>(cand);
 //     //
-//     thrust::tuple<double,double> unitNorm = getUnitVector(dirRad);
-//     double unitNormY = thrust::get<0>(unitNorm);
-//     double unitNormX = thrust::get<1>(unitNorm);
+//     thrust::tuple<float,float> unitNorm = getUnitVector(dirRad);
+//     float unitNormY = thrust::get<0>(unitNorm);
+//     float unitNormX = thrust::get<1>(unitNorm);
 //     //
-//     double bestScore = -1;
-//     double bestDir = 0;
-//     double bestY = 0, bestX = 0;
+//     float bestScore = -1;
+//     float bestDir = 0;
+//     float bestY = 0, bestX = 0;
 //     for (int k = -UP_COUNT; k <= UP_COUNT; k++) {
-//             double y = yPixel + k*UP_STEP*unitNormY;
-//             double x = xPixel + k*UP_STEP*unitNormX;
-//             thrust::tuple<double,double> newScoreDir = bestPossibleScore(F, y, x, width, height);
-//             double newScore = thrust::get<0>(newScoreDir);
-//             double newDir = thrust::get<1>(newScoreDir);
+//             float y = yPixel + k*UP_STEP*unitNormY;
+//             float x = xPixel + k*UP_STEP*unitNormX;
+//             thrust::tuple<float,float> newScoreDir = bestPossibleScore(F, y, x, width, height);
+//             float newScore = thrust::get<0>(newScoreDir);
+//             float newDir = thrust::get<1>(newScoreDir);
 //             if (newScore > bestScore) {
 //                 bestScore = newScore;
 //                 bestDir =  newDir;
@@ -35,12 +35,12 @@
 // }
 
 // __host__
-// std::vector<std::tuple<double,double,double>> sortThresholdCandidates(const double *S, int width, int height) {
-//     std::vector<std::tuple<double,double,double>> tCand;
+// std::vector<std::tuple<float,float,float>> sortThresholdCandidates(const float *S, int width, int height) {
+//     std::vector<std::tuple<float,float,float>> tCand;
 //     for (int y = 0; y < height; y++) {
 //         for (int x = 0; x < width; x++) {
 //             int idx = y * width + x;
-//             double score = S[idx];
+//             float score = S[idx];
 //             if (score >= START_THRESHOLD) {
 //                 tCand.push_back(std::make_tuple(-score, y, x));
 //             }
@@ -51,15 +51,15 @@
 // }
 
 // __host__
-// cv::Mat candidateIterativeSearch(const uchar* F, const double *S, const int *D, int width, int height) {
-//     std::vector<std::tuple<double,double,double>> tCand = sortThresholdCandidates(S, width, height);
+// cv::Mat candidateIterativeSearch(const uchar* F, const float *S, const int *D, int width, int height) {
+//     std::vector<std::tuple<float,float,float>> tCand = sortThresholdCandidates(S, width, height);
 //     cv::Mat CI(height, width, CV_8U, cv::Scalar(0));
-//     for (std::tuple<double,double,double> start: tCand) {
-//         double startY = std::get<1>(start);
-//         double startX = std::get<2>(start);
+//     for (std::tuple<float,float,float> start: tCand) {
+//         float startY = std::get<1>(start);
+//         float startX = std::get<2>(start);
 //         int idx = startY * width + startX;
-//         double direction = getRad(D[idx]);
-//         thrust::tuple<double,double,double> cand = thrust::make_tuple(startY, startX, direction);
+//         float direction = getRad(D[idx]);
+//         thrust::tuple<float,float,float> cand = thrust::make_tuple(startY, startX, direction);
 //         for (int k = 0; k < UP_ITERATIONS; k++) {
 //             cand = upgradeCandidate(F, cand, width, height);
 //         }
@@ -78,19 +78,19 @@
 // __host__
 // void candidateExpand(
 //     const uchar *F, uchar *CI, 
-//     double startY, double startX,
-//     double dirRad, 
+//     float startY, float startX,
+//     float dirRad, 
 //     int width, int height) {
 //     //
-//     thrust::tuple<double,double> unitEdge = getUnitVector(dirRad + getPi()/2.0);
-//     double unitEdgeY = thrust::get<0>(unitEdge);
-//     double unitEdgeX = thrust::get<1>(unitEdge);
+//     thrust::tuple<float,float> unitEdge = getUnitVector(dirRad + getPi()/2.0);
+//     float unitEdgeY = thrust::get<0>(unitEdge);
+//     float unitEdgeX = thrust::get<1>(unitEdge);
 //     //
 //     for (int k = 0; ; k++) {
-//         double y1 = startY + k*unitEdgeY;
-//         double x1 = startX + k*unitEdgeX;
-//         double y2 = startY - k*unitEdgeY;
-//         double x2 = startX - k*unitEdgeX;
+//         float y1 = startY + k*unitEdgeY;
+//         float x1 = startX + k*unitEdgeX;
+//         float y2 = startY - k*unitEdgeY;
+//         float x2 = startX - k*unitEdgeX;
 //         if (
 //             !setCandidates(F, CI, y1, x1, dirRad, width, height)
 //             &&
@@ -104,8 +104,8 @@
 // __host__ 
 // bool setCandidates(
 //     const uchar *F, uchar *CI, 
-//     double y, double x,
-//     double dirRad, 
+//     float y, float x,
+//     float dirRad, 
 //     int width, int height) {
 //     //
 //     if (
@@ -121,7 +121,7 @@
 //     bool isSet = false;
 //     //
 //     if (downY >= 0 && downX >= 0) {
-//         double score = computeLabScore(F, downY, downX, dirRad, width, height);
+//         float score = computeLabScore(F, downY, downX, dirRad, width, height);
 //         if (score >= MIN_THRESHOLD) {
 //             int idx = downY*width + downX;
 //             CI[idx] = 1;
@@ -130,7 +130,7 @@
 //     }
 //     //
 //     if (downY >= 0 && upX < width) {
-//         double score = computeLabScore(F, downY, upX, dirRad, width, height);
+//         float score = computeLabScore(F, downY, upX, dirRad, width, height);
 //         if (score >= THRESHOLD) {
 //             int idx = downY*width + upX;
 //             CI[idx] = 1;
@@ -139,7 +139,7 @@
 //     }
 //     //
 //     if (upY < height && downX >= 0) {
-//         double score = computeLabScore(F, upY, downX, dirRad, width, height);
+//         float score = computeLabScore(F, upY, downX, dirRad, width, height);
 //         if (score >= MIN_THRESHOLD) {
 //             int idx = upY*width + downX;
 //             CI[idx] = 1;
@@ -148,7 +148,7 @@
 //     }
 //     //
 //     if (upY < height && upX < width) {
-//         double score = computeLabScore(F, upY, upX, dirRad, width, height);
+//         float score = computeLabScore(F, upY, upX, dirRad, width, height);
 //         if (score >= MIN_THRESHOLD) {
 //             int idx = upY*width + upX;
 //             CI[idx] = 1;

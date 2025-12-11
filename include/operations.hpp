@@ -5,6 +5,9 @@
 #include <opencv2/cudafilters.hpp>
 #include <opencv2/cudaimgproc.hpp>
 
+#include "config.hpp"
+
+
 __host__
 cv::cuda::GpuMat uploadToGPU(const cv::Mat& cpuF);
 
@@ -16,6 +19,12 @@ cv::Mat convertBGRtoLab(const cv::Mat& cpuF);
 
 __host__
 cv::Mat filterNoise(const cv::Mat& cpuF);
+
+__host__
+float computeScale(const cv::Mat& cpuF);
+
+__host__
+cv::Mat resize(const cv::Mat& cpuF, float scale);
 
 __host__
 void showImage(const cv::Mat& cpuF);

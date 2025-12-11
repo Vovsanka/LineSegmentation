@@ -30,6 +30,19 @@ cv::Mat filterNoise(const cv::Mat& cpuF) {
 }
 
 __host__
+float computeScale(const cv::Mat& cpuF) {
+    return std::min(1.0f*MAX_SIDE/cpuF.cols, 1.0f*MAX_SIDE/cpuF.rows);
+}
+
+__host__
+cv::Mat resize(const cv::Mat& cpuF, float scale) {
+    cv::Size size(std::round(scale*cpuF.cols), std::round(scale*cpuF.rows));
+    cv::Mat scaledF;
+    cv::resize(cpuF, scaledF, size, 0, 0, cv::INTER_CUBIC); // clamp-to-edge strategy
+    return scaledF;
+}
+
+__host__
 void showImage(const cv::Mat& cpuF) {
     cv::imshow("", cpuF);
     cv::waitKey(0);

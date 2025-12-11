@@ -11,31 +11,31 @@
 
 
 __host__ __device__
-thrust::tuple<double,double,double> upgradeCandidate(const uchar* F,
-                                                     thrust::tuple<double,double,double>,
+thrust::tuple<float,float,float> upgradeCandidate(const uchar* F,
+                                                     thrust::tuple<float,float,float>,
                                                      int width, int height);
 
 __host__
-std::vector<std::tuple<double,double,double>> sortThresholdCandidates(const double *S, int width, int height);
+std::vector<std::tuple<float,float,float>> sortThresholdCandidates(const float *S, int width, int height);
 
 
 __host__
-cv::Mat candidateIterativeSearch(const uchar* F, const double *S, const int *D, int width, int height);
+cv::Mat candidateIterativeSearch(const uchar* F, const float *S, const int *D, int width, int height);
 
 
 __host__
 void candidateExpand(
     const uchar *F, uchar *CI, 
-    double startY, double startX,
-    double dirRad, 
+    float startY, float startX,
+    float dirRad, 
     int width, int height);
 
 
 __host__ 
 bool setCandidates(
     const uchar *F, uchar *CI, 
-    double y, double x,
-    double dirRad, 
+    float y, float x,
+    float dirRad, 
     int width, int height);
 
 #endif
