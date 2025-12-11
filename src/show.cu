@@ -1,41 +1,35 @@
 #include "show.hpp"
 
-__host__
-cv::Mat downloadToCpu(const cv::cuda::GpuMat& gpuF) {
-    cv::Mat F;
-    gpuF.download(F);
-    return F;
-}
 
 __host__
-void showMatrix(const cv::cuda::GpuMat& gpuF) {
-    cv::Mat F = downloadToCpu(gpuF);
-    cv::Mat fNorm;
-    cv::normalize(F, fNorm, 0, 255, cv::NORM_MINMAX);
-    fNorm.convertTo(fNorm, CV_8U);
-    cv::imshow("Matrix", fNorm);
-    cv::waitKey(0);
-}
-
-__host__
-void showMatrix(const cv::Mat &F) {
-    cv::Mat fNorm;
-    cv::normalize(F, fNorm, 0, 255, cv::NORM_MINMAX);
-    fNorm.convertTo(fNorm, CV_8U);
-    cv::imshow("Matrix", fNorm);
+void showImage(const cv::Mat& cpuF) {
+    cv::imshow("", cpuF);
     cv::waitKey(0);
 }
 
 __host__
 void showImage(const cv::cuda::GpuMat& gpuF) {
-    cv::Mat F = downloadToCpu(gpuF);
-    cv::imshow("Image", F);
-    cv::waitKey(0);
+    cv::Mat cpuF;
+    gpuF.download(cpuF);
+    showImage(cpuF);
 }
 
 __host__
-void showImage(const cv::Mat& F) {
-    cv::imshow("Image", F);
-    cv::waitKey(0);
+void showMatrix(const cv::Mat &cpuF) {
+    cv::Mat Norm;
+    cv::normalize(cpuF, Norm, 0, 255, cv::NORM_MINMAX);
+    Norm.convertTo(Norm, CV_8U);
+    showImage(Norm);
 }
+
+__host__
+void showMatrix(const cv::cuda::GpuMat& gpuF) {
+    cv::Mat cpuF;
+    gpuF.download(cpuF);
+    showMatrix(cpuF);
+}
+
+
+
+
 
