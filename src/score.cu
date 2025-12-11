@@ -28,6 +28,9 @@ float computeLabScore(
     // TODO
     for (int c = 1; c <= CIRCLE_COUNT; c++) {
         for (int d = 0; d < DIRECTIONS; d++) {
+            // skip the line direction
+            if (d == dir) continue; 
+            // 
             thrust::tuple<float,float> unit = getOrthogonalUnitVector(getRad(dir));
             float dY = thrust::get<0>(unit);
             float dX = thrust::get<1>(unit);
