@@ -109,6 +109,7 @@ float computeLabScore(
     int dir, 
     int width, int height
 ) {
+    float emdSum = 0.0f;
     for (int c = 1; c <= CIRCLE_COUNT; c++) {
         //
         int minL = 255, minA = 255, minB = 255;
@@ -174,6 +175,7 @@ float computeLabScore(
             bArr[DIRECTIONS + d] = b2 - minB + 0.1;
         }
         //
+        emdSum += min(emd(lArr, dir), min(emd(bArr, dir), emd(aArr, dir)));
         ////////// debug start
         // for (int k = 0; k < 2*DIRECTIONS; k++) {
         //     std::cout << lArr[k] << " ";
@@ -183,11 +185,11 @@ float computeLabScore(
         /// debug end
     }
     // compute the score
-    return 0.0f; 
-    // float lRatio = max(l1/l2, l2/l1);
-    // float abRatio = max(ab1/ab2, ab2/ab1);
-    // float ratio = max(lRatio, abRatio);
-    // return 1.0 - std::pow(1.0/ratio, SCORE_EXP);
+    float maxEmd = 1.0f*DIRECTIONS/4;
+    float emdAv = emdSum/CIRCLE_COUNT;
+    float emdNorm = emdAv/maxEmd;
+    float score = 1.0 - emdNorm; 
+    return score; 
 }
 
 // __host__ /*__device__*/

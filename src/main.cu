@@ -44,7 +44,13 @@ int main() {
     showImage(scaledF);
 
     ///// debug start
-    std::cout << computeLabScore(scaledF.ptr<uchar>(), 160, 160, 0, scaledF.cols, scaledF.rows) << std::endl;;
+    std::cout << computeLabScore(scaledF.ptr<uchar>(), 160, 160, 3, scaledF.cols, scaledF.rows) << std::endl;
+    std::cout << computeLabScore(scaledF.ptr<uchar>(), 160, 160, 4, scaledF.cols, scaledF.rows) << std::endl;
+    std::cout << computeLabScore(scaledF.ptr<uchar>(), 160, 160, 0, scaledF.cols, scaledF.rows) << std::endl;
+    std::cout << computeLabScore(scaledF.ptr<uchar>(), 100, 100, 3, scaledF.cols, scaledF.rows) << std::endl;
+    std::cout << computeLabScore(scaledF.ptr<uchar>(), 100, 100, 0, scaledF.cols, scaledF.rows) << std::endl;
+    std::cout << computeLabScore(scaledF.ptr<uchar>(), 200, 300, 3, scaledF.cols, scaledF.rows) << std::endl;
+    std::cout << computeLabScore(scaledF.ptr<uchar>(), 200, 300, 0, scaledF.cols, scaledF.rows) << std::endl;
     ///// debug end
     
     // Upload the image to GPU
