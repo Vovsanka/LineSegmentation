@@ -44,9 +44,10 @@ int main() {
     showImage(scaledF);
 
     ///// debug start
-    std::cout << computeLabScore(scaledF.ptr<uchar>(), 160, 160, 3, scaledF.cols, scaledF.rows) << std::endl;
-    std::cout << computeLabScore(scaledF.ptr<uchar>(), 160, 160, 4, scaledF.cols, scaledF.rows) << std::endl;
-    std::cout << computeLabScore(scaledF.ptr<uchar>(), 160, 160, 0, scaledF.cols, scaledF.rows) << std::endl;
+    for(int d = 0; d < DIRECTIONS; d++) {
+        std::cout << computeLabScore(scaledF.ptr<uchar>(), 160, 160, d, scaledF.cols, scaledF.rows) << std::endl;
+    }
+    std::cout << std::endl;
     std::cout << computeLabScore(scaledF.ptr<uchar>(), 100, 100, 3, scaledF.cols, scaledF.rows) << std::endl;
     std::cout << computeLabScore(scaledF.ptr<uchar>(), 100, 100, 0, scaledF.cols, scaledF.rows) << std::endl;
     std::cout << computeLabScore(scaledF.ptr<uchar>(), 200, 300, 3, scaledF.cols, scaledF.rows) << std::endl;
