@@ -110,8 +110,6 @@ float computeLabScore(
     int width, int height
 ) {
     float emdSum = 0.0f;
-    float sumL1 = 0.0f, sumA1 = 0.0f, sumB1 = 0.0f;
-    float sumL2 = 0.0f, sumA2 = 0.0f, sumB2 = 0.0f;
     for (int c = 1; c <= CIRCLE_COUNT; c++) {
         //
         int minL = 255, minA = 255, minB = 255;
@@ -178,39 +176,12 @@ float computeLabScore(
         }
         //
         emdSum += min(emd(lArr, dir), min(emd(bArr, dir), emd(aArr, dir)));
-        //
-        for (int k = 0; k < 2*DIRECTIONS; k++) {
-            if (k % DIRECTIONS == dir) continue;
-            if (k < dir || k > DIRECTIONS + dir) {
-                sumL1 += lArr[k];
-                sumA1 += aArr[k];
-                sumB1 += bArr[k];
-            } else {
-                sumL2 += lArr[k];
-                sumA2 += aArr[k];
-                sumB2 += bArr[k];
-            }
-        }
-        ////////// debug start
-        // for (int k = 0; k < 2*DIRECTIONS; k++) {
-        //     std::cout << lArr[k] << " ";
-        // }
-        // std::cout << std::endl;
-        // emd(lArr, dir);
-        /// debug end
     }
     // compute the EMD-score
     float maxEmd = 1.0f*DIRECTIONS/4;
     float emdAv = emdSum/CIRCLE_COUNT;
     float emdNorm = fminf(emdAv/maxEmd, 1.0f);
     float emdScore = 1.0 - emdNorm; 
-    // compute the sum-ratio-score
-    float ratioL = fmaxf(sumL1/sumL2, sumL2/sumL1);
-    float ratioA = fmaxf(sumA1/sumA2, sumA2/sumA1);
-    float ratioB = fmaxf(sumB1/sumB2, sumB2/sumB1);
-    float ratioScore = 1.0f - 1.0f/fmaxf(ratioL, fmaxf(ratioA, ratioB));
-    // compute the score
-    // return (emdScore + ratioScore)/2; 
     return emdScore;
 }
 
