@@ -17,7 +17,8 @@ int main() {
     if (!cudaCount) return 1;
 
     // Load an RGB image
-    cv::Mat originalF = cv::imread("../images/mini-table.png", cv::IMREAD_COLOR);
+    cv::Mat originalF = cv::imread("../images/black.png", cv::IMREAD_COLOR);
+    // cv::Mat originalF = cv::imread("../images/mini-table.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/table.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/apb1.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/apb2.png", cv::IMREAD_COLOR);
@@ -33,6 +34,7 @@ int main() {
     // apply the noise filtering to LAB-image (preserves the edge perception)
     cv::Mat filteredF = filterNoise(labF);
     showImage(filteredF);
+    // cv::Mat filteredF = labF;
 
     // resize the image (to the reasonable processing size)
     float scale = computeScale(filteredF);
@@ -42,7 +44,7 @@ int main() {
     showImage(scaledF);
 
     ///// debug start
-    std::cout << computeLabScore(scaledF.ptr<uchar>(), 100, 100, 6, scaledF.cols, scaledF.rows) << std::endl;;
+    std::cout << computeLabScore(scaledF.ptr<uchar>(), 160, 160, 0, scaledF.cols, scaledF.rows) << std::endl;;
     ///// debug end
     
     // Upload the image to GPU

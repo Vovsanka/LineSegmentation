@@ -20,9 +20,15 @@ __host__ __device__
 thrust::tuple<float,float> getOrthogonalUnitVector(float rad);
 
 __host__ __device__
-float emd(const int* arr1, const int* arr2);
+void merge(float* arr, int l, int m, int r);
 
 __host__ __device__
+void mergeSort(float *arr, int l, int r);
+
+__host__ /*__device__*/
+float emd(const int* arr1, const int* arr2);
+
+__host__ /*__device__*/
 float computeLabScore(
     const uchar* F,
     float yPixel, float xPixel,

@@ -5,12 +5,12 @@
 const float PI = 3.141593;
 
 // image scaling (up and down possible)
-const int MAX_SIDE = 1000;
+const int MAX_SIDE = 320;
 
 // beam score computation
-const int DIRECTIONS = 36;
-const int CIRCLE_COUNT = 10;
-const float CIRCLE_STEP = 0.5;
+const int DIRECTIONS = 8;
+const int CIRCLE_COUNT = 5;
+const float CIRCLE_STEP = 1.0;
 
 // threshold candidates
 const float CAND_THRESHOLD = 0.8;

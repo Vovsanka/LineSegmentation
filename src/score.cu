@@ -19,25 +19,90 @@ thrust::tuple<float,float> getOrthogonalUnitVector(float rad) { // y x
 }
 
 __host__ __device__
-float emd(const int* arr1, const int* arr2) {
-    // normalize the arrays
-    int sum1 = 0, sum2 = 0;
-    for (int k = 0; k < DIRECTIONS; k++) {
-        sum1 += arr1[k];
-        sum2 += arr2[k];
+void merge(float* arr, int l, int m, int r) {
+    int p1 = l;
+    int p2 = m + 1;
+    int interval = r - l + 1;
+    float temp[2*DIRECTIONS];
+    for (int k = 0; k < interval; k++) {
+        if (p1 > m) {
+            temp[k] = arr[p2++];
+        } else if (p2 > r) {
+            temp[k] = arr[p1++];
+        } else if (arr[p1] < arr[p2]) {
+            temp[k] = arr[p1++];
+        } else {
+            temp[k] = arr[p2++];
+        }
     }
-    // 
-    float cum1 = 0.0f, cum2 = 0.0f;
-    float emd = 0.0f;
-    for (int k = 0; k < DIRECTIONS; k++) {
-        if (sum1 > 0) cum1 += 1.0f*arr1[k]/sum1;
-        if (sum2 > 0) cum2 += 1.0f*arr2[k]/sum2;
-        emd += fabsf(cum1 - cum2);
+    //
+    for (int k = 0; k < interval; k++) {
+        arr[l + k] = temp[k];
     }
-    return emd;
 }
 
 __host__ __device__
+void mergeSort(float *arr, int l = 0, int r = 2*DIRECTIONS - 1) {
+    // indices [l, r]
+    if (l < r) {
+        int m = l + (r - l)/2;
+        mergeSort(arr, l, m);
+        mergeSort(arr, m + 1, r);
+        merge(arr, l, m, r);
+    }
+}
+
+__host__ /*__device__*/
+float emd(const float* arr, int dir) {
+    // array sum (in order to normalize)
+    float sum = 0;
+    for (int k = 0; k < 2*DIRECTIONS; k++) {
+        sum += arr[k];
+    }
+    // prefix sum (normalized values)
+    float fixed = (1.0/DIRECTIONS); 
+    float prefixSum1[2*DIRECTIONS], prefixSum2[2*DIRECTIONS];
+    for (int k = 0; k < 2*DIRECTIONS; k++) {
+        float val1, val2;
+        if (k % DIRECTIONS == dir) {
+            val1 = val2 = fixed/2; 
+        } else if (k < dir || k > DIRECTIONS + dir) {
+            val1 = 0;
+            val2 = fixed;
+        } else { // dir < k && k < DIRECTIONS + dir
+            val1 = fixed;
+            val2 = 0;
+        }
+        // std::cout << val1 << " | " << val2 << std::endl;
+        // prefix sums of delta of the normalized array values 
+        float arrVal = arr[k]/sum;
+        float delta1 = arrVal - val1;
+        float delta2 = arrVal - val2;
+        if (!k) {
+            prefixSum1[k] = delta1;
+            prefixSum2[k] = delta2;
+        } else {
+            prefixSum1[k] = prefixSum1[k - 1] + delta1;
+            prefixSum2[k] = prefixSum2[k - 1] + delta2;
+        }
+
+    }
+    // median computation
+    mergeSort(prefixSum1);
+    mergeSort(prefixSum2);
+    float med1 = (prefixSum1[DIRECTIONS - 1] + prefixSum1[DIRECTIONS])/2;
+    float med2 = (prefixSum2[DIRECTIONS - 1] + prefixSum2[DIRECTIONS])/2;
+    // ring EMD
+    float emd1 = 0.0f, emd2 = 0.0f;
+    for (int k = 0; k < 2*DIRECTIONS; k++) {
+        emd1 += fabsf(prefixSum1[k] - med1);
+        emd2 += fabsf(prefixSum2[k] - med2);
+    }
+    //
+    return min(emd1, emd2); // the value is bounded by DIRECTIONS/2.0 (uniform <-> one side uniform)
+}
+
+__host__ /*__device__*/
 float computeLabScore(
     const uchar* F,
     float yPixel, float xPixel,
@@ -45,13 +110,9 @@ float computeLabScore(
     int width, int height
 ) {
     for (int c = 1; c <= CIRCLE_COUNT; c++) {
+        //
         int minL = 255, minA = 255, minB = 255;
-        int lArr1[DIRECTIONS - 1], lArr2[DIRECTIONS - 1];
-        int aArr1[DIRECTIONS - 1], aArr2[DIRECTIONS - 1];
-        int bArr1[DIRECTIONS - 1], bArr2[DIRECTIONS - 1];
-        for (int k = 1; k < DIRECTIONS; k++) { 
-            // define the current direction (skip the line direction)
-            int d = (dir + k) % DIRECTIONS;
+        for (int d = 0; d < DIRECTIONS; d++) { 
             // 
             thrust::tuple<float,float> unit = getOrthogonalUnitVector(getRad(d));
             float dY = thrust::get<0>(unit);
@@ -78,9 +139,10 @@ float computeLabScore(
             minB = min(minB, min(b1, b2));
         }
         //
-        for (int k = 1; k < DIRECTIONS; k++) { 
-            // define the current direction (skip the line direction)
-            int d = (dir + k) % DIRECTIONS;
+        float lArr[2*DIRECTIONS];
+        float aArr[2*DIRECTIONS];
+        float bArr[2*DIRECTIONS];
+        for (int d = 0; d < DIRECTIONS; d++) { 
             // 
             thrust::tuple<float,float> unit = getOrthogonalUnitVector(getRad(d));
             float dY = thrust::get<0>(unit);
@@ -101,16 +163,24 @@ float computeLabScore(
             int l2 = thrust::get<0>(lab2);
             int a2 = thrust::get<1>(lab2);
             int b2 = thrust::get<2>(lab2);
+            // 
+            lArr[d] = l1 - minL + 0.1; // -0.1 to fix the 0-arrays
+            lArr[DIRECTIONS + d] = l2 - minL + 0.1;
             //
-            int ind = k - 1;
-            lArr1[ind] = l1;
-            lArr2[ind] = l2;
-            aArr1[ind] = a1;
-            aArr2[ind] = a2;
-            bArr1[ind] = b1;
-            bArr2[ind] = b2;
+            aArr[d] = a1 - minA + 0.1;
+            aArr[DIRECTIONS + d] = a2 - minA + 0.1;
+            //
+            bArr[d] = b1 - minB + 0.1;
+            bArr[DIRECTIONS + d] = b2 - minB + 0.1;
         }
-        emd(lArr1, lArr2);
+        //
+        ////////// debug start
+        // for (int k = 0; k < 2*DIRECTIONS; k++) {
+        //     std::cout << lArr[k] << " ";
+        // }
+        // std::cout << std::endl;
+        // emd(lArr, dir);
+        /// debug end
     }
     // compute the score
     return 0.0f; 
