@@ -11,6 +11,7 @@ const int MAX_SIDE = 320;
 const int DIRECTIONS = 8;
 const int CIRCLE_COUNT = 5;
 const float CIRCLE_STEP = 1.0;
+const float SCORE_BOOSTER = 4.0;
 
 // threshold candidates
 const float CAND_THRESHOLD = 0.8;

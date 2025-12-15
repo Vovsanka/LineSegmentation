@@ -181,7 +181,7 @@ float computeLabScore(
     float maxEmd = 1.0f*DIRECTIONS/4;
     float emdAv = emdSum/CIRCLE_COUNT;
     float emdNorm = fminf(emdAv/maxEmd, 1.0f);
-    float emdScore = 1.0 - emdNorm; 
+    float emdScore = 1.0 - std::pow(emdNorm, SCORE_BOOSTER); 
     return emdScore;
 }
 
