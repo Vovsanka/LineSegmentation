@@ -4,7 +4,7 @@
 
 #include "operations.hpp"
 #include "score.hpp"
-// #include "candidate.hpp"
+#include "candidate.hpp"
 // #include "iterative.hpp"
 
 
@@ -58,19 +58,18 @@ int main() {
     cv::cuda::GpuMat F = uploadToGPU(scaledF);
     showImage(F);
 
-    // // GPU threads for each pixel
-    // dim3 block(16, 16); // 256
-    // dim3 grid((F.cols + block.x - 1) / block.x, (F.rows + block.y - 1) / block.y); // round up to cover the whole image
+    // GPU threads for each pixel
+    dim3 block(16, 16); // 256
+    dim3 grid((F.cols + block.x - 1) / block.x, (F.rows + block.y - 1) / block.y); // round up to cover the whole image
     
-    // // compute the best scores for every pixel
-    // cv::cuda::GpuMat S(F.size(), CV_64F);
-    // cv::cuda::GpuMat D(F.size(), CV_32S);
-    // bestScoreKernel<<<grid, block>>>(
-    //     F.ptr<uchar>(), S.ptr<float>(), D.ptr<int>(),
-    //     F.cols, F.rows
-    // );
-    // showMatrix(S);
-    // // showMatrix(D);
+    // compute the best scores for every pixel
+    cv::cuda::GpuMat S(F.size(), CV_64F);
+    cv::cuda::GpuMat D(F.size(), CV_32S);
+    bestScoreKernel<<<grid, block>>>(
+        F.ptr<uchar>(), S.ptr<float>(), D.ptr<int>(),
+        F.cols, F.rows
+    );
+    showMatrix(S);
 
     // // choose the candidates
     // cv::cuda::GpuMat C(F.size(), CV_8U);

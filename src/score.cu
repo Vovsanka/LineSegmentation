@@ -18,41 +18,20 @@ thrust::tuple<float,float> getOrthogonalUnitVector(float rad) { // y x
     return getUnitVector(rad);
 }
 
-__host__ __device__
-void merge(float* arr, int l, int m, int r) {
-    int p1 = l;
-    int p2 = m + 1;
-    int interval = r - l + 1;
-    float temp[2*DIRECTIONS];
-    for (int k = 0; k < interval; k++) {
-        if (p1 > m) {
-            temp[k] = arr[p2++];
-        } else if (p2 > r) {
-            temp[k] = arr[p1++];
-        } else if (arr[p1] < arr[p2]) {
-            temp[k] = arr[p1++];
-        } else {
-            temp[k] = arr[p2++];
+__host__ __device__ 
+void insertionSort(float* a, int n) {
+    for (int i = 1; i < n; ++i) {
+        float key = a[i];
+        int j = i - 1;
+        while (j >= 0 && a[j] > key) {
+            a[j + 1] = a[j];
+            --j;
         }
-    }
-    //
-    for (int k = 0; k < interval; k++) {
-        arr[l + k] = temp[k];
+        a[j + 1] = key;
     }
 }
 
 __host__ __device__
-void mergeSort(float *arr, int l = 0, int r = 2*DIRECTIONS - 1) {
-    // indices [l, r]
-    if (l < r) {
-        int m = l + (r - l)/2;
-        mergeSort(arr, l, m);
-        mergeSort(arr, m + 1, r);
-        merge(arr, l, m, r);
-    }
-}
-
-__host__ /*__device__*/
 float emd(const float* arr, int dir) {
     // array sum (in order to normalize)
     float sum = 0;
@@ -88,8 +67,8 @@ float emd(const float* arr, int dir) {
 
     }
     // median computation
-    mergeSort(prefixSum1);
-    mergeSort(prefixSum2);
+    insertionSort(prefixSum1, 2*DIRECTIONS);
+    insertionSort(prefixSum2, 2*DIRECTIONS);
     float med1 = (prefixSum1[DIRECTIONS - 1] + prefixSum1[DIRECTIONS])/2;
     float med2 = (prefixSum2[DIRECTIONS - 1] + prefixSum2[DIRECTIONS])/2;
     // ring EMD
@@ -102,7 +81,7 @@ float emd(const float* arr, int dir) {
     return min(emd1, emd2); // the value is bounded by DIRECTIONS/2.0 (uniform <-> one side uniform)
 }
 
-__host__ /*__device__*/
+__host__ __device__
 float computeLabScore(
     const uchar* F,
     float yPixel, float xPixel,
@@ -181,7 +160,7 @@ float computeLabScore(
     float maxEmd = 1.0f*DIRECTIONS/4;
     float emdAv = emdSum/CIRCLE_COUNT;
     float emdNorm = fminf(emdAv/maxEmd, 1.0f);
-    float emdScore = 1.0 - std::pow(emdNorm, SCORE_BOOSTER); 
+    float emdScore = 1.0 - powf(emdNorm, SCORE_BOOSTER); 
     return emdScore;
 }
 

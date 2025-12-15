@@ -1,5 +1,5 @@
-#ifndef BEST_HPP
-#define BEST_HPP
+#ifndef CANDIDATE_HPP
+#define CANDIDATE_HPP
 
 #include <iostream>
 #include <vector>
@@ -12,9 +12,6 @@
 #include "config.hpp"
 #include "score.hpp"
 
-// Configuration start
-
-// Configuration end
 
 
 __global__

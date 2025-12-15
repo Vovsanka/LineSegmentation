@@ -56,7 +56,7 @@ void showImage(const cv::cuda::GpuMat& gpuF) {
 }
 
 __host__
-void showMatrix(const cv::Mat &cpuF) {
+void showMatrix(const cv::Mat& cpuF) {
     cv::Mat Norm;
     cv::normalize(cpuF, Norm, 0, 255, cv::NORM_MINMAX);
     Norm.convertTo(Norm, CV_8U);
