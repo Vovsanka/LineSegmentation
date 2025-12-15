@@ -2,28 +2,33 @@
 
 
 __global__ 
-void bestScoreKernel(const uchar* F, float* S, int* D,
-                                int width, int height) {
+void bestScoreKernel(
+    const uchar* F, size_t Fstep,
+    float* S, size_t Sstep,
+    int* D, size_t Dstep,
+    int width, int height
+) {
 
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
     if (x >= width || y >= height) return;
     
     // Compute the score matrix for every direction
-    float bestScore = -1;
-    float bestDir = 0;
-
+    float bestScore = -1.0f;
+    float bestDir = 0.0f;
     for (int d = 0; d < DIRECTIONS; d++) {
-        float score = computeLabScore(F, y, x, d, width, height);
+        float score = computeLabScore(F, Fstep, y, x, d, width, height);
         if (score > bestScore) {
             bestScore = score;
             bestDir = d;
         }
     }
-
-    int idx = y * width + x;
-    S[idx] = bestScore;
-    D[idx] = bestDir;
+    //
+    float* rowS = (float*)((uchar*)S + y * Sstep);
+    rowS[x] = bestScore;
+    //
+    int* rowD = (int*)((uchar*)D + y * Dstep);
+    rowD[x] = bestDir;
 }
 
 // __global__ 

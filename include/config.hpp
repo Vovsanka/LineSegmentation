@@ -8,10 +8,11 @@ const float PI = 3.141593;
 const int MAX_SIDE = 320;
 
 // beam score computation
-const int DIRECTIONS = 8;
+const int DIRECTIONS = 36;
 const int CIRCLE_COUNT = 5;
-const float CIRCLE_STEP = 1.0;
-const float SCORE_BOOSTER = 4.0;
+const float CIRCLE_STEP = 0.5;
+const float COLOR_OFFSET = 0.01; // avoid 0-arrays
+const float SCORE_BOOSTER = 2.0;
 
 // threshold candidates
 const float CAND_THRESHOLD = 0.8;

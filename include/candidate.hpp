@@ -14,13 +14,14 @@
 
 
 
-__global__
-void bestScoreKernel(const uchar* F, float* S, int* D,
-                     int width, int height);
+__global__ 
+void bestScoreKernel(
+    const uchar* F, size_t Fstep,
+    float* S, size_t Sstep,
+    int* D, size_t Dstep,
+    int width, int height
+);
 
-__global__
-void candidateThresholdKernel(const float *S, const int *D, uchar *C,
-                              int width, int height);
 
 
 #endif

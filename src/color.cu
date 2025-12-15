@@ -4,6 +4,7 @@
 __host__ __device__
 thrust::tuple<uchar,uchar,uchar> bicubicInterpolation(
     const uchar* F,
+    size_t Fstep,
     float y, float x,
     int width, int height
 ) {
@@ -33,12 +34,14 @@ thrust::tuple<uchar,uchar,uchar> bicubicInterpolation(
         for (int i=0; i<4; i++) {
             int xi = min(max(x0+i-1,0), width-1);
             int yj = min(max(y0+j-1,0), height-1);
-            int idx = (yj*width + xi)*3;
-
-            uchar c0 = F[idx+0];
-            uchar c1 = F[idx+1];
-            uchar c2 = F[idx+2];
-
+            //
+            const uchar* row = F + yj * Fstep;
+            const uchar3* row3 = reinterpret_cast<const uchar3*>(row);
+            uchar3 pix = row3[xi];
+            uchar c0 = pix.x;
+            uchar c1 = pix.y;
+            uchar c2 = pix.z;
+            //
             float wxy = wx[i]*wy[j];
             C[0] += c0 * wxy;
             C[1] += c1 * wxy;
@@ -56,6 +59,7 @@ thrust::tuple<uchar,uchar,uchar> bicubicInterpolation(
 __host__ __device__
 thrust::tuple<uchar,uchar,uchar> getColorChannels(
     const uchar* F,
+    size_t Fstep,
     float y, float x,
     int width, int height
 ) {
@@ -65,9 +69,11 @@ thrust::tuple<uchar,uchar,uchar> getColorChannels(
     if (0 <= rY && rY < height &&
         0 <= rX && rX < width &&
         fabsf(y - rY) <= TOL && fabsf(x - rX) <= TOL) {
-        int idx = (rY * width + rX) * 3;
-        return thrust::make_tuple(F[idx + 0], F[idx + 1], F[idx + 2]);
+        const uchar* row = F + rY * Fstep;
+        const uchar3* row3 = reinterpret_cast<const uchar3*>(row);
+        uchar3 pix = row3[rX];
+        return thrust::make_tuple(pix.x, pix.y, pix.z);
     }
     // determine the color of the sub-pixel with the bicubic interpolation (possibly out of range)
-    return bicubicInterpolation(F, y, x, width, height);
+    return bicubicInterpolation(F, Fstep, y, x, width, height);
 }

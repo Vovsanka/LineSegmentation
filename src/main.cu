@@ -17,8 +17,8 @@ int main() {
     if (!cudaCount) return 1;
 
     // Load an RGB image
-    cv::Mat originalF = cv::imread("../images/black.png", cv::IMREAD_COLOR);
-    // cv::Mat originalF = cv::imread("../images/mini-table.png", cv::IMREAD_COLOR);
+    // cv::Mat originalF = cv::imread("../images/black.png", cv::IMREAD_COLOR);
+    cv::Mat originalF = cv::imread("../images/mini-table.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/table.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/apb1.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/apb2.png", cv::IMREAD_COLOR);
@@ -45,13 +45,13 @@ int main() {
 
     ///// debug start
     for(int d = 0; d < DIRECTIONS; d++) {
-        std::cout << computeLabScore(scaledF.ptr<uchar>(), 160, 160, d, scaledF.cols, scaledF.rows) << std::endl;
+        std::cout << computeLabScore(scaledF.ptr<uchar>(), scaledF.step, 160, 160, d, scaledF.cols, scaledF.rows) << std::endl;
     }
     std::cout << std::endl;
-    std::cout << computeLabScore(scaledF.ptr<uchar>(), 100, 100, 3, scaledF.cols, scaledF.rows) << std::endl;
-    std::cout << computeLabScore(scaledF.ptr<uchar>(), 100, 100, 0, scaledF.cols, scaledF.rows) << std::endl;
-    std::cout << computeLabScore(scaledF.ptr<uchar>(), 200, 300, 3, scaledF.cols, scaledF.rows) << std::endl;
-    std::cout << computeLabScore(scaledF.ptr<uchar>(), 200, 300, 0, scaledF.cols, scaledF.rows) << std::endl;
+    std::cout << computeLabScore(scaledF.ptr<uchar>(), scaledF.step, 100, 100, 3, scaledF.cols, scaledF.rows) << std::endl;
+    std::cout << computeLabScore(scaledF.ptr<uchar>(), scaledF.step, 100, 100, 0, scaledF.cols, scaledF.rows) << std::endl;
+    std::cout << computeLabScore(scaledF.ptr<uchar>(), scaledF.step, 200, 300, 3, scaledF.cols, scaledF.rows) << std::endl;
+    std::cout << computeLabScore(scaledF.ptr<uchar>(), scaledF.step, 200, 300, 0, scaledF.cols, scaledF.rows) << std::endl;
     ///// debug end
     
     // Upload the image to GPU
@@ -63,10 +63,12 @@ int main() {
     dim3 grid((F.cols + block.x - 1) / block.x, (F.rows + block.y - 1) / block.y); // round up to cover the whole image
     
     // compute the best scores for every pixel
-    cv::cuda::GpuMat S(F.size(), CV_64F);
+    cv::cuda::GpuMat S(F.size(), CV_32F);
     cv::cuda::GpuMat D(F.size(), CV_32S);
     bestScoreKernel<<<grid, block>>>(
-        F.ptr<uchar>(), S.ptr<float>(), D.ptr<int>(),
+        F.ptr<uchar>(), F.step,
+        S.ptr<float>(), S.step,
+        D.ptr<int>(), D.step,
         F.cols, F.rows
     );
     showMatrix(S);

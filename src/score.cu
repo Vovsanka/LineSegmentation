@@ -84,6 +84,7 @@ float emd(const float* arr, int dir) {
 __host__ __device__
 float computeLabScore(
     const uchar* F,
+    size_t Fstep,
     float yPixel, float xPixel,
     int dir, 
     int width, int height
@@ -104,12 +105,12 @@ float computeLabScore(
             float y2 = yPixel - c*dY;
             float x2 = xPixel - c*dX;
             //
-            thrust::tuple<uchar,uchar,uchar> lab1 = getColorChannels(F, y1, x1, width, height);
+            thrust::tuple<uchar,uchar,uchar> lab1 = getColorChannels(F, Fstep, y1, x1, width, height);
             int l1 = thrust::get<0>(lab1);
             int a1 = thrust::get<1>(lab1);
             int b1 = thrust::get<2>(lab1);
             //
-            thrust::tuple<uchar,uchar,uchar> lab2 = getColorChannels(F, y2, x2, width, height);
+            thrust::tuple<uchar,uchar,uchar> lab2 = getColorChannels(F, Fstep, y2, x2, width, height);
             int l2 = thrust::get<0>(lab2);
             int a2 = thrust::get<1>(lab2);
             int b2 = thrust::get<2>(lab2);
@@ -134,24 +135,24 @@ float computeLabScore(
             float y2 = yPixel - c*dY;
             float x2 = xPixel - c*dX;
             //
-            thrust::tuple<uchar,uchar,uchar> lab1 = getColorChannels(F, y1, x1, width, height);
+            thrust::tuple<uchar,uchar,uchar> lab1 = getColorChannels(F, Fstep, y1, x1, width, height);
             int l1 = thrust::get<0>(lab1);
             int a1 = thrust::get<1>(lab1);
             int b1 = thrust::get<2>(lab1);
             //
-            thrust::tuple<uchar,uchar,uchar> lab2 = getColorChannels(F, y2, x2, width, height);
+            thrust::tuple<uchar,uchar,uchar> lab2 = getColorChannels(F, Fstep, y2, x2, width, height);
             int l2 = thrust::get<0>(lab2);
             int a2 = thrust::get<1>(lab2);
             int b2 = thrust::get<2>(lab2);
             // 
-            lArr[d] = l1 - minL + 0.1; // -0.1 to fix the 0-arrays
-            lArr[DIRECTIONS + d] = l2 - minL + 0.1;
+            lArr[d] = l1 - minL + COLOR_OFFSET; // -COLOR_OFFSET to fix the 0-arrays
+            lArr[DIRECTIONS + d] = l2 - minL + COLOR_OFFSET;
             //
-            aArr[d] = a1 - minA + 0.1;
-            aArr[DIRECTIONS + d] = a2 - minA + 0.1;
+            aArr[d] = a1 - minA + COLOR_OFFSET;
+            aArr[DIRECTIONS + d] = a2 - minA + COLOR_OFFSET;
             //
-            bArr[d] = b1 - minB + 0.1;
-            bArr[DIRECTIONS + d] = b2 - minB + 0.1;
+            bArr[d] = b1 - minB + COLOR_OFFSET;
+            bArr[DIRECTIONS + d] = b2 - minB + COLOR_OFFSET;
         }
         //
         emdSum += min(emd(lArr, dir), min(emd(bArr, dir), emd(aArr, dir)));

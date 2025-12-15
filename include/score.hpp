@@ -28,6 +28,7 @@ float emd(const int* arr1, const int* arr2);
 __host__ __device__
 float computeLabScore(
     const uchar* F,
+    size_t Fstep,
     float yPixel, float xPixel,
     int dir, 
     int width, int height
