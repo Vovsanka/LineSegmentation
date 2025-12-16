@@ -14,10 +14,10 @@ __host__ __device__
 float getRad(int direction);
 
 __host__ __device__
-thrust::tuple<float,float> getUnitVector(float rad);
+thrust::tuple<float,float> getUnitVector(int dir);
 
 __host__ __device__ 
-thrust::tuple<float,float> getOrthogonalUnitVector(float rad);
+thrust::tuple<float,float> getOrthogonalUnitVector(int dir);
 
 __host__ __device__ 
 void insertionSort(float* a, int n);

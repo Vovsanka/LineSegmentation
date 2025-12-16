@@ -7,15 +7,16 @@ float getRad(int direction) {
 }
 
 __host__ __device__ 
-thrust::tuple<float,float> getUnitVector(float rad) { // y x
+thrust::tuple<float,float> getUnitVector(int dir) { // y x
+    float rad = getRad(dir);
     while (rad >= PI) rad -= PI;
     return thrust::make_tuple(sin(rad), cos(rad));
 }
 
 __host__ __device__ 
-thrust::tuple<float,float> getOrthogonalUnitVector(float rad) { // y x
-    rad += PI/2;
-    return getUnitVector(rad);
+thrust::tuple<float,float> getOrthogonalUnitVector(int dir) { // y x
+    dir = (dir + DIRECTIONS/2) % DIRECTIONS;
+    return getUnitVector(dir);
 }
 
 __host__ __device__ 
@@ -97,7 +98,7 @@ float computeLabScore(
         int minL = 255, minA = 255, minB = 255;
         for (int d = 0; d < DIRECTIONS; d++) { 
             // 
-            thrust::tuple<float,float> unit = getUnitVector(getRad(d));
+            thrust::tuple<float,float> unit = getOrthogonalUnitVector(d);
             float dY = thrust::get<0>(unit);
             float dX = thrust::get<1>(unit);
             //

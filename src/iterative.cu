@@ -11,7 +11,7 @@ thrust::tuple<float,float,int> upgradeCandidate(
     float xPixel = thrust::get<1>(cand);
     int dir = thrust::get<2>(cand);
     //
-    thrust::tuple<float,float> unitNorm = getUnitVector(getRad(dir));
+    thrust::tuple<float,float> unitNorm = getUnitVector(dir);
     float unitNormY = thrust::get<0>(unitNorm);
     float unitNormX = thrust::get<1>(unitNorm);
     //
@@ -93,7 +93,7 @@ void candidateExpand(
     int width, int height
 ) {
     //
-    thrust::tuple<float,float> unitEdge = getOrthogonalUnitVector(getRad(dir)); // TODO: something wrong with the direction
+    thrust::tuple<float,float> unitEdge = getOrthogonalUnitVector(dir);
     float unitEdgeY = thrust::get<0>(unitEdge);
     float unitEdgeX = thrust::get<1>(unitEdge);
     //
