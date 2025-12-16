@@ -15,10 +15,19 @@
 
 
 __global__ 
-void bestScoreKernel(
+void candidatePreComputation(
     const uchar* F, size_t Fstep,
     float* S, size_t Sstep,
     int* D, size_t Dstep,
+    int width, int height
+);
+
+
+__global__ 
+void candidateThresholdKernel(
+    const float *S, size_t Sstep,
+    const int *D, size_t Dstep,
+    uchar *C, size_t Cstep,
     int width, int height
 );
 

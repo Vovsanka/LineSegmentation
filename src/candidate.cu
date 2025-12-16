@@ -2,7 +2,7 @@
 
 
 __global__ 
-void bestScoreKernel(
+void candidatePreComputation(
     const uchar* F, size_t Fstep,
     float* S, size_t Sstep,
     int* D, size_t Dstep,
@@ -31,18 +31,23 @@ void bestScoreKernel(
     rowD[x] = bestDir;
 }
 
-// __global__ 
-// void candidateThresholdKernel(const float *S, const int *D, uchar *C,
-//                                          int width, int height) {
-                                    
-//     int x = blockIdx.x * blockDim.x + threadIdx.x;
-//     int y = blockIdx.y * blockDim.y + threadIdx.y;
-//     if (x >= width || y >= height) return;
-    
-//     int idx = y * width + x;
-//     float score = S[idx];
-//     C[idx] = (score >= THRESHOLD) ? 1 : 0;
-// }
+__global__ 
+void candidateThresholdKernel(
+    const float *S, size_t Sstep,
+    const int *D, size_t Dstep,
+    uchar *C, size_t Cstep,
+    int width, int height
+) {                             
+    int x = blockIdx.x * blockDim.x + threadIdx.x;
+    int y = blockIdx.y * blockDim.y + threadIdx.y;
+    if (x >= width || y >= height) return;
+    //
+    float* rowS = (float*)((uchar*)S + y * Sstep);
+    float score = rowS[x];
+    //
+    uchar* rowC = (uchar*)((uchar*)C + y * Cstep);
+    rowC[x] = (score >= CAND_THRESHOLD) ? 1 : 0;
+}
 
 
 

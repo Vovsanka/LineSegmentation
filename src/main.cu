@@ -18,8 +18,8 @@ int main() {
 
     // Load an RGB image
     // cv::Mat originalF = cv::imread("../images/black.png", cv::IMREAD_COLOR);
-    cv::Mat originalF = cv::imread("../images/mini-table.png", cv::IMREAD_COLOR);
-    // cv::Mat originalF = cv::imread("../images/table.png", cv::IMREAD_COLOR);
+    // cv::Mat originalF = cv::imread("../images/mini-table.png", cv::IMREAD_COLOR);
+    cv::Mat originalF = cv::imread("../images/table.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/apb1.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/apb2.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/apb3.png", cv::IMREAD_COLOR);
@@ -65,7 +65,7 @@ int main() {
     // compute the best scores for every pixel
     cv::cuda::GpuMat S(F.size(), CV_32F);
     cv::cuda::GpuMat D(F.size(), CV_32S);
-    bestScoreKernel<<<grid, block>>>(
+    candidatePreComputation<<<grid, block>>>(
         F.ptr<uchar>(), F.step,
         S.ptr<float>(), S.step,
         D.ptr<int>(), D.step,
@@ -73,13 +73,15 @@ int main() {
     );
     showMatrix(S);
 
-    // // choose the candidates
-    // cv::cuda::GpuMat C(F.size(), CV_8U);
-    // candidateThresholdKernel<<<grid, block>>>(
-    //     S.ptr<float>(), D.ptr<int>(), C.ptr<uchar>(),
-    //     F.cols, F.rows
-    // );
-    // showMatrix(C);
+    // choose the candidates
+    cv::cuda::GpuMat C(F.size(), CV_8U);
+    candidateThresholdKernel<<<grid, block>>>(
+        S.ptr<float>(), S.step,
+        D.ptr<int>(), D.step,
+        C.ptr<uchar>(), C.step,
+        F.cols, F.rows
+    );
+    showMatrix(C);
 
     // // /////////
     // // cv::Mat CI = candidateIterativeSearch(
