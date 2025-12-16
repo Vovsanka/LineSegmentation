@@ -79,11 +79,11 @@ int main() {
     /// debug start
     for (int d = 0; d < DIRECTIONS; d++) {
         std::cout << d << " ";
-        std::cout << computeLabScore(Fcpu.ptr<uchar>(), Fcpu.step, 20, 320, d, F.cols, F.rows) << std::endl;
+        std::cout << computeLabScore(Fcpu.ptr<uchar>(), Fcpu.step, 320, 320, d, F.cols, F.rows) << std::endl;
     }
     std::cout << std::endl;
-    thrust::tuple<float,float,int> cand = thrust::make_tuple(240, 320, 18);
-    std::cout << computeLabScore(Fcpu.ptr<uchar>(), Fcpu.step, 240, 320, 18, F.cols, F.rows) << std::endl; 
+    thrust::tuple<float,float,int> cand = thrust::make_tuple(320, 320, 18);
+    std::cout << computeLabScore(Fcpu.ptr<uchar>(), Fcpu.step, 320, 320, 18, F.cols, F.rows) << std::endl; 
     for (int k = 0; k < 5; k++) {
         cand = upgradeCandidate(Fcpu.ptr<uchar>(), Fcpu.step, cand, F.cols, F.rows);
         float candY = thrust::get<0>(cand);

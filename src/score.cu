@@ -128,7 +128,7 @@ float computeLabScore(
         float bArr[2*DIRECTIONS];
         for (int d = 0; d < DIRECTIONS; d++) { 
             // 
-            thrust::tuple<float,float> unit = getOrthogonalUnitVector(getRad(d));
+            thrust::tuple<float,float> unit = getOrthogonalUnitVector(d);
             float dY = thrust::get<0>(unit);
             float dX = thrust::get<1>(unit);
             //
