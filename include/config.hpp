@@ -11,7 +11,7 @@ const int MAX_SIDE = 640;
 const int DIRECTIONS = 36;
 const int CIRCLE_COUNT = 5;
 const float CIRCLE_STEP = 1.0;
-const float COLOR_OFFSET = 2.0; // avoid 0-arrays & ignore some noise
+const float COLOR_OFFSET = 3.0; // avoid 0-arrays & ignore some noise
 const float SCORE_BOOSTER = 4.0;
 
 // threshold candidates

@@ -19,17 +19,17 @@ int main() {
     // Load an RGB image
     // cv::Mat originalF = cv::imread("../images/black.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/mini-table.png", cv::IMREAD_COLOR);
-    cv::Mat originalF = cv::imread("../images/table.png", cv::IMREAD_COLOR);
+    // cv::Mat originalF = cv::imread("../images/table.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/apb1.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/apb2.png", cv::IMREAD_COLOR);
-    // cv::Mat originalF = cv::imread("../images/apb3.png", cv::IMREAD_COLOR);
+    cv::Mat originalF = cv::imread("../images/apb3.png", cv::IMREAD_COLOR);
     if (originalF.empty()) return 1;
     std::cout << "Original image size: " << originalF.cols << "x" << originalF.rows << std::endl; 
     showImage(originalF);
 
     // Convert the image to the LAB color space
     cv::Mat labF = convertBGRtoLab(originalF);
-    showImage(labF);
+    // showImage(labF);
 
     // apply the noise filtering to LAB-image (preserves the edge perception)
     cv::Mat filteredF = filterNoise(labF);
@@ -56,7 +56,7 @@ int main() {
     
     // Upload the image to GPU
     cv::cuda::GpuMat F = uploadToGPU(scaledF);
-    showImage(F);
+    // showImage(F);
 
     // GPU threads for each pixel
     dim3 block(16, 16); // 256
