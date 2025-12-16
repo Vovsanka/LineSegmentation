@@ -165,37 +165,22 @@ float computeLabScore(
     return emdScore;
 }
 
-// __host__ /*__device__*/
-// thrust::tuple<float,float> bestPossibleScore(const uchar* F,
-//                                                float yPixel, float xPixel,
-//                                                int width, int height) {
-//     // n-search
-//     float l = 0, r = getPi();
-//     while (r - l > DIR_PRECISION) {
-//         float m[N + 1];
-//         m[0] = l;
-//         m[N] = r;
-//         // only for points in between
-//         for (int j = 1; j < N - 1; j++) {
-//             m[j] = l + (j + 1)*(r - l)/N;
-//         }
-//         // only for points in between
-//         float s[N];
-//         int bestJ = 1;
-//         for (int j = 1; j < N - 1; j++) {
-//             s[j] = computeLabScore(F, yPixel, xPixel, m[j], width, height);
-//             if (s[j] > s[bestJ]) {
-//                 bestJ = j;
-//             }
-//         }
-//         // update the range of the directions
-//         l = m[bestJ - 1];
-//         r = m[bestJ + 1];
-//     }
-//     //
-//     float bestDir = (l + r)/2;
-//     float bestScore = computeLabScore(F, yPixel, xPixel, bestDir, width, height);
-//     // std::cout << "Best direction: " << bestDir << std::endl;
-//     // std::cout << "Best score: " << bestScore << std::endl;
-//     return thrust::make_tuple(bestScore, bestDir);
-// }
+__host__ __device__
+thrust::tuple<float,int> bestPossibleScore(
+    const uchar* F, size_t Fstep,
+    float yPixel, float xPixel,
+    int width, int height
+) {
+    float bestScore = -1.0f;
+    int bestDir = 0;
+    for (int d = 0; d < DIRECTIONS; d++) {
+        float score = computeLabScore(F, Fstep, yPixel, xPixel, d, width, height);
+        if (score > bestScore) {
+            bestScore = score;
+            bestDir = d;
+        }
+    }
+    // std::cout << "Best direction: " << bestDir << std::endl;
+    // std::cout << "Best score: " << bestScore << std::endl;
+    return thrust::make_tuple(bestScore, bestDir);
+}

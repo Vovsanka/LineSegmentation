@@ -5,7 +5,7 @@
 #include "operations.hpp"
 #include "score.hpp"
 #include "candidate.hpp"
-// #include "iterative.hpp"
+#include "iterative.hpp"
 
 
 
@@ -19,10 +19,10 @@ int main() {
     // Load an RGB image
     // cv::Mat originalF = cv::imread("../images/black.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/mini-table.png", cv::IMREAD_COLOR);
-    // cv::Mat originalF = cv::imread("../images/table.png", cv::IMREAD_COLOR);
+    cv::Mat originalF = cv::imread("../images/table.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/apb1.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/apb2.png", cv::IMREAD_COLOR);
-    cv::Mat originalF = cv::imread("../images/apb3.png", cv::IMREAD_COLOR);
+    // cv::Mat originalF = cv::imread("../images/apb3.png", cv::IMREAD_COLOR);
     if (originalF.empty()) return 1;
     std::cout << "Original image size: " << originalF.cols << "x" << originalF.rows << std::endl; 
     showImage(originalF);
@@ -42,17 +42,6 @@ int main() {
     std::cout << "Scale factor: " << scale << std::endl;
     std::cout << "Scaled image size: " << scaledF.cols << "x" << scaledF.rows << std::endl; 
     showImage(scaledF);
-
-    ///// debug start
-    for(int d = 0; d < DIRECTIONS; d++) {
-        std::cout << computeLabScore(scaledF.ptr<uchar>(), scaledF.step, 160, 160, d, scaledF.cols, scaledF.rows) << std::endl;
-    }
-    std::cout << std::endl;
-    std::cout << computeLabScore(scaledF.ptr<uchar>(), scaledF.step, 100, 100, 3, scaledF.cols, scaledF.rows) << std::endl;
-    std::cout << computeLabScore(scaledF.ptr<uchar>(), scaledF.step, 100, 100, 0, scaledF.cols, scaledF.rows) << std::endl;
-    std::cout << computeLabScore(scaledF.ptr<uchar>(), scaledF.step, 200, 300, 3, scaledF.cols, scaledF.rows) << std::endl;
-    std::cout << computeLabScore(scaledF.ptr<uchar>(), scaledF.step, 200, 300, 0, scaledF.cols, scaledF.rows) << std::endl;
-    ///// debug end
     
     // Upload the image to GPU
     cv::cuda::GpuMat F = uploadToGPU(scaledF);
@@ -83,14 +72,17 @@ int main() {
     );
     showMatrix(C);
 
-    // // /////////
-    // // cv::Mat CI = candidateIterativeSearch(
-    // //     downloadToCpu(F).ptr<uchar>(),
-    // //     downloadToCpu(S).ptr<float>(),
-    // //     downloadToCpu(D).ptr<int>(),
-    // //     F.cols, F.rows
-    // // );
-    // // showMatrix(CI);
+    /////////
+    // cv::Mat Fcpu = downloadToCPU(F);
+    // cv::Mat Scpu = downloadToCPU(S);
+    // cv::Mat Dcpu = downloadToCPU(D);
+    // cv::Mat CI = candidateIterativeSearch(
+    //     Fcpu.ptr<uchar>(), Fcpu.step,
+    //     Scpu.ptr<float>(), Scpu.step,
+    //     Dcpu.ptr<int>(), Dcpu.step,
+    //     F.cols, F.rows
+    // );
+    // showMatrix(CI);
 
     return 0;
 }

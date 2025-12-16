@@ -34,9 +34,11 @@ float computeLabScore(
     int width, int height
 ); 
 
-// __host__ /*__device__*/
-// thrust::tuple<float,float> bestPossibleScore(const uchar* F,
-//                                                float yPixel, float xPixel,
-//                                                int width, int height);
+__host__ __device__
+thrust::tuple<float,int> bestPossibleScore(
+    const uchar* F, size_t Fstep,
+    float yPixel, float xPixel,
+    int width, int height
+);
 
 #endif

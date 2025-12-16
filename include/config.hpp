@@ -19,7 +19,7 @@ const float CAND_THRESHOLD = 0.8;
 
 // iterative candidates
 const float HIGH_THRESHOLD = 0.9;
-const float LOW_THRESHOLD = 0.5;
+const float LOW_THRESHOLD = 0.7;
 
 // candidate upgrade
 const int UP_COUNT = 10;
