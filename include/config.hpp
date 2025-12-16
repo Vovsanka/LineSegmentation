@@ -8,7 +8,7 @@ const float PI = 3.141593;
 const int MAX_SIDE = 640;
 
 // beam score computation
-const int DIRECTIONS = 36;
+const int DIRECTIONS = 36; // even!
 const int CIRCLE_COUNT = 5;
 const float CIRCLE_STEP = 1.0;
 const float COLOR_OFFSET = 3.0; // avoid 0-arrays & ignore some noise

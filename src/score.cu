@@ -33,6 +33,8 @@ void insertionSort(float* a, int n) {
 
 __host__ __device__
 float emd(const float* arr, int dir) {
+    //
+    int edge = (dir + DIRECTIONS/2) % DIRECTIONS;
     // array sum (in order to normalize)
     float sum = 0;
     for (int k = 0; k < 2*DIRECTIONS; k++) {
@@ -43,12 +45,12 @@ float emd(const float* arr, int dir) {
     float prefixSum1[2*DIRECTIONS], prefixSum2[2*DIRECTIONS];
     for (int k = 0; k < 2*DIRECTIONS; k++) {
         float val1, val2;
-        if (k % DIRECTIONS == dir) {
+        if (k % DIRECTIONS == edge) {
             val1 = val2 = fixed/2; 
-        } else if (k < dir || k > DIRECTIONS + dir) {
+        } else if (k < edge || k > DIRECTIONS + edge) {
             val1 = 0;
             val2 = fixed;
-        } else { // dir < k && k < DIRECTIONS + dir
+        } else { // edge < k && k < DIRECTIONS + edge
             val1 = fixed;
             val2 = 0;
         }
@@ -95,7 +97,7 @@ float computeLabScore(
         int minL = 255, minA = 255, minB = 255;
         for (int d = 0; d < DIRECTIONS; d++) { 
             // 
-            thrust::tuple<float,float> unit = getOrthogonalUnitVector(getRad(d));
+            thrust::tuple<float,float> unit = getUnitVector(getRad(d));
             float dY = thrust::get<0>(unit);
             float dX = thrust::get<1>(unit);
             //
