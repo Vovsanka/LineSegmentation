@@ -27,7 +27,7 @@ const float UP_STEP = 0.1;
 const int UP_ITERATIONS = 5; 
 
 // iterative search
-const float ITER_STEP = 0.5;
+const float ITER_STEP = 1.0;
 
 
 #endif

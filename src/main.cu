@@ -76,26 +76,13 @@ int main() {
     cv::Mat Fcpu = downloadToCPU(F);
     cv::Mat Scpu = downloadToCPU(S);
     cv::Mat Dcpu = downloadToCPU(D);
-    /// debug start
-    thrust::tuple<float,float,int> cand = thrust::make_tuple(240, 319, 10);
-    std::cout << computeLabScore(Fcpu.ptr<uchar>(), Fcpu.step, 240, 319, 10, F.cols, F.rows) << std::endl; 
-    for (int k = 0; k < 5; k++) {
-        cand = upgradeCandidate(Fcpu.ptr<uchar>(), Fcpu.step, cand, F.cols, F.rows);
-        float candY = thrust::get<0>(cand);
-        float candX = thrust::get<1>(cand);
-        int candDir = thrust::get<2>(cand);
-        std::cout << candY << " " << candX << " " << candDir << std::endl;
-        std::cout << computeLabScore(Fcpu.ptr<uchar>(), Fcpu.step, candY, candX, candDir, F.cols, F.rows) << std::endl;
-    }
-    
-    /// debug end
-    // cv::Mat CI = candidateIterativeSearch(
-    //     Fcpu.ptr<uchar>(), Fcpu.step,
-    //     Scpu.ptr<float>(), Scpu.step,
-    //     Dcpu.ptr<int>(), Dcpu.step,
-    //     F.cols, F.rows
-    // );
-    // showMatrix(CI);
+    cv::Mat CI = candidateIterativeSearch(
+        Fcpu.ptr<uchar>(), Fcpu.step,
+        Scpu.ptr<float>(), Scpu.step,
+        Dcpu.ptr<int>(), Dcpu.step,
+        F.cols, F.rows
+    );
+    showMatrix(CI);
 
     return 0;
 }

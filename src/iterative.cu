@@ -93,20 +93,20 @@ void candidateExpand(
     int width, int height
 ) {
     //
-    thrust::tuple<float,float> unitEdge = getOrthogonalUnitVector(getRad(dir));
+    thrust::tuple<float,float> unitEdge = getOrthogonalUnitVector(getRad(dir)); // TODO: something wrong with the direction
     float unitEdgeY = thrust::get<0>(unitEdge);
     float unitEdgeX = thrust::get<1>(unitEdge);
     //
     for (int k = 0; ; k++) {
-        float y1 = startY + k*unitEdgeY;
-        float x1 = startX + k*unitEdgeX;
-        float y2 = startY - k*unitEdgeY;
-        float x2 = startX - k*unitEdgeX;
-        if (
-            !setCandidates(F, Fstep, CI, CIstep, y1, x1, dir, width, height)
-            &&
-            !setCandidates(F, Fstep, CI, CIstep, y2, x2, dir, width, height)
-        ) break;
+        float y1 = startY + k*ITER_STEP*unitEdgeY; 
+        float x1 = startX + k*ITER_STEP*unitEdgeX;
+        if (!setCandidates(F, Fstep, CI, CIstep, y1, x1, dir, width, height)) break;
+    }
+    //
+    for (int k = 0; ; k++) {
+        float y2 = startY - k*ITER_STEP*unitEdgeY;
+        float x2 = startX - k*ITER_STEP*unitEdgeX;
+        if (!setCandidates(F, Fstep, CI, CIstep, y2, x2, dir, width, height)) break;
     }
     return;
 }
