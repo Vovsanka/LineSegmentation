@@ -17,9 +17,9 @@ int main() {
     if (!cudaCount) return 1;
 
     // Load an RGB image
-    // cv::Mat originalF = cv::imread("../images/black.png", cv::IMREAD_COLOR);
+    cv::Mat originalF = cv::imread("../images/black.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/mini-table.png", cv::IMREAD_COLOR);
-    cv::Mat originalF = cv::imread("../images/table.png", cv::IMREAD_COLOR);
+    // cv::Mat originalF = cv::imread("../images/table.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/apb1.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/apb2.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/apb3.png", cv::IMREAD_COLOR);
@@ -73,9 +73,22 @@ int main() {
     showMatrix(C);
 
     /////////
-    // cv::Mat Fcpu = downloadToCPU(F);
-    // cv::Mat Scpu = downloadToCPU(S);
-    // cv::Mat Dcpu = downloadToCPU(D);
+    cv::Mat Fcpu = downloadToCPU(F);
+    cv::Mat Scpu = downloadToCPU(S);
+    cv::Mat Dcpu = downloadToCPU(D);
+    /// debug start
+    thrust::tuple<float,float,int> cand = thrust::make_tuple(240, 319, 10);
+    std::cout << computeLabScore(Fcpu.ptr<uchar>(), Fcpu.step, 240, 319, 10, F.cols, F.rows) << std::endl; 
+    for (int k = 0; k < 5; k++) {
+        cand = upgradeCandidate(Fcpu.ptr<uchar>(), Fcpu.step, cand, F.cols, F.rows);
+        float candY = thrust::get<0>(cand);
+        float candX = thrust::get<1>(cand);
+        int candDir = thrust::get<2>(cand);
+        std::cout << candY << " " << candX << " " << candDir << std::endl;
+        std::cout << computeLabScore(Fcpu.ptr<uchar>(), Fcpu.step, candY, candX, candDir, F.cols, F.rows) << std::endl;
+    }
+    
+    /// debug end
     // cv::Mat CI = candidateIterativeSearch(
     //     Fcpu.ptr<uchar>(), Fcpu.step,
     //     Scpu.ptr<float>(), Scpu.step,
