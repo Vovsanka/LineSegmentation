@@ -11,33 +11,33 @@
 
 
 __host__ __device__
-float getRad(int direction);
+double getRad(int direction);
 
 __host__ __device__
-thrust::tuple<float,float> getUnitVector(int dir);
+thrust::tuple<double,double> getUnitVector(int dir);
 
 __host__ __device__ 
-thrust::tuple<float,float> getOrthogonalUnitVector(int dir);
+thrust::tuple<double,double> getOrthogonalUnitVector(int dir);
 
 __host__ __device__ 
-void insertionSort(float* a, int n);
+void insertionSort(double* a, int n);
 
 __host__ __device__
-float emd(const int* arr1, const int* arr2);
+double emd(const int* arr1, const int* arr2);
 
 __host__ __device__
-float computeLabScore(
+double computeLabScore(
     const uchar* F,
     size_t Fstep,
-    float yPixel, float xPixel,
+    double yPixel, double xPixel,
     int dir, 
     int width, int height
 ); 
 
 __host__ __device__
-thrust::tuple<float,int> bestPossibleScore(
+thrust::tuple<double,int> bestPossibleScore(
     const uchar* F, size_t Fstep,
-    float yPixel, float xPixel,
+    double yPixel, double xPixel,
     int width, int height
 );
 

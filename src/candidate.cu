@@ -4,7 +4,7 @@
 __global__ 
 void candidatePreComputation(
     const uchar* F, size_t Fstep,
-    float* S, size_t Sstep,
+    double* S, size_t Sstep,
     int* D, size_t Dstep,
     int width, int height
 ) {
@@ -13,11 +13,11 @@ void candidatePreComputation(
     int y = blockIdx.y * blockDim.y + threadIdx.y;
     if (x >= width || y >= height) return;
     // Compute the score matrix for every direction
-    thrust::tuple<float,int> newScoreDir = bestPossibleScore(F, Fstep, y, x, width, height);
-    float bestScore = thrust::get<0>(newScoreDir);
+    thrust::tuple<double,int> newScoreDir = bestPossibleScore(F, Fstep, y, x, width, height);
+    double bestScore = thrust::get<0>(newScoreDir);
     int bestDir = thrust::get<1>(newScoreDir);
     //
-    float* rowS = (float*)((uchar*)S + y * Sstep);
+    double* rowS = (double*)((uchar*)S + y * Sstep);
     rowS[x] = bestScore;
     //
     int* rowD = (int*)((uchar*)D + y * Dstep);
@@ -26,7 +26,7 @@ void candidatePreComputation(
 
 __global__ 
 void candidateThresholdKernel(
-    const float *S, size_t Sstep,
+    const double *S, size_t Sstep,
     const int *D, size_t Dstep,
     uchar *C, size_t Cstep,
     int width, int height
@@ -35,8 +35,8 @@ void candidateThresholdKernel(
     int y = blockIdx.y * blockDim.y + threadIdx.y;
     if (x >= width || y >= height) return;
     //
-    float* rowS = (float*)((uchar*)S + y * Sstep);
-    float score = rowS[x];
+    double* rowS = (double*)((uchar*)S + y * Sstep);
+    double score = rowS[x];
     //
     uchar* rowC = (uchar*)((uchar*)C + y * Cstep);
     rowC[x] = (score >= CAND_THRESHOLD) ? 1 : 0;

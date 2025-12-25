@@ -21,10 +21,10 @@ __host__
 cv::Mat filterNoise(const cv::Mat& cpuF);
 
 __host__
-float computeScale(const cv::Mat& cpuF);
+double computeScale(const cv::Mat& cpuF);
 
 __host__
-cv::Mat resize(const cv::Mat& cpuF, float scale);
+cv::Mat resize(const cv::Mat& cpuF, double scale);
 
 __host__
 void showImage(const cv::Mat& cpuF);
