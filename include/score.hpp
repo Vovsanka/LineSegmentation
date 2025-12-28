@@ -11,19 +11,32 @@
 
 
 __host__ __device__
-double getRad(int direction);
-
-__host__ __device__
-thrust::tuple<double,double> getUnitVector(int dir);
+double getRad(int d); // returns [0, 2*PI)
 
 __host__ __device__ 
-thrust::tuple<double,double> getOrthogonalUnitVector(int dir);
+thrust::tuple<double,double> getUnitVector(int d); // (y, x) // d in [0, 2*DIRECTIONS)
+
+__host__ __device__
+int getOrthogonalDirection(int d); // d in [0, 2*DIRECTIONS)
+
+__host__ __device__ 
+thrust::tuple<double,double> getOrthogonalUnitVector(int d); // (y, x) // d in [0, 2*DIRECTIONS)
 
 __host__ __device__ 
 void insertionSort(double* a, int n);
 
-__host__ __device__
+__host__ /*__device__*/
 double emd(const int* arr1, const int* arr2);
+
+__host__ __device__
+thrust::tuple<uchar,uchar,uchar> getShiftedColorChannels(
+    const uchar* F,
+    size_t Fstep,
+    double y, double x,
+    int d, int c,
+    int width, int height
+); // d in [0, 2*DIRECTIONS)
+
 
 __host__ __device__
 double computeLabScore(

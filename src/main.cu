@@ -79,10 +79,10 @@ int main() {
     
     /// debug start
     for (int d = 0; d < DIRECTIONS; d++) {
-        std::cout << d << " ";
-        std::cout << computeLabScore(Fcpu.ptr<uchar>(), Fcpu.step, 320, 320.5, d, F.cols, F.rows) << std::endl;
+        std::cout << d << ": ";
+        std::cout << computeLabScore(Fcpu.ptr<uchar>(), Fcpu.step, 320, 320, d, F.cols, F.rows) << std::endl;
     }
-    // std::cout << std::endl;
+    std::cout << std::endl;
     // thrust::tuple<double,double,int> cand = thrust::make_tuple(320, 320.5, 0);
     // std::cout << computeLabScore(Fcpu.ptr<uchar>(), Fcpu.step, 320, 320.5, 0, F.cols, F.rows) << std::endl; 
     // for (int k = 0; k < 5; k++) {

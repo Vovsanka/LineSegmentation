@@ -68,7 +68,7 @@ thrust::tuple<uchar,uchar,uchar> getColorChannels(
     // image integer pixel case (no need to compute)
     if (0 <= rY && rY < height &&
         0 <= rX && rX < width &&
-        fabsf(y - rY) <= TOL && fabsf(x - rX) <= TOL) {
+        fabs(y - rY) <= TOL && fabs(x - rX) <= TOL) {
         const uchar* row = F + rY * Fstep;
         const uchar3* row3 = reinterpret_cast<const uchar3*>(row);
         uchar3 pix = row3[rX];

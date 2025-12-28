@@ -8,8 +8,8 @@ const double PI = 3.141593;
 const int MAX_SIDE = 640;
 
 // beam score computation
-const int DIRECTIONS = 360; // even!
-const int CIRCLE_COUNT = 5;
+const int DIRECTIONS = 4; // even! // DIRECTIONS ~ PI // 36
+const int CIRCLE_COUNT = 1; // 5
 const double CIRCLE_STEP = 1.0;
 const double COLOR_OFFSET = 3.0; // avoid 0-arrays & ignore some noise
 const double SCORE_BOOSTER = 4.0;
@@ -22,8 +22,8 @@ const double HIGH_THRESHOLD = 0.9;
 const double LOW_THRESHOLD = 0.7;
 
 // candidate upgrade
-const int UP_COUNT = 10;
-const double UP_STEP = 0.1;
+const int UP_COUNT = 100;
+const double UP_STEP = 0.01;
 const int UP_ITERATIONS = 5; 
 
 // iterative search
