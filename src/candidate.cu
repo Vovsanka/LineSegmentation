@@ -17,10 +17,10 @@ void candidatePreComputation(
     double bestScore = thrust::get<0>(newScoreDir);
     int bestDir = thrust::get<1>(newScoreDir);
     //
-    double* rowS = (double*)((uchar*)S + y * Sstep);
+    double* rowS = (double*)((uchar*)S + y*Sstep);
     rowS[x] = bestScore;
     //
-    int* rowD = (int*)((uchar*)D + y * Dstep);
+    int* rowD = (int*)((uchar*)D + y*Dstep);
     rowD[x] = bestDir;
 }
 

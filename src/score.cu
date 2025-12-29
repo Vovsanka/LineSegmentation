@@ -131,13 +131,13 @@ double computeLabScore(
             int d2 = getOppositeDirection(d1); 
             //
             thrust::tuple<uchar,uchar,uchar> lab1 = getShiftedColorChannels(
-                F, Fstep, xPixel, yPixel, d1, c, width, height);
+                F, Fstep, yPixel, xPixel, d1, c, width, height);
             int l1 = thrust::get<0>(lab1);
             int a1 = thrust::get<1>(lab1);
             int b1 = thrust::get<2>(lab1);
             //
             thrust::tuple<uchar,uchar,uchar> lab2 = getShiftedColorChannels(
-                F, Fstep, xPixel, yPixel, d2, c, width, height);
+                F, Fstep, yPixel, xPixel, d2, c, width, height);
             int l2 = thrust::get<0>(lab2);
             int a2 = thrust::get<1>(lab2);
             int b2 = thrust::get<2>(lab2);
