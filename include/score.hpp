@@ -22,10 +22,14 @@ int getOrthogonalDirection(int d); // d in [0, 2*DIRECTIONS)
 __host__ __device__ 
 thrust::tuple<double,double> getOrthogonalUnitVector(int d); // (y, x) // d in [0, 2*DIRECTIONS)
 
+__host__ __device__
+int getOppositeDirection(int d); // d in [0, 2*DIRECTIONS)
+
+
 __host__ __device__ 
 void insertionSort(double* a, int n);
 
-__host__ /*__device__*/
+__host__ __device__
 double emd(const int* arr1, const int* arr2);
 
 __host__ __device__

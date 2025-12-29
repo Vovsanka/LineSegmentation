@@ -17,6 +17,11 @@ int getOrthogonalDirection(int d) { // d in [0, 2*DIRECTIONS)
     return (d + DIRECTIONS/2) % (2*DIRECTIONS);
 }
 
+__host__ __device__
+int getOppositeDirection(int d) { // d in [0, 2*DIRECTIONS)
+    return (d + DIRECTIONS) % (2*DIRECTIONS);
+}
+
 __host__ __device__ 
 thrust::tuple<double,double> getOrthogonalUnitVector(int d) { // (y, x) // d in [0, 2*DIRECTIONS)
     return getUnitVector(getOrthogonalDirection(d));
@@ -35,11 +40,15 @@ void insertionSort(double* a, int n) {
     }
 }
 
-__host__ /*__device__*/
+__host__ __device__
 double emd(const double* arr, int d) { // d in [0, 2*DIRECTIONS)
-    // TODO: emd for d (not dir), consider edge1 and edge2 (implement inverted direction)
-    // TODO: use the emd function when computing the lab-score
     int edge1 = getOrthogonalDirection(d);
+    int edge2 = getOppositeDirection(edge1);
+    if (edge1 > edge2) { // make edge1 < edge2
+        int temp = edge1;
+        edge1 = edge2;
+        edge2 = temp;
+    }
     // array sum (in order to normalize)
     double sum = 0;
     for (int k = 0; k < 2*DIRECTIONS; k++) {
@@ -49,15 +58,16 @@ double emd(const double* arr, int d) { // d in [0, 2*DIRECTIONS)
     double fixed = (1.0/DIRECTIONS); 
     double prefixSum1[2*DIRECTIONS], prefixSum2[2*DIRECTIONS];
     for (int k = 0; k < 2*DIRECTIONS; k++) {
-        double patternVal;
-        if (k == edge) {
-            patternVal = fixed/2.0; 
-        } else if (k < edge || k > DIRECTIONS + edge) {
+        double val1, val2;
+        if (k == edge1 || k == edge2) {
+            val1 = val2 = fixed/2.0; 
+        } else if (k < edge1 || edge2 < k) {
             val1 = 0.0;
+            val2 = fixed;
         } else { 
             val1 = fixed;
+            val2 = 0.0;
         }
-        // std::cout << val1 << " | " << val2 << std::endl;
         // prefix sums of delta of the normalized array values 
         double arrVal = arr[k]/sum;
         double delta1 = arrVal - val1;
@@ -69,9 +79,6 @@ double emd(const double* arr, int d) { // d in [0, 2*DIRECTIONS)
             prefixSum1[k] = prefixSum1[k - 1] + delta1;
             prefixSum2[k] = prefixSum2[k - 1] + delta2;
         }
-        ////// debug start
-        std::cout << arrVal << " " << val1 << " " << val2 << std::endl;
-        ///// debug end
     }
     // median computation
     insertionSort(prefixSum1, 2*DIRECTIONS);
@@ -121,7 +128,7 @@ double computeLabScore(
         double aArr[2*DIRECTIONS];
         double bArr[2*DIRECTIONS];
         for (int d1 = 0; d1 < DIRECTIONS; d1++) { 
-            int d2 = d1 + DIRECTIONS; 
+            int d2 = getOppositeDirection(d1); 
             //
             thrust::tuple<uchar,uchar,uchar> lab1 = getShiftedColorChannels(
                 F, Fstep, xPixel, yPixel, d1, c, width, height);
@@ -149,7 +156,7 @@ double computeLabScore(
           }
         //
         for (int d1 = 0; d1 < DIRECTIONS; d1++) { 
-            int d2 = d1 + DIRECTIONS; 
+            int d2 = getOppositeDirection(d1); 
             //
             lArr[d1] += COLOR_OFFSET - minL;
             aArr[d1] += COLOR_OFFSET - minA;
@@ -159,11 +166,8 @@ double computeLabScore(
             aArr[d2] += COLOR_OFFSET - minA;
             bArr[d2] += COLOR_OFFSET - minB;
         }
-        // TODO: use the following line!!!!
-        // emdSum += min(emd(lArr, dir), min(emd(aArr, dir), emd(bArr, dir)));
-        ////// debug start
-        emdSum += emd(lArr, dir);
-        ///// debug end
+        // 
+        emdSum += min(emd(lArr, dir), min(emd(aArr, dir), emd(bArr, dir)));
     }
     // compute the EMD-score
     double maxEmd = 1.0*DIRECTIONS/4;

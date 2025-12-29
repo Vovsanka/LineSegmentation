@@ -8,8 +8,8 @@ const double PI = 3.141593;
 const int MAX_SIDE = 640;
 
 // beam score computation
-const int DIRECTIONS = 4; // even! // DIRECTIONS ~ PI // 36
-const int CIRCLE_COUNT = 1; // 5
+const int DIRECTIONS = 36; // even! // DIRECTIONS ~ PI // 36
+const int CIRCLE_COUNT = 5; // 5
 const double CIRCLE_STEP = 1.0;
 const double COLOR_OFFSET = 3.0; // avoid 0-arrays & ignore some noise
 const double SCORE_BOOSTER = 4.0;
