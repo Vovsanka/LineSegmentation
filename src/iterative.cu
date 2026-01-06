@@ -45,7 +45,7 @@ std::vector<std::tuple<double,int,int>> sortThresholdCandidates(
         for (int x = 0; x < width; x++) {
             double* rowS = (double*)((uchar*)S + y * Sstep);
             double score = rowS[x];
-            if (score >= HIGH_THRESHOLD) {
+            if (score >= CAND_THRESHOLD) {
                 tCand.push_back(std::make_tuple(-score, y, x));
             }
         }
@@ -55,17 +55,40 @@ std::vector<std::tuple<double,int,int>> sortThresholdCandidates(
 }
 
 __host__
-cv::Mat candidateIterativeSearch(
+bool isBlocked(const uchar*B, size_t Bstep, double y, double x, int width, int height) {
+    int closestY = std::round(y);
+    int closestX = std::round(x);
+    if (closestY < 0 || height <= closestY) return true;
+    if (closestX < 0 || width <= closestX) return true;
+    uchar *rowB = (uchar*)((uchar*)B + closestY*Bstep);
+    return (rowB[closestX] != 0);
+}
+
+__host__
+void setBlocked(uchar*B, size_t Bstep, double y, double x, int width, int height) {
+    int closestY = std::round(y);
+    int closestX = std::round(x);
+    if (closestY < 0 || height <= closestY) return;
+    if (closestX < 0 || width <= closestX) return;
+    uchar *rowB = (uchar*)((uchar*)B + closestY*Bstep);
+    rowB[closestX] = 1;
+}
+
+__host__
+std::vector<std::tuple<double,double>> candidateIterativeSearch(
     const uchar* F, size_t Fstep,
     const double *S, size_t Sstep,
     const int *D, size_t Dstep,
     int width, int height
 ) {
+    cv::Mat BLOCKED(height, width, CV_8U, cv::Scalar(0)); 
+    std::vector<std::tuple<double,double>> chosenCand;
+    //
     std::vector<std::tuple<double,int,int>> tCand = sortThresholdCandidates(S, Sstep, width, height);
-    cv::Mat CI(height, width, CV_8U, cv::Scalar(0)); // TODO: fractional candidates instead of CI
     for (std::tuple<double,int,int> start : tCand) {
         int startY = std::get<1>(start);
         int startX = std::get<2>(start);
+        if (isBlocked(BLOCKED.ptr<uchar>(), BLOCKED.step, startY, startX, width, height)) continue;
         int* rowD = (int*)((uchar*)D + startY * Dstep);
         int startDir = rowD[startX];
         thrust::tuple<double,double,int> cand = thrust::make_tuple(startY, startX, startDir);
@@ -73,104 +96,54 @@ cv::Mat candidateIterativeSearch(
             cand = upgradeCandidate(F, Fstep, cand, width, height);
         }
         //
-        double candY = thrust::get<0>(cand);
-        double candX = thrust::get<1>(cand);
-        int candDir = thrust::get<2>(cand);
-        candidateExpand(F, Fstep, CI.ptr<uchar>(), CI.step, candY, candX, candDir, width, height); 
-        //
-        showMatrix(CI);
+        candidateExpand(F, Fstep, BLOCKED.ptr<uchar>(), BLOCKED.step, chosenCand, cand, width, height);   
+        ///// debug start
+        showMatrix(BLOCKED);
+        ///// debug end 
     }
-    return CI;
+    
+    return chosenCand;
 }
 
 
 __host__
 void candidateExpand(
     const uchar *F, size_t Fstep, 
-    uchar *CI, size_t CIstep, 
-    double startY, double startX,
-    int dir, 
+    uchar* B, size_t Bstep,
+    std::vector<std::tuple<double,double>> &chosenCand,
+    thrust::tuple<double,double,int> cand,
     int width, int height
 ) {
+    double startY = thrust::get<0>(cand);
+    double startX = thrust::get<1>(cand);
+    int dir = thrust::get<2>(cand);
     //
-    thrust::tuple<double,double> unitEdge = getOrthogonalUnitVector(dir);
-    double unitEdgeY = thrust::get<0>(unitEdge);
-    double unitEdgeX = thrust::get<1>(unitEdge);
+    int edge1 = getOrthogonalDirection(dir);
+    int edge2 = getOppositeDirection(edge1);
     //
-    for (int k = 0; ; k++) {
-        double y1 = startY + k*ITER_STEP*unitEdgeY; 
-        double x1 = startX + k*ITER_STEP*unitEdgeX;
-        if (!setCandidates(F, Fstep, CI, CIstep, y1, x1, dir, width, height)) break;
+    thrust::tuple<double,double> unitEdge1 = getUnitVector(edge1);
+    double unitEdge1Y = thrust::get<0>(unitEdge1);
+    double unitEdge1X = thrust::get<1>(unitEdge1);
+    //
+    thrust::tuple<double,double> unitEdge2 = getUnitVector(edge2);
+    double unitEdge2Y = thrust::get<0>(unitEdge2);
+    double unitEdge2X = thrust::get<1>(unitEdge2);
+    //
+    chosenCand.push_back(std::make_tuple(startY, startX));
+    //
+    for (double y = startY, x = startX; !isBlocked(B, Bstep, y, x, width, height); y += unitEdge1Y, x += unitEdge1X) {
+        double score  = computeLabScore(F, Fstep, y, x, dir, width, height);
+        if (score < CAND_THRESHOLD) break;
+        //
+        setBlocked(B, Bstep, y, x, width, height);
+        chosenCand.push_back(std::make_tuple(y, x));
     }
     //
-    for (int k = 0; ; k++) {
-        double y2 = startY - k*ITER_STEP*unitEdgeY;
-        double x2 = startX - k*ITER_STEP*unitEdgeX;
-        if (!setCandidates(F, Fstep, CI, CIstep, y2, x2, dir, width, height)) break;
+    for (double y = startY, x = startX; !isBlocked(B, Bstep, y, x, width, height); y += unitEdge2Y, x += unitEdge2X) {
+        double score  = computeLabScore(F, Fstep, y, x, dir, width, height);
+        if (score < CAND_THRESHOLD) break;
+        //
+        setBlocked(B, Bstep, y, x, width, height);
+        chosenCand.push_back(std::make_tuple(y, x));
     }
-    return;
-}
-
-
-__host__ 
-bool setCandidates(
-    const uchar *F, size_t Fstep,
-    uchar *CI, size_t CIstep, 
-    double y, double x,
-    int dir, 
-    int width, int height
-) {
-    //
-    if (
-        y < 0 || y >= height ||
-        x < 0 || x >= width
-    ) return false;
-    //
-    int downY = floor(y);
-    int downX = floor(x);
-    int upY = ceil(y);
-    int upX = ceil(x);
-    //
-    bool isSet = false;
-    //
-    if (downY >= 0 && downX >= 0) {
-        double score = computeLabScore(F, Fstep, downY, downX, dir, width, height);
-        if (score >= LOW_THRESHOLD) {
-            int* rowCI = (int*)((uchar*)CI + downY * CIstep);
-            rowCI[downX] = 1;
-            isSet = true;
-        }
-    }
-    //
-    if (downY >= 0 && upX < width) {
-        double score = computeLabScore(F, Fstep, downY, upX, dir, width, height);
-        if (score >= LOW_THRESHOLD) {
-            int* rowCI = (int*)((uchar*)CI + downY * CIstep);
-            rowCI[upX] = 1;
-            isSet = true;
-        }
-    }
-    //
-    if (upY < height && downX >= 0) {
-        double score = computeLabScore(F, Fstep, upY, downX, dir, width, height);
-        if (score >= LOW_THRESHOLD) {
-            int* rowCI = (int*)((uchar*)CI + upY * CIstep);
-            rowCI[downX] = 1;
-            isSet = true;
-        }
-    }
-    //
-    if (upY < height && upX < width) {
-        double score = computeLabScore(F, Fstep, upY, upX, dir, width, height);
-        if (score >= LOW_THRESHOLD) {
-            int* rowCI = (int*)((uchar*)CI + upY * CIstep);
-            rowCI[upX] = 1;
-            isSet = true;
-        }
-    }
-    //
-    if (isSet) {
-        std::cout << "Set candidates for: y=" << y << " x=" << x  << std::endl;
-    }
-    return isSet;
 }

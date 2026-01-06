@@ -19,8 +19,8 @@ int main() {
     // Load an RGB image
     // cv::Mat originalF = cv::imread("../images/black.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/mini-table.png", cv::IMREAD_COLOR);
-    // cv::Mat originalF = cv::imread("../images/table.png", cv::IMREAD_COLOR);
-    cv::Mat originalF = cv::imread("../images/apb1.png", cv::IMREAD_COLOR);
+    cv::Mat originalF = cv::imread("../images/table.png", cv::IMREAD_COLOR);
+    // cv::Mat originalF = cv::imread("../images/apb1.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/apb2.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/apb3.png", cv::IMREAD_COLOR);
     if (originalF.empty()) return 1;
@@ -71,18 +71,17 @@ int main() {
     );
     showMatrix(C);
 
-    /////////
+    // iterative search for candidates
     cv::Mat Fcpu = downloadToCPU(F);
-    // cv::Mat Scpu = downloadToCPU(S);
-    // cv::Mat Dcpu = downloadToCPU(D);
+    cv::Mat Scpu = downloadToCPU(S);
+    cv::Mat Dcpu = downloadToCPU(D);
     
-    // cv::Mat CI = candidateIterativeSearch(
-    //     Fcpu.ptr<uchar>(), Fcpu.step,
-    //     Scpu.ptr<double>(), Scpu.step,
-    //     Dcpu.ptr<int>(), Dcpu.step,
-    //     F.cols, F.rows
-    // );
-    // showMatrix(CI);
+    std::vector<std::tuple<double,double>> candidates = candidateIterativeSearch(
+        Fcpu.ptr<uchar>(), Fcpu.step,
+        Scpu.ptr<double>(), Scpu.step,
+        Dcpu.ptr<int>(), Dcpu.step,
+        F.cols, F.rows
+    );
 
     return 0;
 }

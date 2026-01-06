@@ -25,30 +25,25 @@ std::vector<std::tuple<double,int,int>> sortThresholdCandidates(
 );
 
 __host__
-cv::Mat candidateIterativeSearch(
+bool isBlocked(const uchar*B, size_t Bstep, double y, double x, int width, int height);
+
+__host__
+void setBlocked(uchar*B, size_t Bstep, double y, double x, int width, int height);
+
+__host__
+std::vector<std::tuple<double,double>> candidateIterativeSearch(
     const uchar* F, size_t Fstep,
     const double *S, size_t Sstep,
     const int *D, size_t Dstep,
     int width, int height
 );
 
-
 __host__
 void candidateExpand(
     const uchar *F, size_t Fstep, 
-    uchar *CI, size_t CIstep, 
-    double startY, double startX,
-    int dir, 
-    int width, int height
-);
-
-
-__host__ 
-bool setCandidates(
-    const uchar *F, size_t Fstep,
-    uchar *CI, size_t CIstep, 
-    double y, double x,
-    int dir, 
+    uchar* B, size_t Bstep,
+    std::vector<std::tuple<double,double>> &chosenCand,
+    thrust::tuple<double,double,int> cand,
     int width, int height
 );
 
