@@ -17,9 +17,9 @@ int main() {
     if (!cudaCount) return 1;
 
     // Load an RGB image
-    cv::Mat originalF = cv::imread("../images/black.png", cv::IMREAD_COLOR);
+    // cv::Mat originalF = cv::imread("../images/black.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/mini-table.png", cv::IMREAD_COLOR);
-    // cv::Mat originalF = cv::imread("../images/table.png", cv::IMREAD_COLOR);
+    cv::Mat originalF = cv::imread("../images/table.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/apb1.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/apb2.png", cv::IMREAD_COLOR);
     // cv::Mat originalF = cv::imread("../images/apb3.png", cv::IMREAD_COLOR);

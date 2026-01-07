@@ -20,7 +20,10 @@ const double CAND_THRESHOLD = 0.8;
 // candidate upgrade
 const int UP_COUNT = 10;
 const double UP_STEP = 0.1;
-const int UP_ITERATIONS = 5; 
+const int UP_ITERATIONS = 3; 
+
+// iterative candidates
+const double LINE_SPACE = 2;
 
 
 

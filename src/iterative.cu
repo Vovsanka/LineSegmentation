@@ -98,6 +98,7 @@ std::vector<std::tuple<double,double>> candidateIterativeSearch(
         //
         candidateExpand(F, Fstep, BLOCKED.ptr<uchar>(), BLOCKED.step, chosenCand, cand, width, height);   
         ///// debug start
+        std::cout << chosenCand.size() << " " << std::get<0>(chosenCand.back()) << " " << std::get<1>(chosenCand.back()) << std::endl;
         showMatrix(BLOCKED);
         ///// debug end 
     }
@@ -118,8 +119,18 @@ void candidateExpand(
     double startX = thrust::get<1>(cand);
     int dir = thrust::get<2>(cand);
     //
+    int norm1 = dir;
+    int norm2 = getOppositeDirection(dir);
     int edge1 = getOrthogonalDirection(dir);
     int edge2 = getOppositeDirection(edge1);
+    //
+    thrust::tuple<double,double> unitNorm1 = getUnitVector(norm1);
+    double unitNorm1Y = thrust::get<0>(unitNorm1);
+    double unitNorm1X = thrust::get<1>(unitNorm1);
+    //
+    thrust::tuple<double,double> unitNorm2 = getUnitVector(norm2);
+    double unitNorm2Y = thrust::get<0>(unitNorm2);
+    double unitNorm2X = thrust::get<1>(unitNorm2);
     //
     thrust::tuple<double,double> unitEdge1 = getUnitVector(edge1);
     double unitEdge1Y = thrust::get<0>(unitEdge1);
@@ -135,15 +146,23 @@ void candidateExpand(
         double score  = computeLabScore(F, Fstep, y, x, dir, width, height);
         if (score < CAND_THRESHOLD) break;
         //
-        setBlocked(B, Bstep, y, x, width, height);
         chosenCand.push_back(std::make_tuple(y, x));
+        for (double k = 0.0; k < LINE_SPACE + 1.0 - 1e-6; k += 1.0) {
+            if (k > LINE_SPACE) k = LINE_SPACE;
+            setBlocked(B, Bstep, y + k*unitNorm1Y, x + k*unitNorm1X, width, height);
+            setBlocked(B, Bstep, y + k*unitNorm2Y, x + k*unitNorm2X, width, height);
+        }
     }
     //
     for (double y = startY, x = startX; !isBlocked(B, Bstep, y, x, width, height); y += unitEdge2Y, x += unitEdge2X) {
         double score  = computeLabScore(F, Fstep, y, x, dir, width, height);
         if (score < CAND_THRESHOLD) break;
         //
-        setBlocked(B, Bstep, y, x, width, height);
         chosenCand.push_back(std::make_tuple(y, x));
+        for (double k = 0.0; k < LINE_SPACE + 1.0 - 1e-6; k += 1.0) {
+            if (k > LINE_SPACE) k = LINE_SPACE;
+            setBlocked(B, Bstep, y + k*unitNorm1Y, x + k*unitNorm1X, width, height);
+            setBlocked(B, Bstep, y + k*unitNorm2Y, x + k*unitNorm2X, width, height);
+        }
     }
 }
