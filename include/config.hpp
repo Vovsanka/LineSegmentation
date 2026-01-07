@@ -5,10 +5,10 @@
 const double PI = 3.141593;
 
 // image scaling (up and down possible)
-const int MAX_SIDE = 320;
+const int MAX_SIDE = 640;
 
 // beam score computation
-const int DIRECTIONS = 8; // even! // DIRECTIONS ~ PI // 36
+const int DIRECTIONS = 4; // even! // DIRECTIONS ~ PI // 36
 const int CIRCLE_COUNT = 5; // 5
 const double CIRCLE_STEP = 1.0;
 const double COLOR_OFFSET = 3.0; // avoid 0-arrays & ignore some noise

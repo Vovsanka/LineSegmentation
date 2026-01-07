@@ -102,7 +102,7 @@ thrust::tuple<uchar,uchar,uchar> getShiftedColorChannels(
     int d, int c,
     int width, int height
 ) { // d in [0, 2*DIRECTIONS)
-    thrust::tuple<double,double> unitVector = getOrthogonalUnitVector(d);
+    thrust::tuple<double,double> unitVector = getUnitVector(d);
     double dy = thrust::get<0>(unitVector);
     double dx = thrust::get<1>(unitVector);
     //
@@ -166,7 +166,7 @@ double computeLabScore(
             aArr[d2] += COLOR_OFFSET - minA;
             bArr[d2] += COLOR_OFFSET - minB;
         }
-        // 
+        // use the following line!
         emdSum += min(emd(lArr, dir), min(emd(aArr, dir), emd(bArr, dir)));
     }
     // compute the EMD-score
