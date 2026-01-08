@@ -5,7 +5,7 @@
 const double PI = 3.141593;
 
 // image scaling (up and down possible)
-const int MAX_SIDE = 640;
+const int MAX_SIDE = 320;
 
 // beam score computation
 const int DIRECTIONS = 4; // even! // DIRECTIONS ~ PI // 36
@@ -23,7 +23,7 @@ const double UP_STEP = 0.1;
 const int UP_ITERATIONS = 3; 
 
 // iterative candidates
-const double LINE_SPACE = 2;
+const double LINE_SPACE = 3.0; // >= 1
 
 
 

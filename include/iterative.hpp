@@ -30,6 +30,7 @@ bool isBlocked(const uchar*B, size_t Bstep, double y, double x, int width, int h
 __host__
 void setBlocked(uchar*B, size_t Bstep, double y, double x, int width, int height);
 
+
 __host__
 std::vector<std::tuple<double,double>> candidateIterativeSearch(
     const uchar* F, size_t Fstep,
