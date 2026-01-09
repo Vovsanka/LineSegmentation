@@ -2,9 +2,14 @@
 
 
 __host__ __device__
-thrust::tuple<double,double,int> upgradeCandidate(
+Cand make_candidate(double y, double x, int dir) {
+    return thrust::make_tuple(y, x, dir);
+}
+
+__host__ __device__
+Cand upgradeCandidate(
     const uchar* F, size_t Fstep,
-    thrust::tuple<double,double,int> cand,
+    Cand cand,
     int width, int height
 ) {
     double yPixel = thrust::get<0>(cand);
@@ -36,21 +41,29 @@ thrust::tuple<double,double,int> upgradeCandidate(
 }
 
 __host__
-std::vector<std::tuple<double,int,int>> sortThresholdCandidates(
+std::vector<Cand> sortThresholdCandidates(
     const double *S, size_t Sstep, 
+    const int *D, size_t Dstep,
     int width, int height
 ) {
-    std::vector<std::tuple<double,int,int>> tCand;
+    std::vector<thrust::tuple<double,Cand>> tCand;
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             double score = cell<double>(S, Sstep, y, x);
+            double dir = cell<int>(D, Dstep, y, x);
             if (score >= CAND_THRESHOLD) {
-                tCand.push_back(std::make_tuple(-score, y, x));
+                tCand.push_back(thrust::make_tuple(-score, make_candidate(y, x, dir)));
             }
         }
     }
     std::sort(std::begin(tCand), std::end(tCand));
-    return tCand;
+    //
+    std::vector<Cand> sortedCand(tCand.size());
+    int ind = 0;
+    for (auto& [minusScore, cand] : tCand) {
+        sortedCand[ind++] = cand;
+    }
+    return sortedCand;
 }
 
 __host__
@@ -72,22 +85,22 @@ void setBlocked(uchar*B, size_t Bstep, double y, double x, int width, int height
 }
 
 __host__
-std::vector<std::tuple<double,double>> candidateIterativeSearch(
+std::vector<Cand> candidateIterativeSearch(
     const uchar* F, size_t Fstep,
     const double *S, size_t Sstep,
     const int *D, size_t Dstep,
     int width, int height
 ) {
     cv::Mat BLOCKED(height, width, CV_8U, cv::Scalar(0)); 
-    std::vector<std::tuple<double,double>> chosenCand;
+    std::vector<Cand> chosenCand;
     //
-    std::vector<std::tuple<double,int,int>> tCand = sortThresholdCandidates(S, Sstep, width, height);
-    for (std::tuple<double,int,int> start : tCand) {
-        int startY = std::get<1>(start);
-        int startX = std::get<2>(start);
+    std::vector<Cand> tCand = sortThresholdCandidates(S, Sstep, D, Dstep, width, height);
+    for (Cand start : tCand) {
+        int startY = thrust::get<1>(start);
+        int startX = thrust::get<2>(start);
         if (isBlocked(BLOCKED.ptr<uchar>(), BLOCKED.step, startY, startX, width, height)) continue;
         int startDir = cell<int>(D, Dstep, startY, startX);
-        thrust::tuple<double,double,int> cand = thrust::make_tuple(startY, startX, startDir);
+        Cand cand = thrust::make_tuple(startY, startX, startDir);
         for (int k = 0; k < UP_ITERATIONS; k++) {
             cand = upgradeCandidate(F, Fstep, cand, width, height);
         }
@@ -109,8 +122,8 @@ __host__
 void candidateExpand(
     const uchar *F, size_t Fstep, 
     uchar* B, size_t Bstep,
-    std::vector<std::tuple<double,double>> &chosenCand,
-    thrust::tuple<double,double,int> cand,
+    std::vector<Cand> &chosenCand,
+    Cand cand,
     int width, int height
 ) {
     double startY = thrust::get<0>(cand);
@@ -131,14 +144,14 @@ void candidateExpand(
     for (double y = startY, x = startX; !isBlocked(B, Bstep, y, x, width, height); y += unitEdge1Y, x += unitEdge1X) {
         double score  = computeLabScore(F, Fstep, y, x, dir, width, height);
         if (score < CAND_THRESHOLD) break;
-        chosenCand.push_back(std::make_tuple(y, x));
+        chosenCand.push_back(make_candidate(y, x, dir));
         setBlocked(B, Bstep, y, x, width, height);
     }
     //
     for (double y = startY + unitEdge2Y, x = startX + unitEdge2X; !isBlocked(B, Bstep, y, x, width, height); y += unitEdge2Y, x += unitEdge2X) {
         double score  = computeLabScore(F, Fstep, y, x, dir, width, height);
         if (score < CAND_THRESHOLD) break;
-        chosenCand.push_back(std::make_tuple(y, x));
+        chosenCand.push_back(make_candidate(y, x, dir));
         setBlocked(B, Bstep, y, x, width, height);
     }
 }

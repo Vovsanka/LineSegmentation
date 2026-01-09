@@ -76,7 +76,7 @@ int main() {
     cv::Mat Scpu = downloadToCPU(S);
     cv::Mat Dcpu = downloadToCPU(D);
     
-    std::vector<std::tuple<double,double>> candidates = candidateIterativeSearch(
+    std::vector<Cand> candidates = candidateIterativeSearch(
         Fcpu.ptr<uchar>(), Fcpu.step,
         Scpu.ptr<double>(), Scpu.step,
         Dcpu.ptr<int>(), Dcpu.step,

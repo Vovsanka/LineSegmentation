@@ -11,16 +11,23 @@
 #include "operations.hpp"
 
 
+typedef thrust::tuple<double,double,int> Cand;
+
+
 __host__ __device__
-thrust::tuple<double,double,int> upgradeCandidate(
+Cand make_candidate(double y, double x, int dir);
+
+__host__ __device__
+Cand upgradeCandidate(
     const uchar* F, size_t Fstep,
-    thrust::tuple<double,double,int> cand,
+    Cand cand,
     int width, int height
 );
 
 __host__
-std::vector<std::tuple<double,int,int>> sortThresholdCandidates(
+std::vector<Cand> sortThresholdCandidates(
     const double *S, size_t Sstep, 
+    const int *D, size_t Dstep,
     int width, int height
 );
 
@@ -32,7 +39,7 @@ void setBlocked(uchar*B, size_t Bstep, double y, double x, int width, int height
 
 
 __host__
-std::vector<std::tuple<double,double>> candidateIterativeSearch(
+std::vector<Cand> candidateIterativeSearch(
     const uchar* F, size_t Fstep,
     const double *S, size_t Sstep,
     const int *D, size_t Dstep,
@@ -43,8 +50,8 @@ __host__
 void candidateExpand(
     const uchar *F, size_t Fstep, 
     uchar* B, size_t Bstep,
-    std::vector<std::tuple<double,double>> &chosenCand,
-    thrust::tuple<double,double,int> cand,
+    std::vector<Cand> &chosenCand,
+    Cand cand,
     int width, int height
 );
 
