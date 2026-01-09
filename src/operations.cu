@@ -1,6 +1,12 @@
 #include "operations.hpp"
 
 
+__host__ __device__
+Vec::Vec(double y, double x) {
+    this->y = y;
+    this->x = x;
+}
+
 __host__
 cv::cuda::GpuMat uploadToGPU(const cv::Mat& cpuF) {
     cv::cuda::GpuMat gpuF;

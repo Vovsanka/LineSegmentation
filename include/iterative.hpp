@@ -11,11 +11,15 @@
 #include "operations.hpp"
 
 
-typedef thrust::tuple<double,double,int> Cand;
+struct Cand {
+    double y, x;
+    int dir;
 
+    Cand() = default;
 
-__host__ __device__
-Cand make_candidate(double y, double x, int dir);
+    __host__ __device__
+    Cand(double y, double x, int dir);
+};
 
 __host__ __device__
 Cand upgradeCandidate(

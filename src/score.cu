@@ -7,9 +7,9 @@ double getRad(int d) { // returns [0, 2*PI)
 }
 
 __host__ __device__ 
-thrust::tuple<double,double> getUnitVector(int d) { // (y, x) // d in [0, 2*DIRECTIONS)
+Vec getUnitVector(int d) { // (y, x) // d in [0, 2*DIRECTIONS)
     double rad = getRad(d);
-    return thrust::make_tuple(sin(rad), cos(rad));
+    return Vec(sin(rad), cos(rad));
 }
 
 __host__ __device__
@@ -23,7 +23,7 @@ int getOppositeDirection(int d) { // d in [0, 2*DIRECTIONS)
 }
 
 __host__ __device__ 
-thrust::tuple<double,double> getOrthogonalUnitVector(int d) { // (y, x) // d in [0, 2*DIRECTIONS)
+Vec getOrthogonalUnitVector(int d) { // (y, x) // d in [0, 2*DIRECTIONS)
     return getUnitVector(getOrthogonalDirection(d));
 }
 
@@ -102,12 +102,10 @@ thrust::tuple<uchar,uchar,uchar> getShiftedColorChannels(
     int d, int c,
     int width, int height
 ) { // d in [0, 2*DIRECTIONS)
-    thrust::tuple<double,double> unitVector = getUnitVector(d);
-    double dy = thrust::get<0>(unitVector);
-    double dx = thrust::get<1>(unitVector);
+    Vec unitVector = getUnitVector(d);
     //
-    double yShifted = y + c*dy;
-    double xShifted = x + c*dx;
+    double yShifted = y + c*unitVector.y;
+    double xShifted = x + c*unitVector.x;
     //
     return getColorChannels(F, Fstep, yShifted, xShifted, width, height);
 }

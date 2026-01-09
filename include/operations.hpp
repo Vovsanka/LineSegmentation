@@ -8,6 +8,15 @@
 #include "config.hpp"
 
 
+struct Vec {
+    double y, x;    
+
+    Vec() = default;
+
+    __host__ __device__
+    Vec(double y, double x);
+};
+
 __host__
 cv::cuda::GpuMat uploadToGPU(const cv::Mat& cpuF);
 

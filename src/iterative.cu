@@ -2,8 +2,10 @@
 
 
 __host__ __device__
-Cand make_candidate(double y, double x, int dir) {
-    return thrust::make_tuple(y, x, dir);
+Cand::Cand(double y, double x, int dir) {
+    this->y = y;
+    this->x = x;
+    this->dir = dir;
 }
 
 __host__ __device__
@@ -12,23 +14,20 @@ Cand upgradeCandidate(
     Cand cand,
     int width, int height
 ) {
-    double yPixel = thrust::get<0>(cand);
-    double xPixel = thrust::get<1>(cand);
-    int dir = thrust::get<2>(cand);
     //
-    thrust::tuple<double,double> unitNorm = getUnitVector(dir);
-    double unitNormY = thrust::get<0>(unitNorm);
-    double unitNormX = thrust::get<1>(unitNorm);
+    Vec unitNorm = getUnitVector(cand.dir);
     //
     double bestScore = -1;
     int bestDir = 0;
     double bestY = 0, bestX = 0;
     for (int k = -UP_COUNT; k <= UP_COUNT; k++) {
-            double y = yPixel + k*UP_STEP*unitNormY;
-            double x = xPixel + k*UP_STEP*unitNormX;
+            double y = cand.y + k*UP_STEP*unitNorm.y;
+            double x = cand.x + k*UP_STEP*unitNorm.x;
+            //
             thrust::tuple<double,int> newScoreDir = bestPossibleScore(F, Fstep, y, x, width, height);
             double newScore = thrust::get<0>(newScoreDir);
             int newDir = thrust::get<1>(newScoreDir);
+            //
             if (newScore > bestScore) {
                 bestScore = newScore;
                 bestDir =  newDir;
@@ -37,7 +36,7 @@ Cand upgradeCandidate(
             }
     }
     //
-    return thrust::make_tuple(bestY, bestX, bestDir);
+    return Cand(bestY, bestX, bestDir);
 }
 
 __host__
@@ -46,22 +45,25 @@ std::vector<Cand> sortThresholdCandidates(
     const int *D, size_t Dstep,
     int width, int height
 ) {
-    std::vector<thrust::tuple<double,Cand>> tCand;
+    std::vector<Cand> candList;
+    int candCount = 0;
+    std::vector<thrust::tuple<double,int>> scores;
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             double score = cell<double>(S, Sstep, y, x);
             double dir = cell<int>(D, Dstep, y, x);
             if (score >= CAND_THRESHOLD) {
-                tCand.push_back(thrust::make_tuple(-score, make_candidate(y, x, dir)));
+                scores.push_back(thrust::make_tuple(-score, candCount++));
+                candList.push_back(Cand(y, x, dir));
             }
         }
     }
-    std::sort(std::begin(tCand), std::end(tCand));
+    std::sort(std::begin(scores), std::end(scores));
     //
-    std::vector<Cand> sortedCand(tCand.size());
-    int ind = 0;
-    for (auto& [minusScore, cand] : tCand) {
-        sortedCand[ind++] = cand;
+    std::vector<Cand> sortedCand(candCount);
+    for (int k = 0; k < candCount; k++) {
+        int ind = thrust::get<1>(scores[k]);
+        sortedCand[k] = candList[ind];
     }
     return sortedCand;
 }
@@ -96,17 +98,13 @@ std::vector<Cand> candidateIterativeSearch(
     //
     std::vector<Cand> tCand = sortThresholdCandidates(S, Sstep, D, Dstep, width, height);
     for (Cand start : tCand) {
-        int startY = thrust::get<1>(start);
-        int startX = thrust::get<2>(start);
-        if (isBlocked(BLOCKED.ptr<uchar>(), BLOCKED.step, startY, startX, width, height)) continue;
-        int startDir = cell<int>(D, Dstep, startY, startX);
-        Cand cand = thrust::make_tuple(startY, startX, startDir);
+        if (isBlocked(BLOCKED.ptr<uchar>(), BLOCKED.step, start.y, start.x, width, height)) continue;
+        int startDir = cell<int>(D, Dstep, start.y, start.x);
+        Cand cand(start.y, start.x, startDir);
         for (int k = 0; k < UP_ITERATIONS; k++) {
             cand = upgradeCandidate(F, Fstep, cand, width, height);
         }
-        startY = thrust::get<0>(cand);
-        startX = thrust::get<1>(cand);
-        if (isBlocked(BLOCKED.ptr<uchar>(), BLOCKED.step, startY, startX, width, height)) continue;
+        if (isBlocked(BLOCKED.ptr<uchar>(), BLOCKED.step, cand.y, cand.x, width, height)) continue;
         //
         candidateExpand(F, Fstep, BLOCKED.ptr<uchar>(), BLOCKED.step, chosenCand, cand, width, height);   
     }
@@ -126,32 +124,23 @@ void candidateExpand(
     Cand cand,
     int width, int height
 ) {
-    double startY = thrust::get<0>(cand);
-    double startX = thrust::get<1>(cand);
-    int dir = thrust::get<2>(cand);
-    //
-    int edge1 = getOrthogonalDirection(dir);
+    int edge1 = getOrthogonalDirection(cand.dir);
     int edge2 = getOppositeDirection(edge1);
     //
-    thrust::tuple<double,double> unitEdge1 = getUnitVector(edge1);
-    double unitEdge1Y = thrust::get<0>(unitEdge1);
-    double unitEdge1X = thrust::get<1>(unitEdge1);
+    Vec unitEdge1 = getUnitVector(edge1);
+    Vec unitEdge2 = getUnitVector(edge2);
     //
-    thrust::tuple<double,double> unitEdge2 = getUnitVector(edge2);
-    double unitEdge2Y = thrust::get<0>(unitEdge2);
-    double unitEdge2X = thrust::get<1>(unitEdge2);
-    //
-    for (double y = startY, x = startX; !isBlocked(B, Bstep, y, x, width, height); y += unitEdge1Y, x += unitEdge1X) {
-        double score  = computeLabScore(F, Fstep, y, x, dir, width, height);
+    for (double y = cand.y, x = cand.x; !isBlocked(B, Bstep, y, x, width, height); y += unitEdge1.y, x += unitEdge1.x) {
+        double score  = computeLabScore(F, Fstep, y, x, cand.dir, width, height);
         if (score < CAND_THRESHOLD) break;
-        chosenCand.push_back(make_candidate(y, x, dir));
+        chosenCand.push_back(Cand(y, x, cand.dir));
         setBlocked(B, Bstep, y, x, width, height);
     }
     //
-    for (double y = startY + unitEdge2Y, x = startX + unitEdge2X; !isBlocked(B, Bstep, y, x, width, height); y += unitEdge2Y, x += unitEdge2X) {
-        double score  = computeLabScore(F, Fstep, y, x, dir, width, height);
+    for (double y = cand.y + unitEdge2.y, x = cand.x + unitEdge2.x; !isBlocked(B, Bstep, y, x, width, height); y += unitEdge2.y, x += unitEdge2.x) {
+        double score  = computeLabScore(F, Fstep, y, x, cand.dir, width, height);
         if (score < CAND_THRESHOLD) break;
-        chosenCand.push_back(make_candidate(y, x, dir));
+        chosenCand.push_back(Cand(y, x, cand.dir));
         setBlocked(B, Bstep, y, x, width, height);
     }
 }
