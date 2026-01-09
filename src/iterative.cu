@@ -97,16 +97,8 @@ std::vector<Cand> candidateIterativeSearch(
     std::vector<Cand> chosenCand;
     //
     std::vector<Cand> tCand = sortThresholdCandidates(S, Sstep, D, Dstep, width, height);
-    for (Cand start : tCand) {
-        if (isBlocked(BLOCKED.ptr<uchar>(), BLOCKED.step, start.y, start.x, width, height)) continue;
-        int startDir = cell<int>(D, Dstep, start.y, start.x);
-        Cand cand(start.y, start.x, startDir);
-        for (int k = 0; k < UP_ITERATIONS; k++) {
-            cand = upgradeCandidate(F, Fstep, cand, width, height);
-        }
-        if (isBlocked(BLOCKED.ptr<uchar>(), BLOCKED.step, cand.y, cand.x, width, height)) continue;
-        //
-        candidateExpand(F, Fstep, BLOCKED.ptr<uchar>(), BLOCKED.step, chosenCand, cand, width, height);   
+    for (Cand startCand : tCand) {
+        candidateExpand(F, Fstep, BLOCKED.ptr<uchar>(), BLOCKED.step, chosenCand, startCand, width, height);   
     }
     ///// debug start
     showMatrix(BLOCKED);
@@ -124,23 +116,32 @@ void candidateExpand(
     Cand cand,
     int width, int height
 ) {
+    if (isBlocked(B, Bstep, cand.y, cand.x, width, height)) return;
+    //
+    for (int k = 0; k < UP_ITERATIONS; k++) {
+        cand = upgradeCandidate(F, Fstep, cand, width, height);
+    }
+    if (isBlocked(B, Bstep, cand.y, cand.x, width, height)) return;
+    double score  = computeLabScore(F, Fstep, cand.y, cand.x, cand.dir, width, height);
+    if (score < CAND_THRESHOLD) return;
+    // 
+    chosenCand.push_back(cand);
+    setBlocked(B, Bstep, cand.y, cand.x, width, height);
+    //
     int edge1 = getOrthogonalDirection(cand.dir);
     int edge2 = getOppositeDirection(edge1);
     //
     Vec unitEdge1 = getUnitVector(edge1);
     Vec unitEdge2 = getUnitVector(edge2);
     //
-    for (double y = cand.y, x = cand.x; !isBlocked(B, Bstep, y, x, width, height); y += unitEdge1.y, x += unitEdge1.x) {
-        double score  = computeLabScore(F, Fstep, y, x, cand.dir, width, height);
-        if (score < CAND_THRESHOLD) break;
-        chosenCand.push_back(Cand(y, x, cand.dir));
-        setBlocked(B, Bstep, y, x, width, height);
-    }
-    //
-    for (double y = cand.y + unitEdge2.y, x = cand.x + unitEdge2.x; !isBlocked(B, Bstep, y, x, width, height); y += unitEdge2.y, x += unitEdge2.x) {
-        double score  = computeLabScore(F, Fstep, y, x, cand.dir, width, height);
-        if (score < CAND_THRESHOLD) break;
-        chosenCand.push_back(Cand(y, x, cand.dir));
-        setBlocked(B, Bstep, y, x, width, height);
-    }
+    candidateExpand(
+        F, Fstep, B, Bstep, chosenCand,
+        Cand(cand.y + unitEdge1.y, cand.x + unitEdge1.x, cand.dir),
+        width, height
+    );
+    candidateExpand(
+        F, Fstep, B, Bstep, chosenCand,
+        Cand(cand.y + unitEdge2.y, cand.x + unitEdge2.x, cand.dir),
+        width, height
+    );
 }
