@@ -35,12 +35,9 @@ thrust::tuple<uchar,uchar,uchar> bicubicInterpolation(
             int xi = min(max(x0+i-1,0), width-1);
             int yj = min(max(y0+j-1,0), height-1);
             //
-            const uchar* row = F + yj * Fstep;
-            const uchar3* row3 = reinterpret_cast<const uchar3*>(row);
-            uchar3 pix = row3[xi];
-            uchar c0 = pix.x;
-            uchar c1 = pix.y;
-            uchar c2 = pix.z;
+            uchar c0 = cell<uchar>(F, Fstep, yj, 3*xi);
+            uchar c1 = cell<uchar>(F, Fstep, yj, 3*xi + 1);
+            uchar c2 = cell<uchar>(F, Fstep, yj, 3*xi + 2);
             //
             double wxy = wx[i]*wy[j];
             C[0] += c0 * wxy;
@@ -69,10 +66,11 @@ thrust::tuple<uchar,uchar,uchar> getColorChannels(
     if (0 <= rY && rY < height &&
         0 <= rX && rX < width &&
         fabs(y - rY) <= TOL && fabs(x - rX) <= TOL) {
-        const uchar* row = F + rY * Fstep;
-        const uchar3* row3 = reinterpret_cast<const uchar3*>(row);
-        uchar3 pix = row3[rX];
-        return thrust::make_tuple(pix.x, pix.y, pix.z);
+        return thrust::make_tuple(
+            cell<uchar>(F, Fstep, rY, 3*rX),
+            cell<uchar>(F, Fstep, rY, 3*rX + 1),
+            cell<uchar>(F, Fstep, rY, 3*rX + 2)
+        );
     }
     // determine the color of the sub-pixel with the bicubic interpolation (possibly out of range)
     return bicubicInterpolation(F, Fstep, y, x, width, height);

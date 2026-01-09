@@ -26,7 +26,7 @@ int main() {
     if (originalF.empty()) return 1;
     std::cout << "Original image size: " << originalF.cols << "x" << originalF.rows << std::endl; 
     showImage(originalF);
-
+    
     // Convert the image to the LAB color space
     cv::Mat labF = convertBGRtoLab(originalF);
     // showImage(labF);

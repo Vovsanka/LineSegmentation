@@ -11,6 +11,7 @@
 
 #include "config.hpp"
 #include "score.hpp"
+#include "operations.hpp"
 
 
 

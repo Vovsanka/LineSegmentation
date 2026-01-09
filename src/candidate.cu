@@ -17,11 +17,9 @@ void candidatePreComputation(
     double bestScore = thrust::get<0>(newScoreDir);
     int bestDir = thrust::get<1>(newScoreDir);
     //
-    double* rowS = (double*)((uchar*)S + y*Sstep);
-    rowS[x] = bestScore;
+    cell<double>(S, Sstep, y, x) = bestScore;
     //
-    int* rowD = (int*)((uchar*)D + y*Dstep);
-    rowD[x] = bestDir;
+    cell<int>(D, Dstep, y, x) = bestDir;
 }
 
 __global__ 
@@ -35,11 +33,9 @@ void candidateThresholdKernel(
     int y = blockIdx.y * blockDim.y + threadIdx.y;
     if (x >= width || y >= height) return;
     //
-    double* rowS = (double*)((uchar*)S + y * Sstep);
-    double score = rowS[x];
+    double score = cell<double>(S, Sstep, y, x);
     //
-    uchar* rowC = (uchar*)((uchar*)C + y * Cstep);
-    rowC[x] = (score >= CAND_THRESHOLD) ? 1 : 0;
+    cell<uchar>(C, Cstep, y, x) = (score >= CAND_THRESHOLD) ? 1 : 0;
 }
 
 

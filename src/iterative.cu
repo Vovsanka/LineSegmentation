@@ -43,8 +43,7 @@ std::vector<std::tuple<double,int,int>> sortThresholdCandidates(
     std::vector<std::tuple<double,int,int>> tCand;
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            double* rowS = (double*)((uchar*)S + y * Sstep);
-            double score = rowS[x];
+            double score = cell<double>(S, Sstep, y, x);
             if (score >= CAND_THRESHOLD) {
                 tCand.push_back(std::make_tuple(-score, y, x));
             }
@@ -55,13 +54,12 @@ std::vector<std::tuple<double,int,int>> sortThresholdCandidates(
 }
 
 __host__
-bool isBlocked(const uchar*B, size_t Bstep, double y, double x, int width, int height) {
+bool isBlocked(const uchar* B, size_t Bstep, double y, double x, int width, int height) {
     int closestY = std::round(y);
     int closestX = std::round(x);
     if (closestY < 0 || height <= closestY) return true;
     if (closestX < 0 || width <= closestX) return true;
-    uchar *rowB = (uchar*)((uchar*)B + closestY*Bstep);
-    return (rowB[closestX] != 0);
+    return (cell<uchar>(B, Bstep, closestY, closestX)  != 0);
 }
 
 __host__
@@ -70,8 +68,7 @@ void setBlocked(uchar*B, size_t Bstep, double y, double x, int width, int height
     int closestX = std::round(x);
     if (closestY < 0 || height <= closestY) return;
     if (closestX < 0 || width <= closestX) return;
-    uchar *rowB = (uchar*)((uchar*)B + closestY*Bstep);
-    rowB[closestX] = 1;
+    cell<uchar>(B, Bstep, closestY, closestX) = 1;
 }
 
 __host__
@@ -89,8 +86,7 @@ std::vector<std::tuple<double,double>> candidateIterativeSearch(
         int startY = std::get<1>(start);
         int startX = std::get<2>(start);
         if (isBlocked(BLOCKED.ptr<uchar>(), BLOCKED.step, startY, startX, width, height)) continue;
-        int* rowD = (int*)((uchar*)D + startY * Dstep);
-        int startDir = rowD[startX];
+        int startDir = cell<int>(D, Dstep, startY, startX);
         thrust::tuple<double,double,int> cand = thrust::make_tuple(startY, startX, startDir);
         for (int k = 0; k < UP_ITERATIONS; k++) {
             cand = upgradeCandidate(F, Fstep, cand, width, height);

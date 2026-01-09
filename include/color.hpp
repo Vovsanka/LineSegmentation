@@ -4,6 +4,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/cuda.hpp>
 
+#include <operations.hpp>
 #include <thrust/tuple.h>
 
 

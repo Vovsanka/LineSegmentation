@@ -22,9 +22,5 @@ const int UP_COUNT = 10;
 const double UP_STEP = 0.1;
 const int UP_ITERATIONS = 3; 
 
-// iterative candidates
-const double LINE_SPACE = 3.0; // >= 1
-
-
 
 #endif
