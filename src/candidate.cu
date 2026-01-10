@@ -2,24 +2,61 @@
 
 
 __global__ 
-void candidatePreComputation(
+void bestPixelScoreKernel(
     const uchar* F, size_t Fstep,
     double* S, size_t Sstep,
     int* D, size_t Dstep,
     int width, int height
 ) {
-
-    int x = blockIdx.x * blockDim.x + threadIdx.x;
-    int y = blockIdx.y * blockDim.y + threadIdx.y;
-    if (x >= width || y >= height) return;
-    // Compute the score matrix for every direction
-    thrust::tuple<double,int> newScoreDir = bestPossibleScore(F, Fstep, y, x, width, height);
-    double bestScore = thrust::get<0>(newScoreDir);
-    int bestDir = thrust::get<1>(newScoreDir);
+    int y = blockIdx.y;  
+    int x = blockIdx.x;
+    if (y >= height || x >= width) return;
     //
-    cell<double>(S, Sstep, y, x) = bestScore;
+    int dir = threadIdx.x;
+    if (dir >= DIRECTIONS) return;
     //
-    cell<int>(D, Dstep, y, x) = bestDir;
+    int lane = dir & 31;
+    int warpId = dir >> 5;
+    //
+    int warpCount = (DIRECTIONS + 31) / 32;
+    //
+    double score = computeLabScore(F, Fstep, y, x, dir, width, height);
+    int bestDir = dir;
+    // warp-level reduction
+    for (int offset = 16; offset > 0; offset >>= 1) {
+        double otherScore = __shfl_down_sync(0xffffffff, score, offset);
+        int otherDir = __shfl_down_sync(0xffffffff, bestDir, offset);
+        if (otherScore > score) {
+            score = otherScore; 
+            bestDir = otherDir;
+        }
+    }
+    // shared memory for warp winners 
+    extern __shared__ unsigned char smem[]; 
+    double* warpMaxScore = (double*)smem; 
+    int* warpMaxDir = (int*)(warpMaxScore + warpCount);
+    if (lane == 0) {
+        warpMaxScore[warpId] = score;
+        warpMaxDir[warpId] = dir;
+    } 
+    __syncthreads();
+    // final reduction by warp 0
+    if (warpId == 0) {
+        double finalScore = (lane < warpCount) ? warpMaxScore[lane] : -1e300;
+        int finalDir = (lane < warpCount) ? warpMaxDir[lane] : -1;
+        for (int offset = 16; offset > 0; offset >>= 1) {
+            double otherScore = __shfl_down_sync(0xffffffff, finalScore, offset);
+            int otherDir = __shfl_down_sync(0xffffffff, finalDir, offset);
+            if (otherScore > finalScore) {
+                finalScore = otherScore;
+                finalDir = otherDir;
+            } 
+        } 
+        if (lane == 0) {
+            cell<double>(S, Sstep, y, x) = finalScore;
+            cell<int>(D, Dstep, y, x) = finalDir;
+        }
+    }
 }
 
 __global__ 

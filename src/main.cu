@@ -47,13 +47,15 @@ int main() {
     // showImage(F);
 
     // GPU threads for each pixel
-    dim3 block(16, 16); // 256
-    dim3 grid((F.cols + block.x - 1)/block.x, (F.rows + block.y - 1)/block.y); // round up to cover the whole image
+    dim3 block(DIRECTIONS); // one thread for every direction
+    dim3 grid(F.cols, F.rows); // one block per pixel
+    int warpCount = (DIRECTIONS + 31) / 32;
+    size_t shmemSize = warpCount * (sizeof(double) + sizeof(int));
     
     // compute the best scores for every pixel
     cv::cuda::GpuMat S(F.size(), CV_64F);
     cv::cuda::GpuMat D(F.size(), CV_32S);
-    candidatePreComputation<<<grid, block>>>(
+    bestPixelScoreKernel<<<grid, block, shmemSize>>>(
         F.ptr<uchar>(), F.step,
         S.ptr<double>(), S.step,
         D.ptr<int>(), D.step,

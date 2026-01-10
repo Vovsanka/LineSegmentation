@@ -16,7 +16,7 @@
 
 
 __global__ 
-void candidatePreComputation(
+void bestPixelScoreKernel(
     const uchar* F, size_t Fstep,
     double* S, size_t Sstep,
     int* D, size_t Dstep,
