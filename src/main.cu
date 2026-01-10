@@ -2,6 +2,7 @@
 
 #include <opencv2/opencv.hpp>
 
+#include "gpu_params.hpp"
 #include "operations.hpp"
 #include "score.hpp"
 #include "candidate.hpp"
@@ -46,16 +47,13 @@ int main() {
     cv::cuda::GpuMat F = uploadToGPU(scaledF);
     // showImage(F);
 
-    // GPU threads for each pixel
-    dim3 block(DIRECTIONS); // one thread for every direction
-    dim3 grid(F.cols, F.rows); // one block per pixel
-    int warpCount = (DIRECTIONS + 31) / 32;
-    size_t shmemSize = warpCount * (sizeof(double) + sizeof(int));
-    
+    // create the gpu grid for the opencv cuda kernels
+    dim3 GPU_GRID(F.cols, F.rows); // one block per pixel
+
     // compute the best scores for every pixel
     cv::cuda::GpuMat S(F.size(), CV_64F);
     cv::cuda::GpuMat D(F.size(), CV_32S);
-    bestPixelScoreKernel<<<grid, block, shmemSize>>>(
+    bestPixelScoreKernel<<<GPU_GRID, GPU_BLOCK, GPU_SHMEM_SIZE>>>(
         F.ptr<uchar>(), F.step,
         S.ptr<double>(), S.step,
         D.ptr<int>(), D.step,
@@ -65,7 +63,7 @@ int main() {
 
     // choose the candidates
     cv::cuda::GpuMat C(F.size(), CV_8U);
-    candidateThresholdKernel<<<grid, block>>>(
+    candidateThresholdKernel<<<GPU_GRID, GPU_BLOCK>>>(
         S.ptr<double>(), S.step,
         D.ptr<int>(), D.step,
         C.ptr<uchar>(), C.step,
@@ -73,17 +71,17 @@ int main() {
     );
     showMatrix(C);
 
-    // iterative search for candidates
-    cv::Mat Fcpu = downloadToCPU(F);
-    cv::Mat Scpu = downloadToCPU(S);
-    cv::Mat Dcpu = downloadToCPU(D);
+    // // iterative search for candidates
+    // cv::Mat Fcpu = downloadToCPU(F);
+    // cv::Mat Scpu = downloadToCPU(S);
+    // cv::Mat Dcpu = downloadToCPU(D);
     
-    std::vector<Cand> candidates = candidateIterativeSearch(
-        Fcpu.ptr<uchar>(), Fcpu.step,
-        Scpu.ptr<double>(), Scpu.step,
-        Dcpu.ptr<int>(), Dcpu.step,
-        F.cols, F.rows
-    );
+    // std::vector<Cand> candidates = candidateIterativeSearch(
+    //     Fcpu.ptr<uchar>(), Fcpu.step,
+    //     Scpu.ptr<double>(), Scpu.step,
+    //     Dcpu.ptr<int>(), Dcpu.step,
+    //     F.cols, F.rows
+    // );
 
     return 0;
 }
