@@ -1,5 +1,11 @@
 #include "operations.hpp"
 
+__host__
+dim3 getGrid(int width, int height) {
+    int gridX = (width + GPU_BLOCK.x - 1) / GPU_BLOCK.x;
+    int gridY = (height + GPU_BLOCK.y - 1) / GPU_BLOCK.y;
+    return dim3(gridX, gridY); 
+}
 
 __host__ __device__
 Vec::Vec(double y, double x) {

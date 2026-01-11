@@ -18,6 +18,21 @@ struct Vec {
 };
 
 __host__
+dim3 getGrid(int width, int height);
+
+
+template <typename T>
+__host__ __device__
+T& cell(
+    const T* Fptr, size_t Fstep,
+    int y, int x
+) { 
+    T* rowF = (T*)((uchar*)Fptr + y * Fstep);
+    return rowF[x];
+}
+
+
+__host__
 cv::cuda::GpuMat uploadToGPU(const cv::Mat& cpuF);
 
 __host__
@@ -46,15 +61,5 @@ void showMatrix(const cv::Mat &cpuF);
 
 __host__
 void showMatrix(const cv::cuda::GpuMat& gpuF);
-
-template <typename T>
-__host__ __device__
-T& cell(
-    const T* Fptr, size_t Fstep,
-    int y, int x
-) { 
-    T* rowF = (T*)((uchar*)Fptr + y * Fstep);
-    return rowF[x];
-}
 
 #endif

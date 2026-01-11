@@ -1,14 +1,18 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
-// constants
+
+// CUDA constants
+const dim3 GPU_BLOCK(16, 16); // one thread for every pixel
+
+// math constants
 const double PI = 3.141593;
 
 // image scaling (up and down possible)
 const int MAX_SIDE = 160;
 
 // beam score computation
-const int DIRECTIONS = 90; // even! // DIRECTIONS ~ PI // 36
+const int DIRECTIONS = 90; // even! <= 1024 // DIRECTIONS ~ PI //
 const int CIRCLE_COUNT = 5; // 5
 const double CIRCLE_STEP = 1.0;
 const double COLOR_OFFSET = 3.0; // avoid 0-arrays & ignore some noise

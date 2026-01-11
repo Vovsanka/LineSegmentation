@@ -25,7 +25,6 @@ Vec getOrthogonalUnitVector(int d); // (y, x) // d in [0, 2*DIRECTIONS)
 __host__ __device__
 int getOppositeDirection(int d); // d in [0, 2*DIRECTIONS)
 
-
 __host__ __device__ 
 void insertionSort(double* a, int n);
 

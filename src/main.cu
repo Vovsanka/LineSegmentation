@@ -2,7 +2,6 @@
 
 #include <opencv2/opencv.hpp>
 
-#include "gpu_params.hpp"
 #include "operations.hpp"
 #include "score.hpp"
 #include "candidate.hpp"
@@ -26,7 +25,7 @@ int main() {
     // cv::Mat originalF = cv::imread("../images/apb3.png", cv::IMREAD_COLOR);
     if (originalF.empty()) return 1;
     std::cout << "Original image size: " << originalF.cols << "x" << originalF.rows << std::endl; 
-    showImage(originalF);
+    // showImage(originalF);
     
     // Convert the image to the LAB color space
     cv::Mat labF = convertBGRtoLab(originalF);
@@ -48,12 +47,12 @@ int main() {
     // showImage(F);
 
     // create the gpu grid for the opencv cuda kernels
-    dim3 GPU_GRID(F.cols, F.rows); // one block per pixel
+    dim3 GPU_GRID = getGrid(F.cols, F.rows);
 
     // compute the best scores for every pixel
     cv::cuda::GpuMat S(F.size(), CV_64F);
     cv::cuda::GpuMat D(F.size(), CV_32S);
-    bestPixelScoreKernel<<<GPU_GRID, GPU_BLOCK, GPU_SHMEM_SIZE>>>(
+    bestPixelScoreKernel<<<GPU_GRID, GPU_BLOCK>>>(
         F.ptr<uchar>(), F.step,
         S.ptr<double>(), S.step,
         D.ptr<int>(), D.step,
