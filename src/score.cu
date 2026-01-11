@@ -181,16 +181,14 @@ thrust::tuple<double,int> bestPossibleScore(
     double yPixel, double xPixel,
     int width, int height
 ) {
-    double bestScore = -1.0;
+    double bestScore = computeLabScore(F, Fstep, yPixel, xPixel, 0, width, height);;
     int bestDir = 0;
-    for (int d = 0; d < DIRECTIONS; d++) {
+    for (int d = 1; d < DIRECTIONS; d++) {
         double score = computeLabScore(F, Fstep, yPixel, xPixel, d, width, height);
         if (score > bestScore) {
             bestScore = score;
             bestDir = d;
         }
     }
-    // std::cout << "Best direction: " << bestDir << std::endl;
-    // std::cout << "Best score: " << bestScore << std::endl;
     return thrust::make_tuple(bestScore, bestDir);
 }

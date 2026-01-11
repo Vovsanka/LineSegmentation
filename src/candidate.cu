@@ -12,16 +12,9 @@ void bestPixelScoreKernel(
     int y = blockIdx.y*blockDim.y + threadIdx.y;
     if (x >= width || y >= height) return;
     //
-    int bestDir = 0;
-    double bestScore = computeLabScore(F, Fstep, y, x, bestDir, width, height);
-    //
-    for (int dir = 1; dir < DIRECTIONS; dir++) {
-        double score = computeLabScore(F, Fstep, y, x, dir, width, height);
-        if (score > bestScore) {
-            bestScore = score;
-            bestDir = dir;
-        }
-    }
+    thrust::tuple<double,int> bestScoreDir = bestPossibleScore(F, Fstep, y, x, width, height);
+    double bestScore = thrust::get<0>(bestScoreDir);
+    int bestDir = thrust::get<1>(bestScoreDir);
     //
     cell<double>(S, Sstep, y, x) = bestScore;
     cell<int>(D, Dstep, y, x) = bestDir;

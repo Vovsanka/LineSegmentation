@@ -39,7 +39,7 @@ Cand upgradeCandidate(
     return Cand(bestY, bestX, bestDir);
 }
 
-__host__ __device__
+__host__
 std::vector<Cand> sortThresholdCandidates(
     const double *S, size_t Sstep, 
     const int *D, size_t Dstep,
@@ -107,8 +107,7 @@ std::vector<Cand> candidateIterativeSearch(
     return chosenCand;
 }
 
-
-__host__
+__host__ 
 void candidateExpand(
     const uchar *F, size_t Fstep, 
     uchar* B, size_t Bstep,

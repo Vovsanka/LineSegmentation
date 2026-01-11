@@ -20,7 +20,6 @@ struct Vec {
 __host__
 dim3 getGrid(int width, int height);
 
-
 template <typename T>
 __host__ __device__
 T& cell(
