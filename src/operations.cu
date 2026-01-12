@@ -1,13 +1,6 @@
 #include "operations.hpp"
 
 __host__
-dim3 getGrid(int width, int height) {
-    int gridX = (width + GPU_BLOCK.x - 1) / GPU_BLOCK.x;
-    int gridY = (height + GPU_BLOCK.y - 1) / GPU_BLOCK.y;
-    return dim3(gridX, gridY); 
-}
-
-__host__
 cv::cuda::GpuMat uploadToGPU(const cv::Mat& cpuF) {
     cv::cuda::GpuMat gpuF;
     gpuF.upload(cpuF);
@@ -79,21 +72,24 @@ void showMatrix(const cv::cuda::GpuMat& gpuF) {
 __host__
 void showScoreDirectionMatrix(
     cv::Mat& S,
-    cv::Mat& D
+    cv::Mat& D,
+    std::vector<Cand>& candidates,
+    bool withThreshold
 ) {
     int width = S.cols;
     int height = S.rows;
-    cv::Mat Mlab(height, width, CV_8UC3); // LAB
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            double score = S.at<double>(y, x);
-            int dir = D.at<int>(y, x);
-            Vec unitVector = getUnitVector(dir);
-            int l = round(score*255.0);
-            int a = round(unitVector.x*255.0);
-            int b = round(unitVector.y*255.0);
-            Mlab.at<cv::Vec3b>(y, x) = cv::Vec3b(l, a, b);
-        }
+    cv::Mat Mlab(height, width, CV_8UC3, cv::Scalar(0, 0, 0)); // LAB
+    for (Cand& cand : candidates) {
+        int y = round(cand.y);
+        int x = round(cand.x);
+        double score = S.at<double>(y, x);
+        if (withThreshold && score < CAND_THRESHOLD) continue;
+        int dir = D.at<int>(y, x);
+        Vec unitVector = getUnitVector(dir);
+        int l = round(score*255.0);
+        int a = round(unitVector.x*255.0);
+        int b = round(unitVector.y*255.0);
+        Mlab.at<cv::Vec3b>(y, x) = cv::Vec3b(l, a, b);
     }
     cv::Mat Mbgr;
     cv::cvtColor(Mlab, Mbgr, cv::COLOR_Lab2BGR);

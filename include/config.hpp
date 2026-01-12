@@ -2,9 +2,6 @@
 #define CONFIG_HPP
 
 
-// CUDA constants
-const dim3 GPU_BLOCK(16, 16); // one thread for every pixel
-
 // math constants
 const double PI = 3.141593;
 

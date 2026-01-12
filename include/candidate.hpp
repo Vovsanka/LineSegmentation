@@ -24,6 +24,13 @@ void bestPixelScoreKernel(
     int width, int height
 );
 
+__host__
+void computeBestPixelScores(
+    cv::cuda::GpuMat& F,
+    cv::cuda::GpuMat& S,
+    cv::cuda::GpuMat& D
+);
+
 __host__ 
 std::vector<Cand> extractThresholdCandidates(
     cv::Mat& S, 

@@ -10,9 +10,6 @@
 #include "directions.hpp"
 
 
-__host__
-dim3 getGrid(int width, int height);
-
 template <typename T>
 __host__ __device__
 T& cell(
@@ -22,7 +19,6 @@ T& cell(
     T* rowF = (T*)((uchar*)Fptr + y * Fstep);
     return rowF[x];
 }
-
 
 __host__
 cv::cuda::GpuMat uploadToGPU(const cv::Mat& cpuF);
@@ -57,7 +53,9 @@ void showMatrix(const cv::cuda::GpuMat& gpuF);
 __host__
 void showScoreDirectionMatrix(
     cv::Mat &S,
-    cv::Mat &D
+    cv::Mat &D,
+    std::vector<Cand>& candidates,
+    bool withThreshold = false
 );
 
 #endif

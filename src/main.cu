@@ -46,32 +46,21 @@ int main() {
     cv::cuda::GpuMat F = uploadToGPU(scaledF);
     // showImage(F);
 
-    // create the gpu grid for the opencv cuda kernels
-    dim3 GPU_GRID = getGrid(F.cols, F.rows);
-
     // compute the best scores for every pixel
     cv::cuda::GpuMat S(F.size(), CV_64F);
     cv::cuda::GpuMat D(F.size(), CV_32S);
-    bestPixelScoreKernel<<<GPU_GRID, GPU_BLOCK>>>(
-        F.ptr<uchar>(), F.step,
-        S.ptr<double>(), S.step,
-        D.ptr<int>(), D.step,
-        F.cols, F.rows
-    );
+    computeBestPixelScores(F, S, D);
     // showMatrix(S);
-    
     
     // download the matrices to CPU
     cv::Mat Fcpu = downloadToCPU(F);
     cv::Mat Scpu = downloadToCPU(S);
     cv::Mat Dcpu = downloadToCPU(D);
     
-    //
-    showScoreDirectionMatrix(Scpu, Dcpu);
-
     // threshold candidates
     std::vector<Cand> candidates = extractThresholdCandidates(Scpu, Dcpu);
-
+    showScoreDirectionMatrix(Scpu, Dcpu, candidates);
+    showScoreDirectionMatrix(Scpu, Dcpu, candidates, true);
     //
     
     // std::vector<Cand> candidates = candidateIterativeSearch(

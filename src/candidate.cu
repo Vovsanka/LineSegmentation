@@ -20,6 +20,29 @@ void bestPixelScoreKernel(
     cell<int>(D, Dstep, y, x) = bestDir;
 }
 
+__host__
+void computeBestPixelScores(
+    cv::cuda::GpuMat& F,
+    cv::cuda::GpuMat& S,
+    cv::cuda::GpuMat& D
+) {
+    int width = S.cols;
+    int height = S.rows;
+    //
+    dim3 block(16, 16); // one thread for every pixel;
+    //
+    int gridX = (width + block.x - 1) / block.x;
+    int gridY = (height + block.y - 1) / block.y;
+    dim3 grid(gridX, gridY); 
+    // 
+    bestPixelScoreKernel<<<grid, block>>>(
+        F.ptr<uchar>(), F.step,
+        S.ptr<double>(), S.step,
+        D.ptr<int>(), D.step,
+        F.cols, F.rows
+    );
+}
+
 __host__ 
 std::vector<Cand> extractThresholdCandidates(
     cv::Mat& S, 
