@@ -54,8 +54,7 @@ __host__
 void showScoreDirectionMatrix(
     cv::Mat &S,
     cv::Mat &D,
-    std::vector<Cand>& candidates,
-    bool withThreshold = false
+    std::vector<Cand>& candidates
 );
 
 #endif

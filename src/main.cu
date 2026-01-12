@@ -25,7 +25,7 @@ int main() {
     // cv::Mat originalF = cv::imread("../images/apb3.png", cv::IMREAD_COLOR);
     if (originalF.empty()) return 1;
     std::cout << "Original image size: " << originalF.cols << "x" << originalF.rows << std::endl; 
-    // showImage(originalF);
+    showImage(originalF);
     
     // Convert the image to the LAB color space
     cv::Mat labF = convertBGRtoLab(originalF);
@@ -60,7 +60,6 @@ int main() {
     // threshold candidates
     std::vector<Cand> candidates = extractThresholdCandidates(Scpu, Dcpu);
     showScoreDirectionMatrix(Scpu, Dcpu, candidates);
-    showScoreDirectionMatrix(Scpu, Dcpu, candidates, true);
     //
     
     // std::vector<Cand> candidates = candidateIterativeSearch(

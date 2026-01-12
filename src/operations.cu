@@ -73,22 +73,38 @@ __host__
 void showScoreDirectionMatrix(
     cv::Mat& S,
     cv::Mat& D,
-    std::vector<Cand>& candidates,
-    bool withThreshold
+    std::vector<Cand>& candidates
 ) {
+    int demoWidth = 500;
+    int demoHeight = 100;
+    cv::Mat Clab(demoHeight, demoWidth, CV_8UC3);
+    for (int x = 0; x < demoWidth; x++) {
+        int dir = 2*round(1.0*x/demoWidth*DIRECTIONS);
+        Vec unitVector = getUnitVector(dir);
+        int l = 255.0;
+        int a = round(127.5 + unitVector.x*127.5);
+        int b = round(127.5 + unitVector.y*127.5);
+        for (int y = 0; y < demoHeight; y++) {
+            Clab.at<cv::Vec3b>(y, x) = cv::Vec3b(l, a, b);
+        }
+    }
+    cv::Mat Cbgr;
+    cv::cvtColor(Clab, Cbgr, cv::COLOR_Lab2BGR);
+    showImage(Cbgr);
+    //
     int width = S.cols;
     int height = S.rows;
-    cv::Mat Mlab(height, width, CV_8UC3, cv::Scalar(0, 0, 0)); // LAB
+    cv::Mat Mlab(height, width, CV_8UC3, cv::Scalar(0, 128, 128)); // LAB
     for (Cand& cand : candidates) {
         int y = round(cand.y);
         int x = round(cand.x);
         double score = S.at<double>(y, x);
-        if (withThreshold && score < CAND_THRESHOLD) continue;
+        if (score < CAND_THRESHOLD) continue;
         int dir = D.at<int>(y, x);
-        Vec unitVector = getUnitVector(dir);
+        Vec unitVector = getUnitVector(2*dir);
         int l = round(score*255.0);
-        int a = round(unitVector.x*255.0);
-        int b = round(unitVector.y*255.0);
+        int a = round(127.5 + unitVector.x*127.5);
+        int b = round(127.5 + unitVector.y*127.5);
         Mlab.at<cv::Vec3b>(y, x) = cv::Vec3b(l, a, b);
     }
     cv::Mat Mbgr;
