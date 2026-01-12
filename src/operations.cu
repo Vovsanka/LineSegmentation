@@ -75,6 +75,7 @@ void showScoreDirectionMatrix(
     cv::Mat& D,
     std::vector<Cand>& candidates
 ) {
+    // 
     int demoWidth = 500;
     int demoHeight = 100;
     cv::Mat Clab(demoHeight, demoWidth, CV_8UC3);
@@ -111,6 +112,8 @@ void showScoreDirectionMatrix(
     cv::cvtColor(Mlab, Mbgr, cv::COLOR_Lab2BGR);
     showImage(Mbgr);
 }
+
+
 
 
 

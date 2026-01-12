@@ -29,37 +29,9 @@ Cand upgradeCandidate(
             }
     }
     //
-    return Cand(bestY, bestX, bestDir);
+    return Cand(bestY, bestX, bestDir, bestScore);
 }
 
-__host__
-std::vector<Cand> sortThresholdCandidates(
-    const double *S, size_t Sstep, 
-    const int *D, size_t Dstep,
-    int width, int height
-) {
-    std::vector<Cand> candList;
-    int candCount = 0;
-    std::vector<thrust::tuple<double,int>> scores;
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            double score = cell<double>(S, Sstep, y, x);
-            double dir = cell<int>(D, Dstep, y, x);
-            if (score >= CAND_THRESHOLD) {
-                scores.push_back(thrust::make_tuple(-score, candCount++));
-                candList.push_back(Cand(y, x, dir));
-            }
-        }
-    }
-    std::sort(std::begin(scores), std::end(scores));
-    //
-    std::vector<Cand> sortedCand(candCount);
-    for (int k = 0; k < candCount; k++) {
-        int ind = thrust::get<1>(scores[k]);
-        sortedCand[k] = candList[ind];
-    }
-    return sortedCand;
-}
 
 __host__
 bool isBlocked(const uchar* B, size_t Bstep, double y, double x, int width, int height) {
@@ -67,7 +39,7 @@ bool isBlocked(const uchar* B, size_t Bstep, double y, double x, int width, int 
     int closestX = std::round(x);
     if (closestY < 0 || height <= closestY) return true;
     if (closestX < 0 || width <= closestX) return true;
-    return (cell<uchar>(B, Bstep, closestY, closestX)  != 0);
+    return (cell<uchar>(B, Bstep, closestY, closestX) != 0);
 }
 
 __host__
@@ -82,22 +54,26 @@ void setBlocked(uchar*B, size_t Bstep, double y, double x, int width, int height
 __host__
 std::vector<Cand> candidateIterativeSearch(
     const uchar* F, size_t Fstep,
-    const double *S, size_t Sstep,
-    const int *D, size_t Dstep,
+    const std::vector<Cand>& tCandidates,
     int width, int height
 ) {
     cv::Mat BLOCKED(height, width, CV_8U, cv::Scalar(0)); 
-    std::vector<Cand> chosenCand;
+    std::vector<Cand> chosenCandidates;
     //
-    std::vector<Cand> tCand = sortThresholdCandidates(S, Sstep, D, Dstep, width, height);
-    for (Cand startCand : tCand) {
-        candidateExpand(F, Fstep, BLOCKED.ptr<uchar>(), BLOCKED.step, chosenCand, startCand, width, height);   
+    for (Cand startCand : tCandidates) {
+        candidateExpand(
+            F, Fstep,
+            BLOCKED.ptr<uchar>(), BLOCKED.step,
+            chosenCandidates,
+            startCand,
+            width, height
+        );   
+        //// debug start
+        showMatrix(BLOCKED);
+        //// debug end
     }
-    ///// debug start
-    showMatrix(BLOCKED);
-    std::cout << "#candidates = " << chosenCand.size() << std::endl;
-    ///// debug end 
-    return chosenCand;
+    //
+    return chosenCandidates;
 }
 
 __host__ 
@@ -114,8 +90,7 @@ void candidateExpand(
         cand = upgradeCandidate(F, Fstep, cand, width, height);
     }
     if (isBlocked(B, Bstep, cand.y, cand.x, width, height)) return;
-    double score  = computeLabScore(F, Fstep, cand.y, cand.x, cand.dir, width, height);
-    if (score < CAND_THRESHOLD) return;
+    if (cand.score < CAND_THRESHOLD) return;
     // 
     chosenCand.push_back(cand);
     setBlocked(B, Bstep, cand.y, cand.x, width, height);
@@ -126,14 +101,21 @@ void candidateExpand(
     Vec unitEdge1 = getUnitVector(edge1);
     Vec unitEdge2 = getUnitVector(edge2);
     //
+    int y1 = cand.y + unitEdge1.y;
+    int x1 = cand.x + unitEdge1.x;
+    double score1 = computeLabScore(F, Fstep, y1, x1, cand.dir, width, height);
     candidateExpand(
         F, Fstep, B, Bstep, chosenCand,
-        Cand(cand.y + unitEdge1.y, cand.x + unitEdge1.x, cand.dir),
+        Cand(y1, x1, cand.dir, score1),
         width, height
     );
+    //
+    int y2 = cand.y + unitEdge2.y;
+    int x2 = cand.x + unitEdge2.x;
+    double score2 = computeLabScore(F, Fstep, y2, x2, cand.dir, width, height);
     candidateExpand(
         F, Fstep, B, Bstep, chosenCand,
-        Cand(cand.y + unitEdge2.y, cand.x + unitEdge2.x, cand.dir),
+        Cand(y2, x2, cand.dir, score2),
         width, height
     );
 }

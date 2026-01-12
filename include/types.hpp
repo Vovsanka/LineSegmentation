@@ -18,11 +18,15 @@ struct Vec {
 struct Cand {
     double y, x;
     int dir;
+    double score;
 
     Cand() = default;
 
     __host__ __device__
-    Cand(double y, double x, int dir);
+    Cand(double y, double x, int dir, double score);
+
+    __host__ __device__
+    bool operator<(const Cand& otherCand);
 };
 
 #endif

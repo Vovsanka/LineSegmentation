@@ -58,16 +58,16 @@ int main() {
     cv::Mat Dcpu = downloadToCPU(D);
     
     // threshold candidates
-    std::vector<Cand> candidates = extractThresholdCandidates(Scpu, Dcpu);
-    showScoreDirectionMatrix(Scpu, Dcpu, candidates);
-    //
+    std::vector<Cand> tCandidates = extractSortedThresholdCandidates(Scpu, Dcpu);
+    showScoreDirectionMatrix(Scpu, Dcpu, tCandidates);
     
-    // std::vector<Cand> candidates = candidateIterativeSearch(
-    //     Fcpu.ptr<uchar>(), Fcpu.step,
-    //     Scpu.ptr<double>(), Scpu.step,
-    //     Dcpu.ptr<int>(), Dcpu.step,
-    //     F.cols, F.rows
-    // );
+    // iterative search candidates
+    std::vector<Cand> candidates = candidateIterativeSearch(
+        Fcpu.ptr<uchar>(), Fcpu.step,
+        tCandidates,
+        F.cols, F.rows
+    );
+    showScoreDirectionMatrix(Scpu, Dcpu, candidates);
 
     return 0;
 }

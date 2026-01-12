@@ -20,13 +20,6 @@ Cand upgradeCandidate(
 );
 
 __host__
-std::vector<Cand> sortThresholdCandidates(
-    const double *S, size_t Sstep, 
-    const int *D, size_t Dstep,
-    int width, int height
-);
-
-__host__
 bool isBlocked(const uchar*B, size_t Bstep, double y, double x, int width, int height);
 
 __host__
@@ -36,8 +29,7 @@ void setBlocked(uchar*B, size_t Bstep, double y, double x, int width, int height
 __host__
 std::vector<Cand> candidateIterativeSearch(
     const uchar* F, size_t Fstep,
-    const double *S, size_t Sstep,
-    const int *D, size_t Dstep,
+    const std::vector<Cand>& tCandidates,
     int width, int height
 );
 
