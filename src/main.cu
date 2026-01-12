@@ -58,22 +58,21 @@ int main() {
         D.ptr<int>(), D.step,
         F.cols, F.rows
     );
-    showMatrix(S);
+    // showMatrix(S);
+    
+    
+    // download the matrices to CPU
+    cv::Mat Fcpu = downloadToCPU(F);
+    cv::Mat Scpu = downloadToCPU(S);
+    cv::Mat Dcpu = downloadToCPU(D);
+    
+    //
+    showScoreDirectionMatrix(Scpu, Dcpu);
 
-    // choose the candidates
-    cv::cuda::GpuMat C(F.size(), CV_8U);
-    candidateThresholdKernel<<<GPU_GRID, GPU_BLOCK>>>(
-        S.ptr<double>(), S.step,
-        D.ptr<int>(), D.step,
-        C.ptr<uchar>(), C.step,
-        F.cols, F.rows
-    );
-    showMatrix(C);
+    // threshold candidates
+    std::vector<Cand> candidates = extractThresholdCandidates(Scpu, Dcpu);
 
-    // // iterative search for candidates
-    // cv::Mat Fcpu = downloadToCPU(F);
-    // cv::Mat Scpu = downloadToCPU(S);
-    // cv::Mat Dcpu = downloadToCPU(D);
+    //
     
     // std::vector<Cand> candidates = candidateIterativeSearch(
     //     Fcpu.ptr<uchar>(), Fcpu.step,

@@ -2,13 +2,6 @@
 
 
 __host__ __device__
-Cand::Cand(double y, double x, int dir) {
-    this->y = y;
-    this->x = x;
-    this->dir = dir;
-}
-
-__host__ __device__
 Cand upgradeCandidate(
     const uchar* F, size_t Fstep,
     Cand cand,

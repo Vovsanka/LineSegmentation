@@ -7,12 +7,6 @@ dim3 getGrid(int width, int height) {
     return dim3(gridX, gridY); 
 }
 
-__host__ __device__
-Vec::Vec(double y, double x) {
-    this->y = y;
-    this->x = x;
-}
-
 __host__
 cv::cuda::GpuMat uploadToGPU(const cv::Mat& cpuF) {
     cv::cuda::GpuMat gpuF;
@@ -80,6 +74,30 @@ void showMatrix(const cv::cuda::GpuMat& gpuF) {
     cv::Mat cpuF;
     gpuF.download(cpuF);
     showMatrix(cpuF);
+}
+
+__host__
+void showScoreDirectionMatrix(
+    cv::Mat& S,
+    cv::Mat& D
+) {
+    int width = S.cols;
+    int height = S.rows;
+    cv::Mat Mlab(height, width, CV_8UC3); // LAB
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            double score = S.at<double>(y, x);
+            int dir = D.at<int>(y, x);
+            Vec unitVector = getUnitVector(dir);
+            int l = round(score*255.0);
+            int a = round(unitVector.x*255.0);
+            int b = round(unitVector.y*255.0);
+            Mlab.at<cv::Vec3b>(y, x) = cv::Vec3b(l, a, b);
+        }
+    }
+    cv::Mat Mbgr;
+    cv::cvtColor(Mlab, Mbgr, cv::COLOR_Lab2BGR);
+    showImage(Mbgr);
 }
 
 

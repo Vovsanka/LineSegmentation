@@ -9,9 +9,10 @@
 
 #include <thrust/tuple.h>
 
+#include "types.hpp"
 #include "config.hpp"
-#include "score.hpp"
 #include "operations.hpp"
+#include "score.hpp"
 
 
 
@@ -23,14 +24,13 @@ void bestPixelScoreKernel(
     int width, int height
 );
 
-
-__global__ 
-void candidateThresholdKernel(
-    const double *S, size_t Sstep,
-    const int *D, size_t Dstep,
-    uchar *C, size_t Cstep,
-    int width, int height
+__host__ 
+std::vector<Cand> extractThresholdCandidates(
+    cv::Mat& S, 
+    cv::Mat& D
 );
+
+
 
 
 

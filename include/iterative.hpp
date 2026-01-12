@@ -6,20 +6,11 @@
 
 #include <thrust/tuple.h>
 
+#include "types.hpp"
 #include "config.hpp"
 #include "score.hpp"
 #include "operations.hpp"
 
-
-struct Cand {
-    double y, x;
-    int dir;
-
-    Cand() = default;
-
-    __host__ __device__
-    Cand(double y, double x, int dir);
-};
 
 __host__ __device__
 Cand upgradeCandidate(

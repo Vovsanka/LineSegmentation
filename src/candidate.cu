@@ -20,21 +20,24 @@ void bestPixelScoreKernel(
     cell<int>(D, Dstep, y, x) = bestDir;
 }
 
-
-__global__ 
-void candidateThresholdKernel(
-    const double *S, size_t Sstep,
-    const int *D, size_t Dstep,
-    uchar *C, size_t Cstep,
-    int width, int height
-) {                             
-    int x = blockIdx.x*blockDim.x + threadIdx.x;
-    int y = blockIdx.y*blockDim.y + threadIdx.y;
-    if (x >= width || y >= height) return;
-    //
-    double score = cell<double>(S, Sstep, y, x);
-    //
-    cell<uchar>(C, Cstep, y, x) = (score >= CAND_THRESHOLD) ? 1 : 0;
+__host__ 
+std::vector<Cand> extractThresholdCandidates(
+    cv::Mat& S, 
+    cv::Mat& D
+) {
+    int width = S.cols;
+    int height = S.rows;
+    std::vector<Cand> candList;
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            double score = S.at<double>(y, x);
+            if (score >= CAND_THRESHOLD) {
+                double dir = D.at<int>(y, x);
+                candList.push_back(Cand(y, x, dir));
+            }
+        }
+    }
+    return candList;
 }
 
 
