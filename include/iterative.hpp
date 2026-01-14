@@ -39,7 +39,7 @@ void candidateExpand(
     uchar* B, size_t Bstep,
     std::vector<Cand> &chosenCand,
     Cand cand,
-    int prevEdgeDir,
+    int invEdgeDir, double prevScore,
     int width, int height
 );
 

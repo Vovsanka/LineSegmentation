@@ -60,14 +60,27 @@ std::vector<Cand> candidateIterativeSearch(
     cv::Mat BLOCKED(height, width, CV_8U, cv::Scalar(0)); 
     std::vector<Cand> chosenCandidates;
     //
-    for (Cand startCand : tCandidates) {
+    //// debug start
+    int candCount = 0;
+    int expMod = 1;
+    //// debug end
+    for (const Cand& startCand : tCandidates) {
         candidateExpand(
             F, Fstep,
             BLOCKED.ptr<uchar>(), BLOCKED.step,
             chosenCandidates,
-            startCand, -1,
+            startCand, -1, 0.0,
             width, height
-        );   
+        );
+        //// debug start
+        std::cout << "Iterative search: #candidates = " << chosenCandidates.size();
+        std::cout << " (" << round(100.0*++candCount/tCandidates.size()) << "%)";
+        std::cout << std::endl;
+        // if (candCount % expMod == 0) {
+        //     showMatrix(BLOCKED);
+        //     expMod *= 2;
+        // }
+        /// debug end
     }
     //
     return chosenCandidates;
@@ -79,15 +92,17 @@ void candidateExpand(
     uchar* B, size_t Bstep,
     std::vector<Cand> &chosenCand,
     Cand cand,
-    int prevEdgeDir,
+    int invEdgeDir,
+    double prevScore,
     int width, int height
 ) {
-    if (isBlocked(B, Bstep, cand.y, cand.x, width, height)) return;
+    if (isBlocked(B, Bstep, cand.y, cand.x, width, height) || cand.score < CAND_THRESHOLD) return;
     //
     cand = upgradeCandidate(F, Fstep, cand, width, height);
+    // if (cand.score < prevScore) {
+    // }
     //
-    if (isBlocked(B, Bstep, cand.y, cand.x, width, height)) return;
-    if (cand.score < CAND_THRESHOLD) return;
+    if (isBlocked(B, Bstep, cand.y, cand.x, width, height) || cand.score < CAND_THRESHOLD) return;
     // 
     chosenCand.push_back(cand);
     setBlocked(B, Bstep, cand.y, cand.x, width, height);
@@ -98,26 +113,26 @@ void candidateExpand(
     Vec unitEdge1 = getUnitVector(edge1);
     Vec unitEdge2 = getUnitVector(edge2);
     //
-    if (edge1 != prevEdgeDir) {
+    if (edge1 != invEdgeDir) {
         double y1 = cand.y + unitEdge1.y;
         double x1 = cand.x + unitEdge1.x;
         double score1 = computeLabScore(F, Fstep, y1, x1, cand.dir, width, height);
         candidateExpand(
             F, Fstep, B, Bstep, chosenCand,
             Cand(y1, x1, cand.dir, score1),
-            edge1,
+            edge2, cand.score,
             width, height
         );
     }
     //
-    if (edge2 != prevEdgeDir) {
+    if (edge2 != invEdgeDir) {
         double y2 = cand.y + unitEdge2.y;
         double x2 = cand.x + unitEdge2.x;
         double score2 = computeLabScore(F, Fstep, y2, x2, cand.dir, width, height);
         candidateExpand(
             F, Fstep, B, Bstep, chosenCand,
             Cand(y2, x2, cand.dir, score2),
-            edge2,
+            edge1, cand.score, 
             width, height
         );
     }
@@ -141,9 +156,6 @@ Cand computeBestPixelScore(
     cv::cuda::GpuMat& F,
     double y, double x
 ) {
-    int width = F.cols;
-    int height = F.rows;
-    //
     dim3 block(DIRECTIONS); // one thread for every direction;
     dim3 grid(1); // one block for the one pixel
     //
