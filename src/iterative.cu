@@ -10,26 +10,26 @@ Cand upgradeCandidate(
     //
     Vec unitNorm = getUnitVector(cand.dir);
     //
-    double bestScore = -1;
-    int bestDir = 0;
-    double bestY = 0, bestX = 0;
+    double bestScore = cand.score;
+    double bestY = cand.y, bestX = cand.x;
     for (int k = -UP_COUNT; k <= UP_COUNT; k++) {
-            double y = cand.y + k*UP_STEP*unitNorm.y;
-            double x = cand.x + k*UP_STEP*unitNorm.x;
-            //
-            thrust::tuple<double,int> newScoreDir = bestPossibleScore(F, Fstep, y, x, width, height);
-            double newScore = thrust::get<0>(newScoreDir);
-            int newDir = thrust::get<1>(newScoreDir);
-            //
-            if (newScore > bestScore) {
-                bestScore = newScore;
-                bestDir =  newDir;
-                bestY = y;
-                bestX = x;
-            }
+        double y = cand.y + k*UP_STEP*unitNorm.y;
+        double x = cand.x + k*UP_STEP*unitNorm.x;
+        //
+        double score = computeLabScore(F, Fstep, y, x, cand.dir, width, height);
+        //
+        if (score > bestScore) {
+            bestScore = score;
+            bestY = y;
+            bestX = x;
+        }
     }
     //
-    return Cand(bestY, bestX, bestDir, bestScore);
+    if (abs(bestY - cand.y) < UP_STEP && abs(bestX - cand.x) < UP_STEP) return cand;
+    //
+    thrust::tuple<double,int> bestScoreDir = bestPossibleScore(F, Fstep, bestY, bestX, width, height);
+    double bestDir = thrust::get<1>(bestScoreDir);
+    return upgradeCandidate(F, Fstep, Cand(bestY, bestX, bestDir, bestScore), width, height);
 }
 
 
@@ -68,9 +68,6 @@ std::vector<Cand> candidateIterativeSearch(
             startCand,
             width, height
         );   
-        //// debug start
-        showMatrix(BLOCKED);
-        //// debug end
     }
     //
     return chosenCandidates;
@@ -82,13 +79,13 @@ void candidateExpand(
     uchar* B, size_t Bstep,
     std::vector<Cand> &chosenCand,
     Cand cand,
+
     int width, int height
 ) {
     if (isBlocked(B, Bstep, cand.y, cand.x, width, height)) return;
     //
-    for (int k = 0; k < UP_ITERATIONS; k++) {
-        cand = upgradeCandidate(F, Fstep, cand, width, height);
-    }
+    cand = upgradeCandidate(F, Fstep, cand, width, height);
+    //
     if (isBlocked(B, Bstep, cand.y, cand.x, width, height)) return;
     if (cand.score < CAND_THRESHOLD) return;
     // 
@@ -101,8 +98,8 @@ void candidateExpand(
     Vec unitEdge1 = getUnitVector(edge1);
     Vec unitEdge2 = getUnitVector(edge2);
     //
-    int y1 = cand.y + unitEdge1.y;
-    int x1 = cand.x + unitEdge1.x;
+    double y1 = cand.y + unitEdge1.y;
+    double x1 = cand.x + unitEdge1.x;
     double score1 = computeLabScore(F, Fstep, y1, x1, cand.dir, width, height);
     candidateExpand(
         F, Fstep, B, Bstep, chosenCand,
@@ -110,8 +107,8 @@ void candidateExpand(
         width, height
     );
     //
-    int y2 = cand.y + unitEdge2.y;
-    int x2 = cand.x + unitEdge2.x;
+    double y2 = cand.y + unitEdge2.y;
+    double x2 = cand.x + unitEdge2.x;
     double score2 = computeLabScore(F, Fstep, y2, x2, cand.dir, width, height);
     candidateExpand(
         F, Fstep, B, Bstep, chosenCand,
