@@ -2,7 +2,7 @@
 
 
 __global__
-void bestPixelScoreKernel(
+void bestPixelScoreKernelPixel(
     const uchar* F, size_t Fstep,
     double* S, size_t Sstep,
     int* D, size_t Dstep,
@@ -12,9 +12,9 @@ void bestPixelScoreKernel(
     int y = blockIdx.y*blockDim.y + threadIdx.y;
     if (x >= width || y >= height) return;
     //
-    thrust::tuple<double,int> bestScoreDir = bestPossibleScore(F, Fstep, y, x, width, height);
-    double bestScore = thrust::get<0>(bestScoreDir);
-    int bestDir = thrust::get<1>(bestScoreDir);
+    Cand bestScoreDir = bestPossibleScoreDirection(F, Fstep, y, x, width, height);
+    double bestScore = bestScoreDir.score;
+    int bestDir = bestScoreDir.dir;
     //
     cell<double>(S, Sstep, y, x) = bestScore;
     cell<int>(D, Dstep, y, x) = bestDir;
@@ -26,8 +26,8 @@ void computeBestPixelScores(
     cv::cuda::GpuMat& S,
     cv::cuda::GpuMat& D
 ) {
-    int width = S.cols;
-    int height = S.rows;
+    int width = F.cols;
+    int height = F.rows;
     //
     dim3 block(16, 16); // one thread for every pixel;
     //
@@ -35,7 +35,7 @@ void computeBestPixelScores(
     int gridY = (height + block.y - 1) / block.y;
     dim3 grid(gridX, gridY); 
     // 
-    bestPixelScoreKernel<<<grid, block>>>(
+    bestPixelScoreKernelPixel<<<grid, block>>>(
         F.ptr<uchar>(), F.step,
         S.ptr<double>(), S.step,
         D.ptr<int>(), D.step,

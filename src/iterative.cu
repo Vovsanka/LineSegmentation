@@ -27,8 +27,8 @@ Cand upgradeCandidate(
     //
     if (abs(bestY - cand.y) < UP_STEP && abs(bestX - cand.x) < UP_STEP) return cand;
     //
-    thrust::tuple<double,int> bestScoreDir = bestPossibleScore(F, Fstep, bestY, bestX, width, height);
-    double bestDir = thrust::get<1>(bestScoreDir);
+    Cand bestScoreDir = bestPossibleScoreDirection(F, Fstep, bestY, bestX, width, height);
+    double bestDir = bestScoreDir.dir;
     return upgradeCandidate(F, Fstep, Cand(bestY, bestX, bestDir, bestScore), width, height);
 }
 
@@ -65,7 +65,7 @@ std::vector<Cand> candidateIterativeSearch(
             F, Fstep,
             BLOCKED.ptr<uchar>(), BLOCKED.step,
             chosenCandidates,
-            startCand,
+            startCand, -1,
             width, height
         );   
     }
@@ -79,7 +79,7 @@ void candidateExpand(
     uchar* B, size_t Bstep,
     std::vector<Cand> &chosenCand,
     Cand cand,
-
+    int prevEdgeDir,
     int width, int height
 ) {
     if (isBlocked(B, Bstep, cand.y, cand.x, width, height)) return;
@@ -98,21 +98,81 @@ void candidateExpand(
     Vec unitEdge1 = getUnitVector(edge1);
     Vec unitEdge2 = getUnitVector(edge2);
     //
-    double y1 = cand.y + unitEdge1.y;
-    double x1 = cand.x + unitEdge1.x;
-    double score1 = computeLabScore(F, Fstep, y1, x1, cand.dir, width, height);
-    candidateExpand(
-        F, Fstep, B, Bstep, chosenCand,
-        Cand(y1, x1, cand.dir, score1),
-        width, height
-    );
+    if (edge1 != prevEdgeDir) {
+        double y1 = cand.y + unitEdge1.y;
+        double x1 = cand.x + unitEdge1.x;
+        double score1 = computeLabScore(F, Fstep, y1, x1, cand.dir, width, height);
+        candidateExpand(
+            F, Fstep, B, Bstep, chosenCand,
+            Cand(y1, x1, cand.dir, score1),
+            edge1,
+            width, height
+        );
+    }
     //
-    double y2 = cand.y + unitEdge2.y;
-    double x2 = cand.x + unitEdge2.x;
-    double score2 = computeLabScore(F, Fstep, y2, x2, cand.dir, width, height);
-    candidateExpand(
-        F, Fstep, B, Bstep, chosenCand,
-        Cand(y2, x2, cand.dir, score2),
-        width, height
+    if (edge2 != prevEdgeDir) {
+        double y2 = cand.y + unitEdge2.y;
+        double x2 = cand.x + unitEdge2.x;
+        double score2 = computeLabScore(F, Fstep, y2, x2, cand.dir, width, height);
+        candidateExpand(
+            F, Fstep, B, Bstep, chosenCand,
+            Cand(y2, x2, cand.dir, score2),
+            edge2,
+            width, height
+        );
+    }
+}
+
+__global__
+void bestPixelScoreKernelDirection(
+    const uchar* F, size_t Fstep,
+    double y, double x,
+    double* scores,
+    int width, int height
+) {
+    int dir = threadIdx.x;
+    if (dir >= DIRECTIONS) return;
+    //
+    scores[dir] = computeLabScore(F, Fstep, y, x, dir, width, height);
+}
+
+__host__
+Cand computeBestPixelScore(
+    cv::cuda::GpuMat& F,
+    double y, double x
+) {
+    int width = F.cols;
+    int height = F.rows;
+    //
+    dim3 block(DIRECTIONS); // one thread for every direction;
+    dim3 grid(1); // one block for the one pixel
+    //
+    double* dScores;
+    cudaMalloc(&dScores, DIRECTIONS*sizeof(double));
+    //
+    bestPixelScoreKernelDirection<<<grid, block>>>(
+        F.ptr<uchar>(), F.step,
+        y, x,
+        dScores,
+        F.cols, F.rows
+    ); 
+    cudaDeviceSynchronize();
+    //
+    double scores[DIRECTIONS];
+    cudaMemcpy(
+        scores,
+        dScores,
+        DIRECTIONS*sizeof(double),
+        cudaMemcpyDeviceToHost
     );
+    cudaFree(dScores);
+    //
+    int bestDir = 0;
+    for (int d = 1; d < DIRECTIONS; d++) {
+        if (scores[d] > scores[bestDir]) {
+            bestDir = d;
+        }
+    }
+    //
+    return Cand(y, x, bestDir, scores[bestDir]);
 }

@@ -37,7 +37,7 @@ double computeLabScore(
 ); 
 
 __host__ __device__
-thrust::tuple<double,int> bestPossibleScore(
+Cand bestPossibleScoreDirection(
     const uchar* F, size_t Fstep,
     double yPixel, double xPixel,
     int width, int height

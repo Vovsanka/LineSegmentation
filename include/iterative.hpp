@@ -33,13 +33,29 @@ std::vector<Cand> candidateIterativeSearch(
     int width, int height
 );
 
-__host__
+__host__ 
 void candidateExpand(
     const uchar *F, size_t Fstep, 
     uchar* B, size_t Bstep,
     std::vector<Cand> &chosenCand,
     Cand cand,
+    int prevEdgeDir,
     int width, int height
 );
+
+__global__
+void bestPixelScoreKernelDirection(
+    const uchar* F, size_t Fstep,
+    double y, double x,
+    double* scores,
+    int width, int height
+);
+
+__host__
+Cand computeBestPixelScore(
+    cv::cuda::GpuMat& F,
+    double y, double x
+);
+
 
 #endif

@@ -150,7 +150,7 @@ double computeLabScore(
 }
 
 __host__ __device__
-thrust::tuple<double,int> bestPossibleScore(
+Cand bestPossibleScoreDirection(
     const uchar* F, size_t Fstep,
     double yPixel, double xPixel,
     int width, int height
@@ -164,5 +164,5 @@ thrust::tuple<double,int> bestPossibleScore(
             bestDir = d;
         }
     }
-    return thrust::make_tuple(bestScore, bestDir);
+    return Cand(yPixel, xPixel, bestDir, bestScore);
 }
