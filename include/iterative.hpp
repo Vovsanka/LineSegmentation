@@ -6,7 +6,7 @@
 
 #include <thrust/tuple.h>
 
-#include "types.hpp"
+#include "cand_type.hpp"
 #include "config.hpp"
 #include "score.hpp"
 #include "operations.hpp"

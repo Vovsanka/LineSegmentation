@@ -1,8 +1,8 @@
 #ifndef DIRECTIONS_HPP
 #define DIRECTIONS_HPP
 
-#include "types.hpp"
 #include "config.hpp"
+#include "vec_type.hpp"
 
 
 __host__ __device__

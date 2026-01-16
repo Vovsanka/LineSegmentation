@@ -22,5 +22,11 @@ const double CAND_THRESHOLD = 0.8;
 const int UP_COUNT = 10;
 const double UP_STEP = 0.1;
 
+// candidate clustering cost
+const double ALMOST_SAME_PIXEL = 1.5; 
+const int ALMOST_SAME_DIR = 1;
+const double ALMOST_SAME_LINE = 2.0;
+const double ALMOST_LINE_TRIANGLE = 2.0;
+const double GAP_SIZE = 5.0;
 
 #endif

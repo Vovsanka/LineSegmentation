@@ -6,6 +6,7 @@
 #include "score.hpp"
 #include "candidate.hpp"
 #include "iterative.hpp"
+#include "cost.hpp"
 
 
 
@@ -60,14 +61,20 @@ int main() {
     // threshold candidates
     std::vector<Cand> tCandidates = extractSortedThresholdCandidates(Scpu, Dcpu);
     showScoreDirectionMatrix(Scpu, Dcpu, tCandidates);
+
+    //// debug start
+    for (int i = 1; i < tCandidates.size(); i++) {
+        std::cout << computeCandidateCost(tCandidates, tCandidates[0], tCandidates[i]) << std::endl;
+    }
+    //// debug end
     
-    // iterative search candidates
-    std::vector<Cand> candidates = candidateIterativeSearch(
-        Fcpu.ptr<uchar>(), Fcpu.step,
-        tCandidates,
-        F.cols, F.rows
-    );
-    showScoreDirectionMatrix(Scpu, Dcpu, candidates);
+    // // iterative search candidates
+    // std::vector<Cand> candidates = candidateIterativeSearch(
+    //     Fcpu.ptr<uchar>(), Fcpu.step,
+    //     tCandidates,
+    //     F.cols, F.rows
+    // );
+    // showScoreDirectionMatrix(Scpu, Dcpu, candidates);
 
     return 0;
 }

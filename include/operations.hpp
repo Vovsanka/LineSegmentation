@@ -5,8 +5,8 @@
 #include <opencv2/cudafilters.hpp>
 #include <opencv2/cudaimgproc.hpp>
 
-#include "types.hpp"
 #include "config.hpp"
+#include "cand_type.hpp"
 #include "directions.hpp"
 
 

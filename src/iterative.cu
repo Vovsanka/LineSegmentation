@@ -60,10 +60,7 @@ std::vector<Cand> candidateIterativeSearch(
     cv::Mat BLOCKED(height, width, CV_8U, cv::Scalar(0)); 
     std::vector<Cand> chosenCandidates;
     //
-    //// debug start
     int candCount = 0;
-    int expMod = 1;
-    //// debug end
     for (const Cand& startCand : tCandidates) {
         candidateExpand(
             F, Fstep,
@@ -72,15 +69,10 @@ std::vector<Cand> candidateIterativeSearch(
             startCand, -1, 0.0,
             width, height
         );
-        //// debug start
+        //
         std::cout << "Iterative search: #candidates = " << chosenCandidates.size();
         std::cout << " (" << round(100.0*++candCount/tCandidates.size()) << "%)";
         std::cout << std::endl;
-        // if (candCount % expMod == 0) {
-        //     showMatrix(BLOCKED);
-        //     expMod *= 2;
-        // }
-        /// debug end
     }
     //
     return chosenCandidates;
