@@ -57,4 +57,5 @@ void showScoreDirectionMatrix(
     std::vector<Cand>& candidates
 );
 
+
 #endif
