@@ -3,11 +3,14 @@
 
 #include <string>
 #include <fstream>
+#include <filesystem>
 
 #include <opencv2/opencv.hpp>
 
 #include "cand_type.hpp"
 
+
+const std::filesystem::path pathPrefix("../working-state");
 
 void saveMatrix(const cv::Mat& M, std::string name);
 

@@ -1,3 +1,6 @@
+# working state 
+/working-state
+
 # ---- Build artifacts ----
 build/
 cmake-build*/

@@ -2,7 +2,7 @@
 
 
 void saveMatrix(const cv::Mat& M, std::string name) {
-    std::ofstream out(name + ".bin", std::ios::binary);
+    std::ofstream out(pathPrefix/(name + ".bin"), std::ios::binary);
     int rows = M.rows, cols = M.cols, type = M.type();
     out.write((char*)&rows, sizeof(int)); 
     out.write((char*)&cols, sizeof(int)); 
@@ -11,7 +11,7 @@ void saveMatrix(const cv::Mat& M, std::string name) {
 }
 
 cv::Mat loadMatrix(std::string name) {
-    std::ifstream in(name + ".bin", std::ios::binary); 
+    std::ifstream in(pathPrefix/(name + ".bin"), std::ios::binary); 
     int rows, cols, type; 
     in.read((char*)&rows, sizeof(int)); 
     in.read((char*)&cols, sizeof(int)); 
@@ -23,7 +23,7 @@ cv::Mat loadMatrix(std::string name) {
 }
 
 void saveCandidates(const std::vector<Cand>& candidates, std::string name) {
-    std::ofstream out(name + ".bin", std::ios::binary);
+    std::ofstream out(pathPrefix/(name + ".bin"), std::ios::binary);
     std::size_t count = candidates.size();
     out.write(reinterpret_cast<const char*>(&count), sizeof(count));
     if (count > 0) {
@@ -32,7 +32,7 @@ void saveCandidates(const std::vector<Cand>& candidates, std::string name) {
 }
 
 std::vector<Cand> loadCandidates(std::string name) {
-    std::ifstream in(name + ".bin", std::ios::binary);
+    std::ifstream in(pathPrefix/(name + ".bin"), std::ios::binary);
     std::size_t count = 0;
     in.read(reinterpret_cast<char*>(&count), sizeof(count));
     std::vector<Cand> candidates(count);
