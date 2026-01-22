@@ -14,21 +14,24 @@ void checkGPU();
 void loadPreprocessImage(std::string path);
 void computeThresholdCandidates();
 void computeIterativeCandidates();
+void showCandidates(bool showIterative);
 
 
 int main() {
 
-    checkGPU();
+    // checkGPU();
 
-    // loadPreprocessImage("../images/black.png");
-    loadPreprocessImage("../images/table.png");
-    // loadPreprocessImage("../images/apb1.png");
-    // loadPreprocessImage("../images/apb2.png");
-    // loadPreprocessImage("../images/apb3.png");
+    // // loadPreprocessImage("../images/black.png");
+    // loadPreprocessImage("../images/table.png");
+    // // loadPreprocessImage("../images/apb1.png");
+    // // loadPreprocessImage("../images/apb2.png");
+    // // loadPreprocessImage("../images/apb3.png");
 
-    computeThresholdCandidates();
+    // computeThresholdCandidates();
+    showCandidates(false);
     
-    computeIterativeCandidates();
+    // computeIterativeCandidates();
+    showCandidates(true);
     
     return 0;
 }
@@ -90,7 +93,6 @@ void computeThresholdCandidates() {
 
     // threshold candidates
     std::vector<Cand> tCandidates = extractSortedThresholdCandidates(cpuS, cpuD);
-    showScoreDirectionMatrix(cpuS, cpuD, tCandidates);
 
     // save the working state
     saveMatrix(cpuS, "scores");
@@ -101,8 +103,6 @@ void computeThresholdCandidates() {
 void computeIterativeCandidates() {
     // load the working state
     cv::Mat cpuF = loadMatrix("preprocessed");
-    cv::Mat cpuS = loadMatrix("scores");
-    cv::Mat cpuD = loadMatrix("directions");
     std::vector<Cand> tCandidates = loadCandidates("tcandidates");
 
     // iterative search candidates
@@ -111,8 +111,21 @@ void computeIterativeCandidates() {
         tCandidates,
         cpuF.cols, cpuF.rows
     );
-    showScoreDirectionMatrix(cpuS, cpuD, candidates);
 
     // save the working state
     saveCandidates(candidates, "candidates");
+}
+
+void showCandidates(bool showIterative) {
+    // load the working state
+    cv::Mat cpuS = loadMatrix("scores");
+    cv::Mat cpuD = loadMatrix("directions");
+    std::vector<Cand> candidates;
+    if (showIterative) {
+        candidates = loadCandidates("candidates");
+    } else {
+        candidates = loadCandidates("tcandidates");
+    }
+    //
+    showScoreDirectionMatrix(cpuS, cpuD, candidates);
 }

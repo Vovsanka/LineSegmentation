@@ -26,7 +26,7 @@ Cand upgradeCandidate(
     }
     //
     if (abs(bestY - cand.y) < UP_STEP && abs(bestX - cand.x) < UP_STEP) return cand;
-    //
+    // arrive at this point iff the score got upgraded (max score limited => no endless loop)
     Cand bestScoreDir = bestPossibleScoreDirection(F, Fstep, bestY, bestX, width, height);
     double bestDir = bestScoreDir.dir;
     return upgradeCandidate(F, Fstep, Cand(bestY, bestX, bestDir, bestScore), width, height);
@@ -66,7 +66,7 @@ std::vector<Cand> candidateIterativeSearch(
             F, Fstep,
             BLOCKED.ptr<uchar>(), BLOCKED.step,
             chosenCandidates,
-            startCand, -1, 0.0,
+            startCand, -1, 1.0,
             width, height
         );
         //
@@ -93,9 +93,9 @@ void candidateExpand(
 ) {
     if (isBlocked(B, Bstep, cand.y, cand.x, width, height) || cand.score < CAND_THRESHOLD) return;
     //
-    cand = upgradeCandidate(F, Fstep, cand, width, height);
-    // if (cand.score < prevScore) {
-    // }
+    if (cand.score < prevScore) {
+        cand = upgradeCandidate(F, Fstep, cand, width, height);
+    }
     //
     if (isBlocked(B, Bstep, cand.y, cand.x, width, height) || cand.score < CAND_THRESHOLD) return;
     // 
