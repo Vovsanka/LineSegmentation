@@ -4,17 +4,19 @@
 #include <opencv2/opencv.hpp>
 
 #include "operations.hpp"
+#include "working_state.hpp"
 #include "score.hpp"
 #include "candidate.hpp"
 #include "iterative.hpp"
-#include "cost.hpp"
-#include "working_state.hpp"
+#include "cgraph.hpp"
+
 
 void checkGPU();
 void loadPreprocessImage(std::string path);
 void computeThresholdCandidates();
 void computeIterativeCandidates();
-void showCandidates(bool showIterative);
+void showCandidates(bool pickIterative);
+void buildClusteringGraph(bool pickIterative);
 
 
 int main() {
@@ -28,10 +30,13 @@ int main() {
     // // loadPreprocessImage("../images/apb3.png");
 
     // computeThresholdCandidates();
-    showCandidates(false);
+    // showCandidates(false);
     
     // computeIterativeCandidates();
-    showCandidates(true);
+    // showCandidates(true);
+
+    buildClusteringGraph(false);
+    buildClusteringGraph(true);
     
     return 0;
 }
@@ -116,12 +121,12 @@ void computeIterativeCandidates() {
     saveCandidates(candidates, "candidates");
 }
 
-void showCandidates(bool showIterative) {
+void showCandidates(bool pickIterative) {
     // load the working state
     cv::Mat cpuS = loadMatrix("scores");
     cv::Mat cpuD = loadMatrix("directions");
     std::vector<Cand> candidates;
-    if (showIterative) {
+    if (pickIterative) {
         candidates = loadCandidates("candidates");
     } else {
         candidates = loadCandidates("tcandidates");
@@ -129,3 +134,25 @@ void showCandidates(bool showIterative) {
     //
     showScoreDirectionMatrix(cpuS, cpuD, candidates);
 }
+
+void buildClusteringGraph(bool pickIterative) {
+    // load the working state
+    std::vector<Cand> candidates;
+    if (pickIterative) {
+        candidates = loadCandidates("candidates");
+    } else {
+        candidates = loadCandidates("tcandidates");
+    }
+
+    CandidateGraph G(candidates);
+
+    // TODO: add costs and maybe lifted graph
+
+    // save the working state
+    if (pickIterative) {
+        // TODO (different names)
+    } else {
+        // TODO (different names)
+    }
+}
+

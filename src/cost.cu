@@ -3,8 +3,9 @@
 
 __host__
 double computeCandidateCost(
-    std::vector<Cand> candidates,
-    Cand& cand1, Cand& cand2
+    const std::vector<Cand>& candidates,
+    const Cand& cand1,
+    const Cand& cand2
 ) { 
     // reward if candidates are really close
     if (Cand::dist(cand1, cand2) <= ALMOST_SAME_PIXEL) return -1; 
@@ -23,11 +24,11 @@ double computeCandidateCost(
 
 __host__
 bool checkGaps(
-    std::vector<Cand> candidates,
-    Cand& cand1, Cand& cand2
+    const std::vector<Cand>& candidates,
+    const Cand& cand1, 
+    const Cand& cand2
 ) { 
     double candDist = Cand::dist(cand1, cand2);
-    if (candDist < GAP_SIZE) return true;
     //
     double maxTriangleDist = candDist + ALMOST_LINE_TRIANGLE;
     std::vector<int> segmentCandidates;
@@ -41,7 +42,7 @@ bool checkGaps(
     Vec lineVec(cand2.y - cand1.y, cand2.x - cand1.x);
     std::vector<double> projections;
     for (int k : segmentCandidates) {
-        Cand& cand = candidates[k];
+        const Cand& cand = candidates[k];
         Vec v1(cand.y - cand1.y, cand.x - cand1.x);
         double t = v1.dot(lineVec)/lineVec.dot(lineVec);
         double projectionDist = t*lineVec.len();
@@ -52,7 +53,7 @@ bool checkGaps(
     int lastProj = 0;
     for (double p : projections) {
         if (p <= 0 || p >= candDist) continue;
-        if (p - lastProj > GAP_SIZE) return false;
+        if (p - lastProj > MIN_GAP_SIZE) return false;
         lastProj = p;
     }
     return true;

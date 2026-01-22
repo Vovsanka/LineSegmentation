@@ -24,13 +24,13 @@ struct Cand {
     bool operator<(const Cand& otherCand);
 
     __host__ __device__
-    double distToLine(const Cand& otherCand);
+    double distToLine(const Cand& otherCand) const;
 
     __host__ __device__
-    static double dist(Cand& cand1, Cand& cand2);
+    static double dist(const Cand& cand1, const Cand& cand2);
 
     __host__ __device__
-    static int dirDiff(Cand& cand1, Cand& cand2);
+    static int dirDiff(const Cand& cand1, const Cand& cand2);
 
 };
 

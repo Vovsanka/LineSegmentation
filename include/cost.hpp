@@ -9,14 +9,16 @@
 
 __host__
 double computeCandidateCost(
-    std::vector<Cand> candidates,
-    Cand& cand1, Cand& cand2
+    const std::vector<Cand>& candidates,
+    const Cand& cand1, 
+    const Cand& cand2
 );
 
 __host__
 bool checkGaps(
-    std::vector<Cand> candidates,
-    Cand& cand1, Cand& cand2
+    const std::vector<Cand>& candidates,
+    const Cand& cand1, 
+    const Cand& cand2
 );
 
 
