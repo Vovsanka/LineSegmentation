@@ -8,6 +8,7 @@
 #include <opencv2/opencv.hpp>
 
 #include "cand_type.hpp"
+#include "cgraph.hpp"
 
 
 const std::filesystem::path pathPrefix("../working-state");
@@ -19,5 +20,9 @@ cv::Mat loadMatrix(std::string name);
 void saveCandidates(const std::vector<Cand>& candidates, std::string name);
 
 std::vector<Cand> loadCandidates(std::string name);
+
+void saveCandidateGraph(const CandidateGraph& G, std::string name);
+
+CandidateGraph loadCandidateGraph(std::string name);
 
 #endif

@@ -17,7 +17,7 @@ struct Edge {
 };
 
 struct CandidateGraph {
-    int n;
+    std::size_t n;
     std::vector<Edge> edges;
 
     CandidateGraph() = default;

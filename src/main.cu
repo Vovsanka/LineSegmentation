@@ -35,7 +35,7 @@ int main() {
     // computeIterativeCandidates();
     // showCandidates(true);
 
-    buildClusteringGraph(false);
+    // buildClusteringGraph(false);
     buildClusteringGraph(true);
     
     return 0;
@@ -102,13 +102,13 @@ void computeThresholdCandidates() {
     // save the working state
     saveMatrix(cpuS, "scores");
     saveMatrix(cpuD, "directions");
-    saveCandidates(tCandidates, "tcandidates");
+    saveCandidates(tCandidates, "t_candidates");
 }
 
 void computeIterativeCandidates() {
     // load the working state
     cv::Mat cpuF = loadMatrix("preprocessed");
-    std::vector<Cand> tCandidates = loadCandidates("tcandidates");
+    std::vector<Cand> tCandidates = loadCandidates("t_candidates");
 
     // iterative search candidates
     std::vector<Cand> candidates = candidateIterativeSearch(
@@ -129,7 +129,7 @@ void showCandidates(bool pickIterative) {
     if (pickIterative) {
         candidates = loadCandidates("candidates");
     } else {
-        candidates = loadCandidates("tcandidates");
+        candidates = loadCandidates("t_candidates");
     }
     //
     showScoreDirectionMatrix(cpuS, cpuD, candidates);
@@ -141,18 +141,18 @@ void buildClusteringGraph(bool pickIterative) {
     if (pickIterative) {
         candidates = loadCandidates("candidates");
     } else {
-        candidates = loadCandidates("tcandidates");
+        candidates = loadCandidates("t_candidates");
     }
 
     CandidateGraph G(candidates);
 
-    // TODO: add costs and maybe lifted graph
+    // TODO: maybe lifted graph
 
     // save the working state
     if (pickIterative) {
-        // TODO (different names)
+        saveCandidateGraph(G, "cgraph");
     } else {
-        // TODO (different names)
+        saveCandidateGraph(G, "t_cgraph");
     }
 }
 

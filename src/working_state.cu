@@ -37,7 +37,35 @@ std::vector<Cand> loadCandidates(std::string name) {
     in.read(reinterpret_cast<char*>(&count), sizeof(count));
     std::vector<Cand> candidates(count);
     if (count > 0) { 
-        in.read(reinterpret_cast<char*>(candidates.data()), count * sizeof(Cand)); 
+        in.read(reinterpret_cast<char*>(candidates.data()), count*sizeof(Cand)); 
     } 
     return candidates;
+}
+
+void saveCandidateGraph(const CandidateGraph& G, std::string name) {
+    std::ofstream out(pathPrefix/(name + ".bin"), std::ios::binary);
+    std::size_t vertexCount = G.n;
+    std::size_t edgeCount = G.edges.size();
+    out.write(reinterpret_cast<const char*>(&vertexCount), sizeof(vertexCount));
+    out.write(reinterpret_cast<const char*>(&edgeCount), sizeof(edgeCount));
+    if (edgeCount > 0) {
+        out.write(reinterpret_cast<const char*>(G.edges.data()), edgeCount*sizeof(Edge)); 
+    }
+}
+
+CandidateGraph loadCandidateGraph(std::string name) {
+    std::ifstream in(pathPrefix/(name + ".bin"), std::ios::binary);
+    std::size_t vertexCount = 0;
+    std::size_t edgeCount = 0;
+    in.read(reinterpret_cast<char*>(&vertexCount), sizeof(vertexCount));
+    in.read(reinterpret_cast<char*>(&edgeCount), sizeof(edgeCount));
+    std::vector<Edge> edges(edgeCount);
+    if (edgeCount > 0) { 
+        in.read(reinterpret_cast<char*>(edges.data()), edgeCount*sizeof(Edge)); 
+    } 
+    //
+    CandidateGraph G;
+    G.n = vertexCount;
+    G.edges = edges;
+    return G;
 }
