@@ -8,18 +8,18 @@ double computeCandidateCost(
     const Cand& cand2
 ) { 
     // reward if candidates are really close
-    if (Cand::dist(cand1, cand2) <= ALMOST_SAME_PIXEL) return -1; 
+    if (Cand::dist(cand1, cand2) <= ALMOST_SAME_PIXEL) return +1; 
     // penalty if directions do not match
-    if (Cand::dirDiff(cand1, cand2) > ALMOST_SAME_DIR) return 1;
+    if (Cand::dirDiff(cand1, cand2) > ALMOST_SAME_DIR) return -1;
     // penalty if the cands are not on the same line
     if (
         cand1.distToLine(cand2) > ALMOST_SAME_LINE && 
         cand2.distToLine(cand1) > ALMOST_SAME_LINE
-    ) return 1;
+    ) return -1;
     // reward if the line is continuous (no gaps)
-    if (checkGaps(candidates, cand1, cand2)) return -1;
+    if (checkGaps(candidates, cand1, cand2)) return +1;
     // penalty if the line has gaps
-    return 1;
+    return -1;
 }
 
 __host__

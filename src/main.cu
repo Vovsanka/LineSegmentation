@@ -9,14 +9,16 @@
 #include "candidate.hpp"
 #include "iterative.hpp"
 #include "cgraph.hpp"
+#include "clustering.hpp"
 
-
-void checkGPU();
-void loadPreprocessImage(std::string path);
-void computeThresholdCandidates();
-void computeIterativeCandidates();
-void showCandidates(bool pickIterative);
-void buildClusteringGraph(bool pickIterative);
+// independent steps 
+void checkGPU(); // 0
+void loadPreprocessImage(std::string path); // 1
+void computeThresholdCandidates(); // 2-1
+void computeIterativeCandidates(); // 2-2
+void showCandidates(bool pickIterative); // 2.1
+void buildClusteringGraph(bool pickIterative); // 3.1
+void performClustering(bool pickIterative); // 3.2
 
 
 int main() {
@@ -37,6 +39,9 @@ int main() {
 
     // buildClusteringGraph(false);
     buildClusteringGraph(true);
+
+    // performClustering(false);
+    performClustering(true);
     
     return 0;
 }
@@ -146,13 +151,32 @@ void buildClusteringGraph(bool pickIterative) {
 
     CandidateGraph G(candidates);
 
-    // TODO: maybe lifted graph
+    // TODO: maybe lifted candidate graph
 
     // save the working state
     if (pickIterative) {
         saveCandidateGraph(G, "cgraph");
     } else {
         saveCandidateGraph(G, "t_cgraph");
+    }
+}
+
+void performClustering(bool pickIterative) {
+    // load the working state
+    CandidateGraph G;
+    if (pickIterative) {
+        G = loadCandidateGraph("cgraph");
+    } else {
+        G = loadCandidateGraph("t_cgraph");
+    }
+
+    std::vector<bool> edgeLabels = solveClustering(G);
+
+    // save the working state
+    if (pickIterative) {
+        // TODO
+    } else {
+        // TODO
     }
 }
 
