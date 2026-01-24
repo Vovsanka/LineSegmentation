@@ -1,4 +1,4 @@
-#include "cgraph.hpp"
+#include "cgraph_type.hpp"
 
 
 __host__ __device__

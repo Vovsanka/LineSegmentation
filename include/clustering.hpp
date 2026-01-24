@@ -7,7 +7,7 @@
 #include "andres-graph/complete-graph.hxx"
 #include "andres-graph/greedy-additive.hxx"
 
-#include "cgraph.hpp"
+#include "cgraph_type.hpp"
 
 using namespace andres::graph;
 

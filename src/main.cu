@@ -8,7 +8,7 @@
 #include "score.hpp"
 #include "candidate.hpp"
 #include "iterative.hpp"
-#include "cgraph.hpp"
+#include "cgraph_type.hpp"
 #include "clustering.hpp"
 #include "line_type.hpp"
 
@@ -203,22 +203,13 @@ void extractLines(bool pickIterative) {
         edgeLabels = loadEdgeLabels("t_labels");
     }
 
-    //// debug start
-    for (int k = 0; k < G.edges.size(); k++) {
-        if (edgeLabels[k] == 0) {
-            const Edge& e = G.edges[k]; 
-            const Cand& cand1 = candidates[e.c1];
-            const Cand& cand2 = candidates[e.c2];
-            std::cout << e.c1 << " " << e.c2 << " " << e.w << std::endl;
-            std::cout << cand1.y << ":" << cand1.x << ":" << cand1.dir << " ";
-            std::cout << cand2.y << ":" << cand2.x << ":" << cand2.dir << std::endl;
-        }
-    }
-    //// debug end
-
-    // TODO
+    std::vector<Line> lines = extractLinesFromClusters(candidates, G, edgeLabels);
 
     // save the working state
-    // TODO
+    if (pickIterative) {
+        saveLines(lines, "lines");
+    } else {
+        saveLines(lines, "t_lines");
+    }
 }
 

@@ -89,3 +89,23 @@ std::vector<char> loadEdgeLabels(std::string name) {
     } 
     return edgeLabels;
 }
+
+void saveLines(const std::vector<Line>& lines, std::string name) {
+    std::ofstream out(pathPrefix/(name + ".bin"), std::ios::binary);
+    std::size_t lineCount = lines.size();
+    out.write(reinterpret_cast<const char*>(&lineCount), sizeof(lineCount));
+    if (lineCount > 0) {
+        out.write(reinterpret_cast<const char*>(lines.data()), lineCount*sizeof(Line)); 
+    }
+}
+
+std::vector<Line> loadLines(std::string name) {
+    std::ifstream in(pathPrefix/(name + ".bin"), std::ios::binary);
+    std::size_t lineCount = 0;
+    in.read(reinterpret_cast<char*>(&lineCount), sizeof(lineCount));
+    std::vector<Line> lines(lineCount);
+    if (lineCount > 0) { 
+        in.read(reinterpret_cast<char*>(lines.data()), lineCount*sizeof(Line)); 
+    } 
+    return lines;
+}

@@ -8,7 +8,8 @@
 #include <opencv2/opencv.hpp>
 
 #include "cand_type.hpp"
-#include "cgraph.hpp"
+#include "cgraph_type.hpp"
+#include "line_type.hpp"
 
 
 const std::filesystem::path pathPrefix("../working-state");
@@ -28,5 +29,9 @@ CandidateGraph loadCandidateGraph(std::string name);
 void saveEdgeLabels(const std::vector<char>& edgeLabels, std::string name);
 
 std::vector<char> loadEdgeLabels(std::string name);
+
+void saveLines(const std::vector<Line>& lines, std::string name);
+
+std::vector<Line> loadLines(std::string name);
 
 #endif
