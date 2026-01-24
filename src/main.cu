@@ -170,13 +170,13 @@ void performClustering(bool pickIterative) {
         G = loadCandidateGraph("t_cgraph");
     }
 
-    std::vector<bool> edgeLabels = solveClustering(G);
+    std::vector<char> edgeLabels = solveClustering(G);
 
     // save the working state
     if (pickIterative) {
-        // TODO
+        saveEdgeLabels(edgeLabels, "labels");
     } else {
-        // TODO
+        saveEdgeLabels(edgeLabels, "t_labels");
     }
 }
 

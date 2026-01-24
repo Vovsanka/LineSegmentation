@@ -69,3 +69,23 @@ CandidateGraph loadCandidateGraph(std::string name) {
     G.edges = edges;
     return G;
 }
+
+void saveEdgeLabels(const std::vector<char>& edgeLabels, std::string name) {
+    std::ofstream out(pathPrefix/(name + ".bin"), std::ios::binary);
+    std::size_t edgeCount = edgeLabels.size();
+    out.write(reinterpret_cast<const char*>(&edgeCount), sizeof(edgeCount));
+    if (edgeCount > 0) {
+        out.write(reinterpret_cast<const char*>(edgeLabels.data()), edgeCount); 
+    }
+}
+
+std::vector<char> loadEdgeLabels(std::string name) {
+    std::ifstream in(pathPrefix/(name + ".bin"), std::ios::binary);
+    std::size_t edgeCount = 0;
+    in.read(reinterpret_cast<char*>(&edgeCount), sizeof(edgeCount));
+    std::vector<char> edgeLabels(edgeCount);
+    if (edgeCount > 0) { 
+        in.read(reinterpret_cast<char*>(edgeLabels.data()), edgeCount); 
+    } 
+    return edgeLabels;
+}

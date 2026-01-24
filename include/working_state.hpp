@@ -25,4 +25,8 @@ void saveCandidateGraph(const CandidateGraph& G, std::string name);
 
 CandidateGraph loadCandidateGraph(std::string name);
 
+void saveEdgeLabels(const std::vector<char>& edgeLabels, std::string name);
+
+std::vector<char> loadEdgeLabels(std::string name);
+
 #endif

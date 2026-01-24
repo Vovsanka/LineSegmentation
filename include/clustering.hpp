@@ -12,7 +12,7 @@
 using namespace andres::graph;
 
 
-std::vector<bool> solveClustering(const CandidateGraph& G);
+std::vector<char> solveClustering(const CandidateGraph& G);
 
 
 #endif
