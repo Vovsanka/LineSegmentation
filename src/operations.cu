@@ -113,6 +113,23 @@ void showScoreDirectionMatrix(
     showImage(Mbgr);
 }
 
+__host__
+void drawLines(const std::vector<Line>& lines, int width, int height) {
+    cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+    cairo_t* cr = cairo_create(surface);
+    // Background 
+    cairo_set_source_rgb(cr, 1.0, 1.0, 1.0); 
+    cairo_paint(cr); 
+    // Line with fractional coordinates 
+    cairo_set_source_rgb(cr, 0.0, 0.0, 0.0); 
+    cairo_set_line_width(cr, 2.0); 
+    cairo_move_to(cr, 10.3, 10.7); 
+    cairo_line_to(cr, 389.8, 289.2); 
+    cairo_stroke(cr); 
+    cairo_surface_write_to_png(surface, "output.png");
+    cairo_destroy(cr);
+    cairo_surface_destroy(surface);
+}
 
 
 

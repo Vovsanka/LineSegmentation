@@ -10,6 +10,8 @@
 #include "iterative.hpp"
 #include "cgraph.hpp"
 #include "clustering.hpp"
+#include "line_type.hpp"
+
 
 // independent steps 
 void checkGPU(); // 0
@@ -45,7 +47,9 @@ int main() {
     // performClustering(true);
 
     // extractLines(false);
-    extractLines(true);
+    // extractLines(true);
+
+    drawLines(std::vector<Line>(), 400, 400);
     
     return 0;
 }
@@ -212,6 +216,9 @@ void extractLines(bool pickIterative) {
     }
     //// debug end
 
+    // TODO
+
     // save the working state
+    // TODO
 }
 

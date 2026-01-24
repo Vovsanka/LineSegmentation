@@ -1,6 +1,6 @@
 # LineSegmentation
 
-On Linux: g++, cmake, opencv (with CUDA support),
+On Linux: g++, cmake, opencv (with CUDA support), cairo
 libgtk2.0-dev pkg-config,
 libcanberra-gtk-module libcanberra-gtk3-module,
 
