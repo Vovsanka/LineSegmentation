@@ -17,8 +17,9 @@ void loadPreprocessImage(std::string path); // 1
 void computeThresholdCandidates(); // 2-1
 void computeIterativeCandidates(); // 2-2
 void showCandidates(bool pickIterative); // 2.1
-void buildClusteringGraph(bool pickIterative); // 3.1
-void performClustering(bool pickIterative); // 3.2
+void buildClusteringGraph(bool pickIterative); // 3
+void performClustering(bool pickIterative); // 4
+void extractLines(bool pickIterative); // 5
 
 
 int main() {
@@ -38,10 +39,13 @@ int main() {
     // showCandidates(true);
 
     // buildClusteringGraph(false);
-    buildClusteringGraph(true);
+    // buildClusteringGraph(true);
 
     // performClustering(false);
-    performClustering(true);
+    // performClustering(true);
+
+    // extractLines(false);
+    extractLines(true);
     
     return 0;
 }
@@ -178,5 +182,36 @@ void performClustering(bool pickIterative) {
     } else {
         saveEdgeLabels(edgeLabels, "t_labels");
     }
+}
+
+void extractLines(bool pickIterative) {
+    // load the working state
+    std::vector<Cand> candidates;
+    CandidateGraph G;
+    std::vector<char> edgeLabels;
+    if (pickIterative) {
+        candidates = loadCandidates("candidates");
+        G = loadCandidateGraph("cgraph");
+        edgeLabels = loadEdgeLabels("labels");
+    } else {
+        candidates = loadCandidates("t_candidates");
+        G = loadCandidateGraph("t_cgraph");
+        edgeLabels = loadEdgeLabels("t_labels");
+    }
+
+    //// debug start
+    for (int k = 0; k < G.edges.size(); k++) {
+        if (edgeLabels[k] == 0) {
+            const Edge& e = G.edges[k]; 
+            const Cand& cand1 = candidates[e.c1];
+            const Cand& cand2 = candidates[e.c2];
+            std::cout << e.c1 << " " << e.c2 << " " << e.w << std::endl;
+            std::cout << cand1.y << ":" << cand1.x << ":" << cand1.dir << " ";
+            std::cout << cand2.y << ":" << cand2.x << ":" << cand2.dir << std::endl;
+        }
+    }
+    //// debug end
+
+    // save the working state
 }
 
