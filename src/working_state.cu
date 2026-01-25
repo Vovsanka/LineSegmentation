@@ -1,6 +1,29 @@
 #include "working_state.hpp"
 
 
+void saveImageParams(
+    int originalWidth, int originalHeight,
+    int width, int height,
+    std::string name
+) {
+    std::ofstream out(pathPrefix/(name + ".bin"), std::ios::binary);
+    out.write(reinterpret_cast<const char*>(&originalWidth), sizeof(originalWidth));
+    out.write(reinterpret_cast<const char*>(&originalHeight), sizeof(originalHeight));
+    out.write(reinterpret_cast<const char*>(&width), sizeof(width));
+    out.write(reinterpret_cast<const char*>(&height), sizeof(height));
+}
+
+std::tuple<int,int,int,int> loadImageParams(std::string name) {
+    std::ifstream in(pathPrefix/(name + ".bin"), std::ios::binary);
+    int originalWidth = 0, originalHeight = 0;
+    int width = 0, height = 0;
+    in.read(reinterpret_cast<char*>(&originalWidth), sizeof(originalWidth));
+    in.read(reinterpret_cast<char*>(&originalHeight), sizeof(originalHeight));
+    in.read(reinterpret_cast<char*>(&width), sizeof(width));
+    in.read(reinterpret_cast<char*>(&height), sizeof(height));
+    return std::make_tuple(originalWidth, originalHeight, width, height);
+}
+
 void saveMatrix(const cv::Mat& M, std::string name) {
     std::ofstream out(pathPrefix/(name + ".bin"), std::ios::binary);
     int rows = M.rows, cols = M.cols, type = M.type();

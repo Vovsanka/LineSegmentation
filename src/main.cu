@@ -4,54 +4,87 @@
 #include <opencv2/opencv.hpp>
 
 #include "operations.hpp"
-#include "working_state.hpp"
-#include "score.hpp"
 #include "candidate.hpp"
 #include "iterative.hpp"
-#include "cgraph_type.hpp"
 #include "clustering.hpp"
-#include "line_type.hpp"
 #include "lines.hpp"
 
 
 // independent steps 
 void checkGPU(); // 0
-void loadPreprocessImage(std::string path); // 1
-void computeThresholdCandidates(); // 2-1
-void computeIterativeCandidates(); // 2-2
-void showCandidates(bool pickIterative); // 2.1
-void buildClusteringGraph(bool pickIterative); // 3
-void performClustering(bool pickIterative); // 4
-void extractLines(bool pickIterative); // 5
+void loadPreprocessImage(
+    std::string imagePath,
+    std::string originalImage_outName,
+    std::string preprocessedImage_outName,
+    std::string params_outName
+); // 1
+void computeThresholdCandidates(
+    std::string preprocessedImage_inName,
+    std::string scoreMatrix_outName,
+    std::string directionMatrix_outName,
+    std::string candidateList_outName
+); // 2-1
+void computeIterativeCandidates(
+    std::string preprocessedImage_inName,
+    std::string candidateList_inName,
+    std::string candidateList_outName
+); // 2-2
+void showCandidates(
+    std::string scoreMatrix_inName,
+    std::string directionMatrix_inName,
+    std::string candidateList_inName
+); // 2.1
+void buildCandidateGraph(
+    std::string candidateList_inName,
+    std::string candidateGraph_outName
+); // 3
+void performClustering(
+    std::string candidateGraph_inName,
+    std::string edgeLabels_outName
+); // 4
+void extractLines(
+    std::string candidateList_inName,
+    std::string candidateGraph_inName,
+    std::string edgeLabels_inName,
+    std::string lines_outName
+); // 5
+void reconstructOriginalLines(
+    std::string params_inName,
+    std::string lines_inName,
+    std::string lines_outName
+); // 5.1
+void buildLineEdgeImage(
+    std::string params_inName,
+    std::string lines_inName,
+    std::string lineEdgeImage_outName,
+    bool originalSize = true
+); // 5.2
 
 
 int main() {
 
     // checkGPU();
 
-    // // loadPreprocessImage("../images/black.png");
-    // loadPreprocessImage("../images/table.png");
-    // // loadPreprocessImage("../images/apb1.png");
-    // // loadPreprocessImage("../images/apb2.png");
-    // // loadPreprocessImage("../images/apb3.png");
+    // // loadPreprocessImage("../images/black.png", "original", "preprocessed", "params");
+    // loadPreprocessImage("../images/table.png", "original", "preprocessed", "params");
+    // // loadPreprocessImage("../images/apb1.png", "original", "preprocessed", "params");
+    // // loadPreprocessImage("../images/apb2.png", "original", "preprocessed", "params");
+    // // loadPreprocessImage("../images/apb3.png", "original", "preprocessed", "params");
 
-    // computeThresholdCandidates();
-    // showCandidates(false);
+    // computeThresholdCandidates("preprocessed", "scores", "directions", "t_candidates");
+    // showCandidates("scores", "directions", "t_candidates");
     
-    // computeIterativeCandidates();
-    // showCandidates(true);
+    // computeIterativeCandidates("preprocessed", "t_candidates", "candidates");
+    // showCandidates("scores", "directions", "candidates");
 
-    // buildClusteringGraph(false);
-    // buildClusteringGraph(true);
+    // buildCandidateGraph("candidates", "cgraph");
+    // performClustering("cgraph", "labels");
 
-    // performClustering(false);
-    // performClustering(true);
+    // extractLines("candidates", "cgraph", "labels", "lines");
+    // buildLineEdgeImage("params", "lines", "edges", false);
 
-    // extractLines(false);
-    extractLines(true);
-
-    // drawLines(false);
-    // drawLines(true);
+    // reconstructOriginalLines("params", "lines", "or_lines");
+    buildLineEdgeImage("params", "or_lines", "or_edges");
     
     return 0;
 }
@@ -63,9 +96,14 @@ void checkGPU() {
     if (!cudaCount) std::exit(1);
 }
 
-void loadPreprocessImage(std::string path) {
+void loadPreprocessImage(
+    std::string imagePath,
+    std::string originalImage_outName,
+    std::string preprocessedImage_outName,
+    std::string params_outName
+) {
     // Load an RGB image
-    cv::Mat originalF = cv::imread(path, cv::IMREAD_COLOR);
+    cv::Mat originalF = cv::imread(imagePath, cv::IMREAD_COLOR);
     if (originalF.empty()) std::exit(1);
     showImage(originalF);
     
@@ -89,13 +127,19 @@ void loadPreprocessImage(std::string path) {
     std::cout << "cpu image size: " << cpuF.cols << "x" << cpuF.rows << std::endl;    
 
     // save the working state
-    saveMatrix(originalF, "original");
-    saveMatrix(cpuF, "preprocessed");
+    saveMatrix(originalF, originalImage_outName);
+    saveMatrix(cpuF, preprocessedImage_outName);
+    saveImageParams(originalF.cols, originalF.rows, cpuF.cols, cpuF.rows, params_outName);
 }
 
-void computeThresholdCandidates() {
+void computeThresholdCandidates(
+    std::string preprocessedImage_inName,
+    std::string scoreMatrix_outName,
+    std::string directionMatrix_outName,
+    std::string candidateList_outName
+) {
     // load the working state
-    cv::Mat cpuF = loadMatrix("preprocessed");
+    cv::Mat cpuF = loadMatrix(preprocessedImage_inName);
 
     // Upload the preprocessed matrix to GPU
     cv::cuda::GpuMat F = uploadToGPU(cpuF);
@@ -115,15 +159,19 @@ void computeThresholdCandidates() {
     std::vector<Cand> tCandidates = extractSortedThresholdCandidates(cpuS, cpuD);
 
     // save the working state
-    saveMatrix(cpuS, "scores");
-    saveMatrix(cpuD, "directions");
-    saveCandidates(tCandidates, "t_candidates");
+    saveMatrix(cpuS, scoreMatrix_outName);
+    saveMatrix(cpuD, directionMatrix_outName);
+    saveCandidates(tCandidates, candidateList_outName);
 }
 
-void computeIterativeCandidates() {
+void computeIterativeCandidates(
+    std::string preprocessedImage_inName,
+    std::string candidateList_inName,
+    std::string candidateList_outName
+) {
     // load the working state
-    cv::Mat cpuF = loadMatrix("preprocessed");
-    std::vector<Cand> tCandidates = loadCandidates("t_candidates");
+    cv::Mat cpuF = loadMatrix(preprocessedImage_inName);
+    std::vector<Cand> tCandidates = loadCandidates(candidateList_inName);
 
     // iterative search candidates
     std::vector<Cand> candidates = candidateIterativeSearch(
@@ -133,85 +181,114 @@ void computeIterativeCandidates() {
     );
 
     // save the working state
-    saveCandidates(candidates, "candidates");
+    saveCandidates(candidates, candidateList_outName);
 }
 
-void showCandidates(bool pickIterative) {
+void showCandidates(
+    std::string scoreMatrix_inName,
+    std::string directionMatrix_inName,
+    std::string candidateList_inName
+) {
     // load the working state
-    cv::Mat cpuS = loadMatrix("scores");
-    cv::Mat cpuD = loadMatrix("directions");
-    std::vector<Cand> candidates;
-    if (pickIterative) {
-        candidates = loadCandidates("candidates");
-    } else {
-        candidates = loadCandidates("t_candidates");
-    }
+    cv::Mat cpuS = loadMatrix(scoreMatrix_inName);
+    cv::Mat cpuD = loadMatrix(directionMatrix_inName);
+    std::vector<Cand> candidates = loadCandidates(candidateList_inName);
     //
     showScoreDirectionMatrix(cpuS, cpuD, candidates);
 }
 
-void buildClusteringGraph(bool pickIterative) {
+void buildCandidateGraph(
+    std::string candidateList_inName,
+    std::string candidateGraph_outName
+) {
     // load the working state
-    std::vector<Cand> candidates;
-    if (pickIterative) {
-        candidates = loadCandidates("candidates");
-    } else {
-        candidates = loadCandidates("t_candidates");
-    }
+    std::vector<Cand> candidates = loadCandidates(candidateList_inName);
 
     CandidateGraph G(candidates);
 
     // TODO: maybe lifted candidate graph
 
     // save the working state
-    if (pickIterative) {
-        saveCandidateGraph(G, "cgraph");
-    } else {
-        saveCandidateGraph(G, "t_cgraph");
-    }
+    saveCandidateGraph(G, candidateGraph_outName);
 }
 
-void performClustering(bool pickIterative) {
+void performClustering(
+    std::string candidateGraph_inName,
+    std::string edgeLabels_outName
+) {
     // load the working state
-    CandidateGraph G;
-    if (pickIterative) {
-        G = loadCandidateGraph("cgraph");
-    } else {
-        G = loadCandidateGraph("t_cgraph");
-    }
+    CandidateGraph G = loadCandidateGraph(candidateGraph_inName);
 
     std::vector<char> edgeLabels = solveClustering(G);
 
     // save the working state
-    if (pickIterative) {
-        saveEdgeLabels(edgeLabels, "labels");
-    } else {
-        saveEdgeLabels(edgeLabels, "t_labels");
-    }
+    saveEdgeLabels(edgeLabels, edgeLabels_outName);
 }
 
-void extractLines(bool pickIterative) {
+void extractLines(
+    std::string candidateList_inName,
+    std::string candidateGraph_inName,
+    std::string edgeLabels_inName,
+    std::string lines_outName
+) {
     // load the working state
-    std::vector<Cand> candidates;
-    CandidateGraph G;
-    std::vector<char> edgeLabels;
-    if (pickIterative) {
-        candidates = loadCandidates("candidates");
-        G = loadCandidateGraph("cgraph");
-        edgeLabels = loadEdgeLabels("labels");
-    } else {
-        candidates = loadCandidates("t_candidates");
-        G = loadCandidateGraph("t_cgraph");
-        edgeLabels = loadEdgeLabels("t_labels");
-    }
+    std::vector<Cand> candidates = loadCandidates(candidateList_inName);
+    CandidateGraph G = loadCandidateGraph(candidateGraph_inName);
+    std::vector<char> edgeLabels = loadEdgeLabels(edgeLabels_inName);
 
     std::vector<Line> lines = extractLinesFromClusters(candidates, G, edgeLabels);
 
     // save the working state
-    if (pickIterative) {
-        saveLines(lines, "lines");
-    } else {
-        saveLines(lines, "t_lines");
-    }
+    saveLines(lines, lines_outName);
 }
 
+void reconstructOriginalLines(
+    std::string params_inName,
+    std::string lines_inName,
+    std::string lines_outName
+) {
+    // load the working state
+    int originalWidth, originalHeight;
+    int width, height;
+    std::tie(originalWidth, originalHeight, width, height) = loadImageParams(params_inName);
+    std::vector<Line> lines = loadLines(lines_inName);
+    
+    double scaleY = 1.0*originalHeight/height;
+    double scaleX = 1.0*originalWidth/width;
+    std::vector<Line> originalLines(lines.size());
+    for (int k = 0; k < lines.size(); k++) {
+        const Line& l = lines[k];
+        originalLines[k] = Line(scaleY*l.y1, scaleX*l.x1, scaleY*l.y2, scaleX*l.x2);
+    } 
+
+    // save the working state
+    saveLines(originalLines, lines_outName);
+}
+
+void buildLineEdgeImage(
+    std::string params_inName,
+    std::string lines_inName,
+    std::string lineEdgeImage_outName,
+    bool originalSize
+) {
+    // load the working state
+    int originalWidth, originalHeight;
+    int width, height;
+    std::tie(originalWidth, originalHeight, width, height) = loadImageParams(params_inName);
+    std::vector<Line> lines = loadLines(lines_inName);
+
+    if (originalSize) {
+        width = originalWidth;
+        height = originalHeight;
+    }
+
+    // draw and save the line edge image
+    drawLineEdgeImage(lines, width, height, lineEdgeImage_outName);
+
+    // show the line edge image
+    cv::Mat I = cv::imread(
+        (pathPrefix/(lineEdgeImage_outName + ".png")).string().c_str(),
+        cv::IMREAD_GRAYSCALE
+    );
+    showImage(I);
+}

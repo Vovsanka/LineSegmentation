@@ -14,6 +14,14 @@
 
 const std::filesystem::path pathPrefix("../working-state");
 
+void saveImageParams(
+    int originalWidth, int originalHeight,
+    int width, int height,
+    std::string name
+);
+
+std::tuple<int,int,int,int> loadImageParams(std::string name);
+
 void saveMatrix(const cv::Mat& M, std::string name);
 
 cv::Mat loadMatrix(std::string name);

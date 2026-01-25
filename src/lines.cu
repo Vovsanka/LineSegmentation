@@ -57,7 +57,7 @@ std::optional<Line> clusterToLine (
     std::vector<cv::Point2d> points;
     for (int node : cluster) {
         const Cand& cand = candidates[node];
-        points.push_back({cand.y, cand.x});
+        points.push_back({cand.x, cand.y});
     }
     //
     cv::Vec4f line;
@@ -82,5 +82,5 @@ std::optional<Line> clusterToLine (
     double end1X = x0 + minT*vx;
     double end2Y = y0 + maxT*vy;
     double end2X = x0 + maxT*vx;
-    return Line(end1Y, end1X, end2Y, end2X);
+    return Line(end1Y, end1X, end2Y, end2X); // TODO: fix min-max-T
 }

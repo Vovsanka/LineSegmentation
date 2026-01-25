@@ -1,6 +1,8 @@
 #ifndef OPERATIONS_HPP
 #define OPERATIONS_HPP
 
+#include <string>
+
 #include <opencv2/opencv.hpp>
 #include <opencv2/cudafilters.hpp>
 #include <opencv2/cudaimgproc.hpp>
@@ -10,6 +12,7 @@
 #include "cand_type.hpp"
 #include "directions.hpp"
 #include "line_type.hpp"
+#include "working_state.hpp"
 
 
 template <typename T>
@@ -60,6 +63,10 @@ void showScoreDirectionMatrix(
 );
 
 __host__
-void drawLines(const std::vector<Line>& lines, int width, int height);
+void drawLineEdgeImage(
+    const std::vector<Line>& lines, 
+    int width, int height,
+    std::string name
+);
 
 #endif

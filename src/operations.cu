@@ -114,19 +114,24 @@ void showScoreDirectionMatrix(
 }
 
 __host__
-void drawLines(const std::vector<Line>& lines, int width, int height) {
+void drawLineEdgeImage(const std::vector<Line>& lines, int width, int height, std::string name) {
     cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
     cairo_t* cr = cairo_create(surface);
-    // Background 
-    cairo_set_source_rgb(cr, 1.0, 1.0, 1.0); 
-    cairo_paint(cr); 
-    // Line with fractional coordinates 
+    // background 
     cairo_set_source_rgb(cr, 0.0, 0.0, 0.0); 
-    cairo_set_line_width(cr, 2.0); 
-    cairo_move_to(cr, 10.3, 10.7); 
-    cairo_line_to(cr, 389.8, 289.2); 
+    cairo_paint(cr); 
+    // pen
+    cairo_set_source_rgb(cr, 1.0, 1.0, 1.0); 
+    cairo_set_line_width(cr, 1.0); 
+    // draw lines
+    for (const Line& l : lines) {
+        cairo_move_to(cr, l.x1, l.y1); 
+        cairo_line_to(cr, l.x2, l.y2); 
+    }
     cairo_stroke(cr); 
-    cairo_surface_write_to_png(surface, "output.png");
+    //
+    cairo_surface_write_to_png(surface, (pathPrefix/(name + ".png")).string().c_str());
+    //
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
 }
