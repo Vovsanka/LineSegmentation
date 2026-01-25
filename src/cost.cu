@@ -45,7 +45,7 @@ bool checkGaps(
         const Cand& cand = candidates[k];
         Vec v1(cand.y - cand1.y, cand.x - cand1.x);
         double t = v1.dot(lineVec)/lineVec.dot(lineVec);
-        double projectionDist = t*lineVec.len();
+        double projectionDist = t*lineVec.len(); // dist from cand1 
         projections.push_back(projectionDist);
     }
     // check for the gaps in the projections

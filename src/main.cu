@@ -11,6 +11,7 @@
 #include "cgraph_type.hpp"
 #include "clustering.hpp"
 #include "line_type.hpp"
+#include "lines.hpp"
 
 
 // independent steps 
@@ -47,9 +48,10 @@ int main() {
     // performClustering(true);
 
     // extractLines(false);
-    // extractLines(true);
+    extractLines(true);
 
-    drawLines(std::vector<Line>(), 400, 400);
+    // drawLines(false);
+    // drawLines(true);
     
     return 0;
 }

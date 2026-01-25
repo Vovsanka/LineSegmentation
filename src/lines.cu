@@ -1,6 +1,6 @@
 #include "lines.hpp"
 
-
+__host__
 std::vector<Line> extractLinesFromClusters(
     const std::vector<Cand>& candidates,
     const CandidateGraph& G,
@@ -10,13 +10,15 @@ std::vector<Line> extractLinesFromClusters(
     //
     std::vector<Line> lines;
     for (const std::vector<int>& cluster : clusters) {
-        if (clusterIsLine(candidates, cluster)) {
-            lines.push_back(clusterToLine(candidate, cluster));
+        std::optional<Line> line = clusterToLine(candidates, cluster);
+        if (line.has_value()) {
+            lines.push_back(*line);
         }
     }
     return lines;
 }
 
+__host__
 std::vector<std::vector<int>> retrieveClusters( 
     const CandidateGraph& G,
     const std::vector<char>& edgeLabels
@@ -45,16 +47,40 @@ std::vector<std::vector<int>> retrieveClusters(
     return clusters;
 }
 
-bool clusterIsLine(
+__host__
+std::optional<Line> clusterToLine (
     const std::vector<Cand>& candidates,
     const std::vector<int>& cluster
 ) {
-    // TODO
-}
-
-Line clusterToLine() (
-    const std::vector<Cand>& candidates,
-    const std::vector<int>& cluster
-) {
-    // TODO: best fit line (opencv maybe?)
+    if (cluster.size() < MIN_LINE_SIZE) return std::nullopt;
+    //
+    std::vector<cv::Point2d> points;
+    for (int node : cluster) {
+        const Cand& cand = candidates[node];
+        points.push_back({cand.y, cand.x});
+    }
+    //
+    cv::Vec4f line;
+    cv::fitLine(points, line, cv::DIST_L2, 0, 0.01, 0.01);
+    // line = (vx, vy, x0, y0)
+    float vx = line[0];
+    float vy = line[1];
+    float x0 = line[2];
+    float y0 = line[3];
+    //
+    Vec lineVec(vy, vx);
+    double minT = +1e6, maxT = -1e6; // projection factor
+    for (int node : cluster) {
+        const Cand& cand = candidates[node];
+        Vec v1(cand.y - y0, cand.x - x0);
+        double t = v1.dot(lineVec)/lineVec.dot(lineVec);
+        minT = min(t, minT);
+        maxT = max(t, maxT);
+    }
+    // 
+    double end1Y = y0 + minT*vy;
+    double end1X = x0 + minT*vx;
+    double end2Y = y0 + maxT*vy;
+    double end2X = x0 + maxT*vx;
+    return Line(end1Y, end1X, end2Y, end2X);
 }
