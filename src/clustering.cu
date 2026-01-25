@@ -16,7 +16,7 @@ std::vector<char> solveClustering(const CandidateGraph& G) {
     }
     // 
     std::vector<char> allLabels(liftedGraph.numberOfEdges(), 1);
-    multicut_lifted::greedyAdditiveEdgeContraction(originalGraph, liftedGraph, weights, allLabels);
+    multicut_lifted::kernighanLin(originalGraph, liftedGraph, weights, allLabels, allLabels);
     //
     std::vector<char> edgeLabels(m, true);
     for (int k = 0; k < m; k++) {
