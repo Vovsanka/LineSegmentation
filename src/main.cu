@@ -71,20 +71,20 @@ int main() {
     // // loadPreprocessImage("../images/apb2.png", "original", "preprocessed", "params");
     // // loadPreprocessImage("../images/apb3.png", "original", "preprocessed", "params");
 
-    // computeThresholdCandidates("preprocessed", "scores", "directions", "t_candidates");
-    // showCandidates("scores", "directions", "t_candidates");
+    computeThresholdCandidates("preprocessed", "scores", "directions", "t_candidates");
+    showCandidates("scores", "directions", "t_candidates");
     
     // computeIterativeCandidates("preprocessed", "t_candidates", "candidates");
     // showCandidates("scores", "directions", "candidates");
 
     // buildCandidateGraph("candidates", "cgraph");
-    performClustering("cgraph", "labels");
+    // performClustering("cgraph", "labels");
 
-    extractLines("candidates", "cgraph", "labels", "lines");
-    buildLineEdgeImage("params", "lines", "edges", false);
+    // extractLines("candidates", "cgraph", "labels", "lines");
+    // buildLineEdgeImage("params", "lines", "edges", false);
 
-    reconstructOriginalLines("params", "lines", "or_lines");
-    buildLineEdgeImage("params", "or_lines", "or_edges");
+    // reconstructOriginalLines("params", "lines", "or_lines");
+    // buildLineEdgeImage("params", "or_lines", "or_edges");
     
     return 0;
 }

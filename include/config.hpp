@@ -2,14 +2,15 @@
 #define CONFIG_HPP
 
 
-// math constants
+// constants
+const double TOL = 1e-6;
 const double PI = 3.141593;
 
 // image scaling (up and down possible)
 const int MAX_SIDE = 320;
 
 // beam score computation
-const int DIRECTIONS = 36; // even! // <= 1024 // DIRECTIONS ~ PI //
+const int DIRECTIONS = 180; // even! // <= 1024 // DIRECTIONS ~ PI //
 const int CIRCLE_COUNT = 5; // 5
 const double CIRCLE_STEP = 1.0;
 const double COLOR_OFFSET = 3.0; // avoid 0-arrays & ignore some noise
@@ -23,14 +24,13 @@ const int UP_COUNT = 10;
 const double UP_STEP = 0.1;
 
 // candidate graph 
-const double MAX_PROXIMITY = 3.0;
-const double ALMOST_SAME_PIXEL = 1.5; 
-const int ALMOST_SAME_DIR = 1;
-const double ALMOST_SAME_LINE = 2.0;
-const double ALMOST_LINE_TRIANGLE = 2.0;
+const double CONNECTION_RADIUS = 10.0;
+const double SAME_LINE_FACTOR = 0.1;
+const double LINE_TRIANGLE_FACTOR = 1.1;
 const double MIN_GAP_SIZE = 5.0;
 
-// line extraction
-const int MIN_LINE_SIZE = 5;
+// clustering and line extraction
+const double MAX_COST = 1;
+const int MIN_LINE_CLUSTER = 5;
 
 #endif

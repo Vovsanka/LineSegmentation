@@ -28,6 +28,7 @@ int Cand::dirDiff(const Cand& cand1, const Cand& cand2) {
 __host__ __device__
 double Cand::distToLine(const Cand& otherCand) const {
     Vec v(otherCand.y - y, otherCand.x - x);
-    Vec u = getUnitVector(dir);
-    return abs(v.dot(u));
+    Vec u = getOrthogonalUnitVector(dir);
+    Vec p = v.subtract(u*v.dot(u));
+    return p.len();
 }

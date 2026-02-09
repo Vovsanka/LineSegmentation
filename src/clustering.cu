@@ -1,27 +1,20 @@
 #include "clustering.hpp"
 
+
 std::vector<char> solveClustering(const CandidateGraph& G) {
     std::size_t n = G.n;
     std::size_t m = G.edges.size();
     //
-    Graph<> originalGraph(n);
-    for (const Edge& e : G.edges) {
-        originalGraph.insertEdge(e.c1, e.c2);
-    }
-    //
-    CompleteGraph<> liftedGraph(n);
-    std::vector<double> weights(liftedGraph.numberOfEdges());
-    for (const Edge& e : G.edges) {
-        weights[liftedGraph.findEdge(e.c1, e.c2).second] = e.w;
-    }
-    // 
-    std::vector<char> allLabels(liftedGraph.numberOfEdges(), 1);
-    multicut_lifted::kernighanLin(originalGraph, liftedGraph, weights, allLabels, allLabels);
-    //
-    std::vector<char> edgeLabels(m, true);
+    Graph<> graph(n);
+    std::vector<int> weights(m);
     for (int k = 0; k < m; k++) {
         const Edge& e = G.edges[k];
-        edgeLabels[k] = allLabels[liftedGraph.findEdge(e.c1, e.c2).second];
+        graph.insertEdge(e.c1, e.c2);
+        weights[k] = e.w;
     }
+    // 
+    std::vector<char> edgeLabels(m, 1);
+    multicut::kernighanLin(graph, weights, edgeLabels, edgeLabels);
+    //
     return edgeLabels;
 }

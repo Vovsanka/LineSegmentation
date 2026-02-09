@@ -18,6 +18,11 @@ Vec Vec::subtract(const Vec& otherVec) {
 }
 
 __host__ __device__
-double Vec::dot(Vec& otherVec) {
+Vec Vec::operator*(double k) {
+    return Vec(k*y, k*x);
+}
+
+__host__ __device__
+double Vec::dot(const Vec& otherVec) {
     return x*otherVec.x + y*otherVec.y;
 }

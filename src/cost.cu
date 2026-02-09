@@ -1,40 +1,53 @@
 #include "cost.hpp"
 
 
-__host__
+__host__ 
 double computeCandidateCost(
     const std::vector<Cand>& candidates,
     const Cand& cand1,
     const Cand& cand2
-) { 
-    // reward if candidates are really close
-    if (Cand::dist(cand1, cand2) <= ALMOST_SAME_PIXEL) return +1; 
-    // penalty if directions do not match
-    if (Cand::dirDiff(cand1, cand2) > ALMOST_SAME_DIR) return -1;
-    // penalty if the cands are not on the same line
-    if (
-        cand1.distToLine(cand2) > ALMOST_SAME_LINE && 
-        cand2.distToLine(cand1) > ALMOST_SAME_LINE
-    ) return -1;
-    // reward if the line is continuous (no gaps)
-    if (checkGaps(candidates, cand1, cand2)) return +1;
-    // penalty if the line has gaps
-    return -1;
+) {
+    double sim = computeCandidateSimilarity(candidates, cand1, cand2);
+    // logit of the similiarity
+    if (sim  < TOL) return -MAX_COST;
+    if (sim >= 1.0 - TOL) return MAX_COST;
+    double cost = std::log2(sim/(1.0 - sim));
+    return min(cost, MAX_COST);
 }
 
 __host__
-bool checkGaps(
+double computeCandidateSimilarity( // [0, 1]
+    const std::vector<Cand>& candidates,
+    const Cand& cand1,
+    const Cand& cand2
+) { 
+    double maxDistToLine = SAME_LINE_FACTOR*Cand::dist(cand1, cand2);
+    double sim1 = 1.0 - cand1.distToLine(cand2)/maxDistToLine;
+    double sim2 = 1.0 - cand2.distToLine(cand1)/maxDistToLine;
+    // candidates are not on the same line or almost => dissimilar
+    if (sim1 <= 0.0 && sim2 <= 0.0) return 0.0;
+    // reward if the line is continuous (no gaps)
+    if (checkNoGaps(candidates, cand1, cand2)) {
+        return max(sim1, sim2);
+    } 
+    // line has gaps => dissimilar
+    return 0.0;
+}
+
+__host__
+bool checkNoGaps(
     const std::vector<Cand>& candidates,
     const Cand& cand1, 
     const Cand& cand2
 ) { 
     double candDist = Cand::dist(cand1, cand2);
+    if (candDist < MIN_GAP_SIZE) return true;
     //
-    double maxTriangleDist = candDist + ALMOST_LINE_TRIANGLE;
+    double maxTriangleDist = LINE_TRIANGLE_FACTOR*candDist;
     std::vector<int> segmentCandidates;
     for (int k = 0; k < candidates.size(); k++) {
         double triangleDist = Cand::dist(cand1, candidates[k]) + Cand::dist(cand2, candidates[k]);
-        if (triangleDist <= ALMOST_LINE_TRIANGLE) {
+        if (triangleDist <= maxTriangleDist) {
             segmentCandidates.push_back(k);
         }
     }

@@ -4,11 +4,9 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/cuda.hpp>
 
-#include <operations.hpp>
 #include <thrust/tuple.h>
 
-
-const double TOL = 1e-6;
+#include "operations.hpp"
 
 
 __host__ __device__

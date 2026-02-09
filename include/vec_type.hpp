@@ -20,7 +20,10 @@ struct Vec {
     Vec subtract(const Vec& otherVec);
 
     __host__ __device__
-    double dot(Vec& otherVec);
+    double dot(const Vec& otherVec);
+
+    __host__ __device__
+    Vec operator*(double k);
 };
 
 #endif

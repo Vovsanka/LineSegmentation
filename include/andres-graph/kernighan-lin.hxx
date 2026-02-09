@@ -1,70 +1,66 @@
 #pragma once
-#ifndef ANDRES_GRAPH_MULTICUT_LIFTED_KERNIGHAN_LIN_HXX
-#define ANDRES_GRAPH_MULTICUT_LIFTED_KERNIGHAN_LIN_HXX
+#ifndef ANDRES_GRAPH_MULTICUT_KERNIGHAN_LIN_HXX
+#define ANDRES_GRAPH_MULTICUT_KERNIGHAN_LIN_HXX
 
-#include <algorithm>
-#include <iostream>
 #include <iomanip>
+#include <stack>
+#include <stdexcept>
 #include <set>
 #include <vector>
-#include <stack>
+
+#include "complete-graph.hxx"
 
 
 
 namespace andres {
 namespace graph {
-namespace multicut_lifted {
+namespace multicut {
 
-struct KernighanLinSettings {
+struct KernighanLinSettings
+{
     size_t numberOfInnerIterations { std::numeric_limits<size_t>::max() };
     size_t numberOfOuterIterations { 100 };
     double epsilon { 1e-6 };
     bool verbose { false };
-    bool introduce_new_sets { true };
 };
 
-
-template<typename ORIGINAL_GRAPH, typename LIFTED_GRAPH, typename ECA, typename VERTEXLABELS>
-auto kernighanLin(
-    ORIGINAL_GRAPH const& original_graph,
-    LIFTED_GRAPH const& lifted_graph,
-    ECA const& edge_costs,
-    VERTEXLABELS const& input_vertex_labels,
-    KernighanLinSettings settings = KernighanLinSettings()) -> VERTEXLABELS
+template<typename GRAPH, typename ECA, typename VERTEXLABELS>
+inline
+auto kernighanLin(const GRAPH& graph, const ECA& edge_costs, const VERTEXLABELS& input_vertex_labels, const KernighanLinSettings settings = KernighanLinSettings()) -> VERTEXLABELS
 {
-    struct Visitor {
-        constexpr bool operator()(VERTEXLABELS const& vertex_labels)
-            { return true; }
+    struct Visitor
+    {
+        bool operator()(VERTEXLABELS const& vertex_labels) const
+        {
+            return true;
+        }
     } visitor;
 
-    return kernighanLin(original_graph, lifted_graph, edge_costs, input_vertex_labels, visitor, settings);
+    return kernighanLin(graph, edge_costs, input_vertex_labels, visitor, settings);
 }
 
-template<typename ORIGINAL_GRAPH, typename LIFTED_GRAPH, typename ECA, typename VERTEXLABELS, typename VIS>
+template<typename GRAPH, typename ECA, typename VERTEXLABELS, typename VIS>
 inline
-auto kernighanLin(
-    ORIGINAL_GRAPH const& original_graph,
-    LIFTED_GRAPH const& lifted_graph,
-    ECA const& edge_costs,
-    VERTEXLABELS const& input_vertex_labels,
-    VIS& visitor,
-    const KernighanLinSettings settings = KernighanLinSettings()) -> VERTEXLABELS
+auto kernighanLin(const GRAPH& graph, const ECA& edge_costs, const VERTEXLABELS& input_vertex_labels, VIS& visitor, const KernighanLinSettings settings = KernighanLinSettings()) -> VERTEXLABELS
 {
-    struct Buffers {
-        Buffers(const ORIGINAL_GRAPH& graph)
-            :   differences(graph.numberOfVertices()),
-                is_moved(graph.numberOfVertices()),
-                referenced_by(graph.numberOfVertices()),
-                vertex_labels(graph.numberOfVertices())
-            {}
+    struct TwoCutBuffers
+    {
+        TwoCutBuffers(const GRAPH& graph) :
+            differences(graph.numberOfVertices()),
+            is_moved(graph.numberOfVertices()),
+            referenced_by(graph.numberOfVertices()),
+            vertex_labels(graph.numberOfVertices())
+        {}
+
+        std::vector<size_t> border;
         std::vector<double> differences;
         std::vector<char> is_moved;
         size_t max_not_used_label;
         std::vector<size_t> referenced_by;
         VERTEXLABELS vertex_labels;
-    } buffer(original_graph);
+    } buffer(graph);
 
-    auto update_bipartition = [&buffer, &original_graph, &lifted_graph, &edge_costs, &settings] (std::vector<size_t>& A, std::vector<size_t>& B)
+    auto update_bipartition = [&](std::vector<size_t>& A, std::vector<size_t>& B)
     {
         struct Move
         {
@@ -83,19 +79,18 @@ auto kernighanLin(
                 double diffInt = .0;
                 size_t ref_cnt = 0;
 
-                for (auto it = lifted_graph.adjacenciesFromVertexBegin(A[i]); it != lifted_graph.adjacenciesFromVertexEnd(A[i]); ++it)
+                for (auto it = graph.adjacenciesFromVertexBegin(A[i]); it != graph.adjacenciesFromVertexEnd(A[i]); ++it)
                 {
                     const auto lbl = buffer.vertex_labels[it->vertex()];
 
                     if (lbl == label_A)
                         diffInt += edge_costs[it->edge()];
                     else if (lbl == label_B)
+                    {
                         diffExt += edge_costs[it->edge()];
-                }
-
-                for (auto it = original_graph.adjacenciesFromVertexBegin(A[i]); it != original_graph.adjacenciesFromVertexEnd(A[i]); ++it)
-                    if (buffer.vertex_labels[it->vertex()] == label_B)
                         ++ref_cnt;
+                    }
+                }
 
                 buffer.differences[A[i]] = diffExt - diffInt;
                 buffer.referenced_by[A[i]] = ref_cnt;
@@ -108,33 +103,32 @@ auto kernighanLin(
 
         if (A.empty())
             return .0;
-        
+
         auto label_A = buffer.vertex_labels[A[0]];
         auto label_B = (!B.empty()) ? buffer.vertex_labels[B[0]] : buffer.max_not_used_label;
-
+        
         compute_differences(A, label_A, label_B);
         compute_differences(B, label_B, label_A);
 
         gain_from_merging /= 2.0;
 
-        std::vector<size_t> border;
-
+        buffer.border.clear();
+        
         for (auto a : A)
             if (buffer.referenced_by[a] > 0)
-                border.push_back(a);
+                buffer.border.push_back(a);
 
         for (auto b : B)
             if (buffer.referenced_by[b] > 0)
-                border.push_back(b);
+                buffer.border.push_back(b);
 
         std::vector<Move> moves;
         double cumulative_diff = .0;
         std::pair<double, size_t> max_move { std::numeric_limits<double>::lowest(), 0 };
-
         for (size_t k = 0; k < settings.numberOfInnerIterations; ++k)
         {
             Move m;
-
+            
             if (B.empty() && k == 0)
             {
                 for (auto a : A)
@@ -146,25 +140,25 @@ auto kernighanLin(
             }
             else
             {
-                size_t size = border.size();
+                size_t size = buffer.border.size();
                 
                 for (size_t i = 0; i < size; )
-                    if (buffer.referenced_by[border[i]] == 0)
-                        std::swap(border[i], border[--size]);
+                    if (buffer.referenced_by[buffer.border[i]] == 0)
+                        std::swap(buffer.border[i], buffer.border[--size]);
                     else
                     {
-                        if (buffer.differences[border[i]] > m.difference)
+                        if (buffer.differences[buffer.border[i]] > m.difference)
                         {
-                            m.v = border[i];
+                            m.v = buffer.border[i];
                             m.difference = buffer.differences[m.v];
                         }
                         
                         ++i;
                     }
 
-                border.erase(border.begin() + size, border.end());
+                buffer.border.erase(buffer.border.begin() + size, buffer.border.end());
             }
-
+            
             if (m.v == -1)
                 break;
 
@@ -176,38 +170,27 @@ auto kernighanLin(
                 m.new_label = label_A;
 
             // update differences and references
-            for (auto it = lifted_graph.adjacenciesFromVertexBegin(m.v); it != lifted_graph.adjacenciesFromVertexEnd(m.v); ++it)
+            for (auto it = graph.adjacenciesFromVertexBegin(m.v); it != graph.adjacenciesFromVertexEnd(m.v); ++it)
             {
                 if (buffer.is_moved[it->vertex()])
                     continue;
 
                 const auto lbl = buffer.vertex_labels[it->vertex()];
-                
                 // edge to an element of the new set
                 if (lbl == m.new_label)
+                {
                     buffer.differences[it->vertex()] -= 2.0*edge_costs[it->edge()];
-                // edge to an element of the old set
-                else if (lbl == old_label)
-                    buffer.differences[it->vertex()] += 2.0*edge_costs[it->edge()];
-            }
-
-            for (auto it = original_graph.adjacenciesFromVertexBegin(m.v); it != original_graph.adjacenciesFromVertexEnd(m.v); ++it)
-            {
-                if (buffer.is_moved[it->vertex()])
-                    continue;
-
-                const auto lbl = buffer.vertex_labels[it->vertex()];
-
-                // edge to an element of the new set
-                if (lbl == m.new_label)
                     --buffer.referenced_by[it->vertex()];
+
+                }
                 // edge to an element of the old set
                 else if (lbl == old_label)
                 {
+                    buffer.differences[it->vertex()] += 2.0*edge_costs[it->edge()];
                     ++buffer.referenced_by[it->vertex()];
 
                     if (buffer.referenced_by[it->vertex()] == 1)
-                        border.push_back(it->vertex());
+                        buffer.border.push_back(it->vertex());
                 }
             }
 
@@ -223,7 +206,6 @@ auto kernighanLin(
                 max_move = std::make_pair(cumulative_diff, moves.size());
         }
 
-        
         if (gain_from_merging > max_move.first && gain_from_merging > settings.epsilon)
         {
             A.insert(A.end(), B.begin(), B.end());
@@ -251,7 +233,6 @@ auto kernighanLin(
                     buffer.vertex_labels[moves[i].v] = label_B;
             }
 
-            // make sure that this is unique label
             if (B.empty())
                 ++buffer.max_not_used_label;
 
@@ -277,220 +258,154 @@ auto kernighanLin(
         return .0;
     };
 
-    auto compute_obj_value = [&lifted_graph, &edge_costs] (std::vector<size_t> const& vertex_labels)
+    double starting_energy = .0;
+
+    // check if the input multicut labeling is valid
+    for(size_t edge = 0; edge < graph.numberOfEdges(); ++edge)
     {
-        double obj_value = .0;
+        auto v0 = graph.vertexOfEdge(edge, 0);
+        auto v1 = graph.vertexOfEdge(edge, 1);
 
-        for (size_t i = 0; i < lifted_graph.numberOfEdges(); ++i)
-        {
-            auto const v0 = lifted_graph.vertexOfEdge(i, 0);
-            auto const v1 = lifted_graph.vertexOfEdge(i, 1);
+        if (input_vertex_labels[v0] != input_vertex_labels[v1])
+            starting_energy += edge_costs[edge];
+    }
 
-            if (vertex_labels[v0] != vertex_labels[v1])
-                obj_value += edge_costs[i];
-        }
+    auto numberOfComponents = *std::max_element(input_vertex_labels.begin(), input_vertex_labels.end()) + 1;
 
-        return obj_value;
-    };
+    // build partitions
+    std::vector<std::vector<size_t>> partitions(numberOfComponents);
 
-    auto form_partitions = [] (std::vector<size_t> const& vertex_labels)
+    for (size_t i = 0; i < input_vertex_labels.size(); ++i)
     {
-        auto const number_of_components = *std::max_element(vertex_labels.begin(), vertex_labels.end()) + 1;
-
-        std::vector<std::vector<size_t>> partitions(number_of_components);
-
-        for (size_t i = 0; i < vertex_labels.size(); ++i)
-            partitions[vertex_labels[i]].push_back(i);
-        
-        return partitions;
-    };
-
-    auto project_onto_feasable_set = [&original_graph] (std::vector<size_t> const& vertex_labels)
-    {
-        std::stack<size_t> S;
-        std::vector<char> visited(original_graph.numberOfVertices());
-
-        std::vector<size_t> feasable_vertex_labels(vertex_labels.size());
-
-        // do connected component labeling on the original graph
-        for (size_t i = 0, new_label = 0; i < original_graph.numberOfVertices(); ++i)
-            if (!visited[i])
-            {
-                S.push(i);
-                visited[i] = 1;
-
-                auto const label = vertex_labels[i];
-
-                while (!S.empty())
-                {
-                    auto const v = S.top();
-                    S.pop();
-
-                    feasable_vertex_labels[v] = new_label;
-
-                    for (auto it = original_graph.adjacenciesFromVertexBegin(v); it != original_graph.adjacenciesFromVertexEnd(v); ++it)
-                        if (vertex_labels[it->vertex()] == label && !visited[it->vertex()])
-                        {
-                            S.push(it->vertex());
-                            visited[it->vertex()] = 1;
-                        }
-                }
-
-                ++new_label;
-            }
-
-        return feasable_vertex_labels;
-    };
-
-    auto mark_partitions_that_changed_shape = [&original_graph] (std::vector<size_t> const& previous_vertex_labels, std::vector<size_t> const& current_vertex_labels)
-    {
-        auto const number_of_components = *std::max_element(current_vertex_labels.begin(), current_vertex_labels.end()) + 1;
-
-        std::vector<char> changed(number_of_components);
-
-        std::stack<size_t> S;
-        std::vector<char> visited(original_graph.numberOfVertices());
-        
-        for (size_t i = 0; i < original_graph.numberOfVertices(); ++i)
-            if (!visited[i])
-            {
-                S.push(i);
-                visited[i] = 1;
-
-                auto const label_new = current_vertex_labels[i];
-                auto const label_old = previous_vertex_labels[i];
-
-                while (!S.empty())
-                {
-                    auto const v = S.top();
-                    S.pop();
-
-                    for (auto w = original_graph.verticesFromVertexBegin(v); w != original_graph.verticesFromVertexEnd(v); ++w)
-                    {
-                        if (
-                            previous_vertex_labels[*w] == label_old && current_vertex_labels[*w] != label_new
-                            ||
-                            previous_vertex_labels[*w] != label_old && current_vertex_labels[*w] == label_new
-                            )
-                            changed[label_new] = 1;
-
-                        if (visited[*w])
-                            continue;
-
-                        if (current_vertex_labels[*w] == label_new)
-                        {
-                            S.push(*w);
-                            visited[*w] = 1;
-
-                            if (previous_vertex_labels[*w] != label_old)
-                                changed[label_new] = 1;
-                        }
-                    }
-                }
-            }
-
-        return changed;
-    };
-
-
-
-    buffer.vertex_labels = project_onto_feasable_set(input_vertex_labels);
-
-    auto current_obj_value = compute_obj_value(buffer.vertex_labels);
-
-    auto partitions = form_partitions(buffer.vertex_labels);
+        partitions[input_vertex_labels[i]].push_back(i);
+        buffer.vertex_labels[i] = input_vertex_labels[i];
+    }
+    
     buffer.max_not_used_label = partitions.size();
 
     if (settings.verbose)
     {
-        std::cout << "Starting number of segments: " << partitions.size() << std::endl;
-        std::cout << "Starting energy: " << std::fixed << std::setprecision(4) << current_obj_value << std::endl;
-        std::cout << std::setw(4) << "Iter" << std::setw(16) << "Obj. value" << std::setw(15) << "Pair updates" << std::setw(15) << "New sets" << std::setw(10) << "# sets\n";
+        std::cout << "Starting energy: " << starting_energy << std::endl;
+        std::cout << std::setw(4) << "Iter" << std::setw(16) << "Total decrease" << std::setw(15) << "Pair updates" << std::setw(15) << "New sets" << std::setw(15) << "Num. of sets\n";
     }
 
     auto last_good_vertex_labels = buffer.vertex_labels;
-    auto vertex_labels_for_changed_thing = buffer.vertex_labels;
 
+    // auxillary array for BFS/DFS
+    std::vector<char> visited(graph.numberOfVertices());
+
+    // 1 if i-th partitioned changed since last iteration, 0 otherwise
+    std::vector<char> changed(numberOfComponents, 1);
+
+    // interatively update bipartition in order to minimize the total cost of the multicut
     for (size_t k = 0; k < settings.numberOfOuterIterations; ++k)
     {
-        // 1 if i-th partitioned changed since last iteration, 0 otherwise
-        std::vector<char> changed(partitions.size(), 1);
+        auto energy_decrease = .0;
 
-        if (k > 0)
-            changed = mark_partitions_that_changed_shape(vertex_labels_for_changed_thing, buffer.vertex_labels);
-
-        std::vector<std::set<size_t>> edges(partitions.size());
-        for (size_t e = 0; e < original_graph.numberOfEdges(); ++e)
+        std::vector<std::set<size_t>> edges(numberOfComponents);
+        for (size_t e = 0; e < graph.numberOfEdges(); ++e)
         {
-            auto const v0 = buffer.vertex_labels[original_graph.vertexOfEdge(e, 0)];
-            auto const v1 = buffer.vertex_labels[original_graph.vertexOfEdge(e, 1)];
+            auto const v0 = buffer.vertex_labels[graph.vertexOfEdge(e, 0)];
+            auto const v1 = buffer.vertex_labels[graph.vertexOfEdge(e, 1)];
 
             if (v0 != v1)
                 edges[std::min(v0, v1)].insert(std::max(v0, v1));
         }
 
-        for (size_t i = 0; i < partitions.size(); ++i)
+        for (size_t i = 0; i < numberOfComponents; ++i)
             if (!partitions[i].empty())
-                for (auto j = edges[i].begin(); j != edges[i].end(); ++j)
-                    if (!partitions[*j].empty() && (changed[*j] || changed[i]))
+                for (auto j : edges[i])
+                    if (!partitions[j].empty() && (changed[j] || changed[i]))
                     {
-                        update_bipartition(partitions[i], partitions[*j]);
+                        auto ret = update_bipartition(partitions[i], partitions[j]);
+
+                        if (ret > settings.epsilon)
+                            changed[i] = changed[j] = 1;
+
+                        energy_decrease += ret;
 
                         if (partitions[i].size() == 0)
                             break;
                     }
+        
+        auto ee = energy_decrease;
 
-
-        buffer.vertex_labels = project_onto_feasable_set(buffer.vertex_labels);
-
-        partitions = form_partitions(buffer.vertex_labels);
-        buffer.max_not_used_label = partitions.size();
-
-        auto pair_updates_decrease = current_obj_value - compute_obj_value(buffer.vertex_labels);
-        current_obj_value -= pair_updates_decrease;
-
-
-
-        if (k > 0)
-            changed = mark_partitions_that_changed_shape(vertex_labels_for_changed_thing, buffer.vertex_labels);
-        else
-            changed.resize(partitions.size(), 1);
+        // remove partitions that became empty after the previous step
+        auto new_end = std::partition(partitions.begin(), partitions.end(), [](const std::vector<size_t>& s) { return !s.empty(); });
+        partitions.resize(new_end - partitions.begin());
 
         // try to intoduce new partitions
-        if (settings.introduce_new_sets)
-            for (size_t i = 0; i < partitions.size(); ++i)
+        for (size_t i = 0, p_size = partitions.size(); i < p_size; ++i)
+        {
+            if (!changed[i])
+                continue;
+
+            while (1)
             {
-                if (!changed[i])
-                    continue;
+                std::vector<size_t> new_set;
+                energy_decrease += update_bipartition(partitions[i], new_set);
 
-                while (1)
-                {
-                    std::vector<size_t> new_set;
-                    update_bipartition(partitions[i], new_set);
-                    
-                    if (new_set.empty())
-                        break;
-                }
+                if (new_set.empty())
+                    break;
+
+                partitions.emplace_back(std::move(new_set));
             }
+        }
 
-
-        buffer.vertex_labels = project_onto_feasable_set(buffer.vertex_labels);
-
-        partitions = form_partitions(buffer.vertex_labels);
-        buffer.max_not_used_label = partitions.size();
-
-        auto new_sets_decrease = current_obj_value - compute_obj_value(buffer.vertex_labels);
-        current_obj_value -= new_sets_decrease;
-
-
-        if (new_sets_decrease + pair_updates_decrease < std::numeric_limits<double>::epsilon())
+        if (!visitor(buffer.vertex_labels))
             break;
 
+        if (energy_decrease == .0)
+            break;
+
+        std::stack<size_t> S;
+        
+        std::fill(visited.begin(), visited.end(), 0);
+
+        partitions.clear();
+        numberOfComponents = 0;
+
+        // do connected component labeling on the original graph and form new pфrtitions
+        for (size_t i = 0; i < graph.numberOfVertices(); ++i)
+            if (!visited[i])
+            {
+                S.push(i);
+                visited[i] = 1;
+
+                auto label = buffer.vertex_labels[i];
+
+                buffer.referenced_by[i] = numberOfComponents;
+
+                partitions.emplace_back(std::vector<size_t>());
+                partitions.back().push_back(i);
+
+                while (!S.empty())
+                {
+                    auto v = S.top();
+                    S.pop();
+
+                    for (auto it = graph.adjacenciesFromVertexBegin(v); it != graph.adjacenciesFromVertexEnd(v); ++it)
+                        if (buffer.vertex_labels[it->vertex()] == label && !visited[it->vertex()])
+                        {
+                            S.push(it->vertex());
+                            visited[it->vertex()] = 1;
+                            buffer.referenced_by[it->vertex()] = numberOfComponents;
+                            partitions.back().push_back(it->vertex());
+                        }
+                }
+
+                ++numberOfComponents;
+            }
+
+        buffer.vertex_labels = buffer.referenced_by;
+
+        buffer.max_not_used_label = numberOfComponents;
+
         bool didnt_change = true;
-        for (size_t i = 0; i < lifted_graph.numberOfEdges(); ++i)
+        for (size_t i = 0; i < graph.numberOfEdges(); ++i)
         {
-            auto v0 = lifted_graph.vertexOfEdge(i, 0);
-            auto v1 = lifted_graph.vertexOfEdge(i, 1);
+            auto const v0 = graph.vertexOfEdge(i, 0);
+            auto const v1 = graph.vertexOfEdge(i, 1);
 
             auto edge_label = buffer.vertex_labels[v0] == buffer.vertex_labels[v1] ? 0 : 1;
 
@@ -501,29 +416,298 @@ auto kernighanLin(
         if (didnt_change)
             break;
 
-        vertex_labels_for_changed_thing = last_good_vertex_labels;
+        // check if the shape of some partitions didn't change
+        changed.resize(numberOfComponents);
+        std::fill(changed.begin(), changed.end(), 0);
+
+        std::fill(visited.begin(), visited.end(), 0);
+
+        for (size_t i = 0; i < graph.numberOfVertices(); ++i)
+            if (!visited[i])
+            {
+                S.push(i);
+                visited[i] = 1;
+
+                auto label_new = buffer.vertex_labels[i];
+                auto label_old = last_good_vertex_labels[i];
+
+                while (!S.empty())
+                {
+                    auto v = S.top();
+                    S.pop();
+
+                    for (auto w = graph.verticesFromVertexBegin(v); w != graph.verticesFromVertexEnd(v); ++w)
+                    {
+                        if (last_good_vertex_labels[*w] == label_old && buffer.vertex_labels[*w] != label_new)
+                            changed[label_new] = 1;
+
+                        if (visited[*w])
+                            continue;
+
+                        if (buffer.vertex_labels[*w] == label_new)
+                        {
+                            S.push(*w);
+                            visited[*w] = 1;
+
+                            if (last_good_vertex_labels[*w] != label_old)
+                                changed[label_new] = 1;
+                        }
+                    }
+                }
+            }
 
         last_good_vertex_labels = buffer.vertex_labels;
 
-        if (!visitor(last_good_vertex_labels))
-            break;
-
         if (settings.verbose)
-            std::cout << std::setw(4) << k+1 << std::setw(16) << current_obj_value << std::setw(15) << pair_updates_decrease << std::setw(15) << new_sets_decrease << std::setw(10) << partitions.size() << std::endl;
+            std::cout << std::setw(4) << k+1 << std::setw(16) << energy_decrease << std::setw(15) << ee << std::setw(15) << (energy_decrease - ee) << std::setw(14) << partitions.size() << std::endl;
     }
-
-    if (settings.verbose)
-        std::cout << "Final objective: " << compute_obj_value(last_good_vertex_labels) << std::endl;
 
     return last_good_vertex_labels;
 }
 
+template<typename GraphVisitor, typename ECA, typename VERTEXLABELS>
+inline
+auto kernighanLin(const CompleteGraph<GraphVisitor>& graph, const ECA& edge_costs, const VERTEXLABELS& input_vertex_labels, const KernighanLinSettings settings = KernighanLinSettings()) -> VERTEXLABELS
+{
+    struct Visitor
+    {
+        bool operator()(VERTEXLABELS const& edge_labels) const
+        {
+            return true;
+        }
+    } visitor;
+
+    return kernighanLin(graph, edge_costs, input_vertex_labels, visitor, settings);
+}
+
+template<typename GraphVisitor, typename ECA, typename VERTEXLABELS, typename VIS>
+inline
+auto kernighanLin(const CompleteGraph<GraphVisitor>& graph, const ECA& edge_costs, const VERTEXLABELS& input_vertex_labels, VIS& visitor, const KernighanLinSettings settings = KernighanLinSettings()) -> VERTEXLABELS
+{
+    struct Buffers
+    {
+        Buffers(const CompleteGraph<GraphVisitor>& graph) :
+            differences(graph.numberOfVertices()),
+            is_moved(graph.numberOfVertices())
+        {}
+
+        std::vector<double> differences;
+        std::vector<char> is_moved;
+    } buffer(graph);
+
+    auto update_bipartition = [&](std::vector<size_t>& A, std::vector<size_t>& B)
+    {
+        if (A.empty())
+            return .0;
+
+        auto gain_from_merging = .0;
+
+        // compute differences for set A
+        for (size_t i = 0; i < A.size(); ++i)
+        {
+            double diff = .0;
+            buffer.is_moved[A[i]] = 0;
+            
+            for (auto v : A)
+                if (A[i] != v)
+                    diff -= edge_costs[graph.findEdge(A[i], v).second];
+
+            for (auto v : B)
+            {
+                diff += edge_costs[graph.findEdge(A[i], v).second];
+                gain_from_merging += edge_costs[graph.findEdge(A[i], v).second];
+            }
+
+            buffer.differences[A[i]] = diff;
+        }
+
+        // compute differences for set B
+        for (size_t i = 0; i < B.size(); ++i)
+        {
+            double diff = .0;
+            buffer.is_moved[B[i]] = 0;
+
+            for (auto v : B)
+                if (B[i] != v)
+                    diff -= edge_costs[graph.findEdge(B[i], v).second];
+
+            for (auto v : A)
+                diff += edge_costs[graph.findEdge(B[i], v).second];
+
+            buffer.differences[B[i]] = diff;
+        }
+
+        struct Move
+        {
+            int v { -1 };
+            double difference { std::numeric_limits<double>::lowest() };
+            char new_label;
+        };
+
+        double cumulative_diff = .0;
+        std::pair<double, size_t> max_move { std::numeric_limits<double>::lowest(), 0 };
+        std::vector<Move> moves;
+        
+        for (size_t k = 0; k < settings.numberOfInnerIterations; ++k)
+        {
+            Move m;
+
+            for (auto a : A)
+                if (!buffer.is_moved[a] && buffer.differences[a] > m.difference)
+                {
+                    m.v = a;
+                    m.difference = buffer.differences[a];
+                    m.new_label = 'B';
+                }
+
+            for (auto b : B)
+                if (!buffer.is_moved[b] && buffer.differences[b] > m.difference)
+                {
+                    m.v = b;
+                    m.difference = buffer.differences[b];
+                    m.new_label = 'A';
+                }
+
+            if (m.v == -1)
+                break;
+
+            // update differences
+            if (m.new_label == 'B')
+            {
+                for (auto v : A)
+                    if (v != m.v && !buffer.is_moved[v] && buffer.differences[v] > std::numeric_limits<double>::lowest())
+                        buffer.differences[v] += 2.0*edge_costs[graph.findEdge(v, m.v).second];
+
+                for (auto v : B)
+                    if (!buffer.is_moved[v] && buffer.differences[v] > std::numeric_limits<double>::lowest())
+                        buffer.differences[v] -= 2.0*edge_costs[graph.findEdge(v, m.v).second];
+                
+            }
+            else
+            {
+                for (auto v : A)
+                    if (!buffer.is_moved[v] && buffer.differences[v] > std::numeric_limits<double>::lowest())
+                        buffer.differences[v] -= 2.0*edge_costs[graph.findEdge(v, m.v).second];
+
+                for (auto v : B)
+                    if (v != m.v && !buffer.is_moved[v] && buffer.differences[v] > std::numeric_limits<double>::lowest())
+                        buffer.differences[v] += 2.0*edge_costs[graph.findEdge(v, m.v).second];
+            }
+
+            buffer.differences[m.v] = std::numeric_limits<double>::lowest();
+            buffer.is_moved[m.v] = 1;
+            moves.push_back(m);
+
+            cumulative_diff += m.difference;
+
+            if (cumulative_diff > max_move.first)
+                max_move = std::make_pair(cumulative_diff, moves.size());
+        }
+
+        if (gain_from_merging > max_move.first && gain_from_merging > settings.epsilon)
+        {
+            A.insert(A.end(), B.begin(), B.end());
+
+            B.clear();
+
+            return gain_from_merging;
+        }
+        if (max_move.first > settings.epsilon)
+        {
+            for (size_t i = max_move.second; i < moves.size(); ++i)
+                buffer.is_moved[moves[i].v] = 0;
+
+            A.erase(std::partition(A.begin(), A.end(), [&](size_t a) { return !buffer.is_moved[a]; }), A.end());
+            B.erase(std::partition(B.begin(), B.end(), [&](size_t b) { return !buffer.is_moved[b]; }), B.end());
+
+            for (size_t i = 0; i < max_move.second; ++i)
+                // move vertex to the other set
+                if (moves[i].new_label == 'B')
+                    B.push_back(moves[i].v);
+                else
+                    A.push_back(moves[i].v);
+
+            return max_move.first;
+        }
+
+        return .0;
+    };
+
+    double starting_energy = .0;
+
+    // check if the input multicut labeling is valid
+    for(size_t edge = 0; edge < graph.numberOfEdges(); ++edge)
+    {
+        auto v0 = graph.vertexOfEdge(edge, 0);
+        auto v1 = graph.vertexOfEdge(edge, 1);
+
+        if (input_vertex_labels[v0] != input_vertex_labels[v1])
+            starting_energy += edge_costs[edge];
+    }
+
+    auto numberOfComponents = *std::max_element(input_vertex_labels.begin(), input_vertex_labels.end()) + 1;
+
+    // build partitions
+    std::vector<std::vector<size_t>> partitions(numberOfComponents);
+    for (size_t i = 0; i < input_vertex_labels.size(); ++i)
+        partitions[input_vertex_labels[i]].push_back(i);
+
+    if (settings.verbose)
+    {
+        std::cout << "Starting energy: " << starting_energy << std::endl;
+        std::cout << std::setw(4) << "Iter" << std::setw(16) << "Total decrease" << std::setw(15) << "Pair updates" << std::setw(15) << "New sets" << std::setw(15) << "Num. of sets\n";
+    }
+
+    // interatively update bipartition in order to minimize the total cost of the multicut
+    for (size_t k = 0; k < settings.numberOfOuterIterations; ++k)
+    {
+        auto energy_decrease = .0;
+
+        // update pairs of partitions
+        for (size_t i = 0; i < partitions.size() - 1; ++i)
+            for (auto j = i + 1; j < partitions.size(); ++j)
+                if (!partitions[j].empty())
+                    energy_decrease += update_bipartition(partitions[i], partitions[j]);
+
+        // remove partitions that became empty after the previous step
+        auto new_end = std::partition(partitions.begin(), partitions.end(), [](const std::vector<size_t>& s) { return !s.empty(); });
+        partitions.resize(new_end - partitions.begin());
+
+        auto ee = energy_decrease;
+
+        // try to intoduce new partitions
+        for (size_t i = 0, p_size = partitions.size(); i < p_size; ++i)       
+            while (1)
+            {
+                std::vector<size_t> new_set;
+                energy_decrease += update_bipartition(partitions[i], new_set);
+
+                if (!new_set.empty())
+                    partitions.emplace_back(std::move(new_set));
+                else
+                    break;
+            }
+
+        if (energy_decrease == .0)
+            break;
+
+        if (settings.verbose)
+            std::cout << std::setw(4) << k+1 << std::setw(16) << energy_decrease << std::setw(15) << ee << std::setw(15) << (energy_decrease - ee) << std::setw(14) << partitions.size() << std::endl;
+    }
+
+    VERTEXLABELS vertex_labels(graph.numberOfVertices());
+    for (size_t i = 0; i < partitions.size(); ++i)
+        for (size_t j = 0; j < partitions[i].size(); ++j)
+            vertex_labels[partitions[i][j]] = i;
+
+    return vertex_labels;
+}
 
 
 // functions for back compatability with old interface that works with edge labels
-template<typename ORIGINAL_GRAPH, typename LIFTED_GRAPH, typename ECA, typename ELA>
+template<typename GRAPH, typename ECA, typename ELA>
 inline
-void kernighanLin(const ORIGINAL_GRAPH& original_graph, const LIFTED_GRAPH& lifted_graph, const ECA& edge_costs, const ELA& input_edge_labels, ELA& output_edge_labels, const KernighanLinSettings settings = KernighanLinSettings())
+void kernighanLin(const GRAPH& graph, const ECA& edge_costs, const ELA& input_edge_labels, ELA& output_edge_labels, const KernighanLinSettings settings = KernighanLinSettings())
 {
     struct Visitor
     {
@@ -533,18 +717,18 @@ void kernighanLin(const ORIGINAL_GRAPH& original_graph, const LIFTED_GRAPH& lift
         }
     } visitor;
 
-    return kernighanLin(original_graph, lifted_graph, edge_costs, input_edge_labels, output_edge_labels, visitor, settings);
+    return kernighanLin(graph, edge_costs, input_edge_labels, output_edge_labels, visitor, settings);
 }
 
-template<typename ORIGINAL_GRAPH, typename LIFTED_GRAPH, typename ECA, typename ELA, typename VIS>
+template<typename GRAPH, typename ECA, typename ELA, typename VIS>
 inline
-void kernighanLin(const ORIGINAL_GRAPH& original_graph, const LIFTED_GRAPH& lifted_graph, const ECA& edge_costs, const ELA& input_edge_labels, ELA& output_edge_labels, VIS& visitor, const KernighanLinSettings settings = KernighanLinSettings())
+void kernighanLin(const GRAPH& graph, const ECA& edge_costs, const ELA& input_edge_labels, ELA& output_edge_labels, VIS& visitor, const KernighanLinSettings settings = KernighanLinSettings())
 {
-    std::vector<size_t> vertex_labels(lifted_graph.numberOfVertices());
-    std::vector<char> visited(lifted_graph.numberOfVertices());
+    std::vector<size_t> vertex_labels(graph.numberOfVertices());
+    std::vector<char> visited(graph.numberOfVertices());
 
     std::stack<size_t> S;
-    for (size_t i = 0, label = 0; i < lifted_graph.numberOfVertices(); ++i)
+    for (size_t i = 0, label = 0; i < graph.numberOfVertices(); ++i)
         if (!visited[i])
         {
             S.push(i);
@@ -557,7 +741,7 @@ void kernighanLin(const ORIGINAL_GRAPH& original_graph, const LIFTED_GRAPH& lift
 
                 vertex_labels[v] = label;
 
-                for (auto it = lifted_graph.adjacenciesFromVertexBegin(v); it != lifted_graph.adjacenciesFromVertexEnd(v); ++it)
+                for (auto it = graph.adjacenciesFromVertexBegin(v); it != graph.adjacenciesFromVertexEnd(v); ++it)
                     if (!input_edge_labels[it->edge()] && !visited[it->vertex()])
                     {
                         S.push(it->vertex());
@@ -568,19 +752,77 @@ void kernighanLin(const ORIGINAL_GRAPH& original_graph, const LIFTED_GRAPH& lift
             ++label;
         }
 
-    vertex_labels = kernighanLin(original_graph, lifted_graph, edge_costs, vertex_labels, visitor, settings);
+    vertex_labels = kernighanLin(graph, edge_costs, vertex_labels, visitor, settings);
 
-    for (size_t e = 0; e < lifted_graph.numberOfEdges(); ++e)
+    for (size_t e = 0; e < graph.numberOfEdges(); ++e)
     {
-        auto const v0 = lifted_graph.vertexOfEdge(e, 0);
-        auto const v1 = lifted_graph.vertexOfEdge(e, 1);
+        auto const v0 = graph.vertexOfEdge(e, 0);
+        auto const v1 = graph.vertexOfEdge(e, 1);
 
         output_edge_labels[e] = (vertex_labels[v0] != vertex_labels[v1]) ? 1 : 0;
     }
 }
 
+template<typename GraphVisitor, typename ECA, typename ELA>
+inline
+void kernighanLin(const CompleteGraph<GraphVisitor>& graph, const ECA& edge_costs, const ELA& input_edge_labels, ELA& output_edge_labels, const KernighanLinSettings settings = KernighanLinSettings())
+{
+    struct Visitor
+    {
+        bool operator()(std::vector<size_t> const& vertex_labels) const
+        {
+            return true;
+        }
+    } visitor;
+
+    return kernighanLin(graph, edge_costs, input_edge_labels, output_edge_labels, visitor, settings);
 }
+
+template<typename GraphVisitor, typename ECA, typename ELA, typename VIS>
+inline
+void kernighanLin(const CompleteGraph<GraphVisitor>& graph, const ECA& edge_costs, const ELA& input_edge_labels, ELA& output_edge_labels, VIS& visitor, const KernighanLinSettings settings = KernighanLinSettings())
+{
+    std::vector<size_t> vertex_labels(graph.numberOfVertices());
+    std::vector<char> visited(graph.numberOfVertices());
+
+    std::stack<size_t> S;
+    for (size_t i = 0, label = 0; i < graph.numberOfVertices(); ++i)
+        if (!visited[i])
+        {
+            S.push(i);
+            visited[i] = 1;
+
+            while (!S.empty())
+            {
+                auto v = S.top();
+                S.pop();
+
+                vertex_labels[v] = label;
+
+                for (auto it = graph.adjacenciesFromVertexBegin(v); it != graph.adjacenciesFromVertexEnd(v); ++it)
+                    if (!input_edge_labels[it->edge()] && !visited[it->vertex()])
+                    {
+                        S.push(it->vertex());
+                        visited[it->vertex()] = 1;
+                    }
+            }
+
+            ++label;
+        }
+
+    vertex_labels = kernighanLin(graph, edge_costs, vertex_labels, visitor, settings);
+
+    for (size_t e = 0; e < graph.numberOfEdges(); ++e)
+    {
+        auto const v0 = graph.vertexOfEdge(e, 0);
+        auto const v1 = graph.vertexOfEdge(e, 1);
+
+        output_edge_labels[e] = (vertex_labels[v0] != vertex_labels[v1]) ? 1 : 0;
+    }
 }
-}
+
+} // of multicut
+} // of graph
+} // of andres
 
 #endif

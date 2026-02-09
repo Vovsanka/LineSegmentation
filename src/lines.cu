@@ -52,7 +52,7 @@ std::optional<Line> clusterToLine (
     const std::vector<Cand>& candidates,
     const std::vector<int>& cluster
 ) {
-    if (cluster.size() < MIN_LINE_SIZE) return std::nullopt;
+    if (cluster.size() < MIN_LINE_CLUSTER) return std::nullopt;
     //
     std::vector<cv::Point2d> points;
     for (int node : cluster) {
