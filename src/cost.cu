@@ -9,10 +9,10 @@ double computeCandidateCost(
 ) {
     double sim = computeCandidateSimilarity(candidates, cand1, cand2);
     // logit of the similiarity
-    if (sim  < TOL) return -MAX_COST;
+    if (sim  < TOL) return MIN_COST;
     if (sim >= 1.0 - TOL) return MAX_COST;
     double cost = std::log2(sim/(1.0 - sim));
-    return min(cost, MAX_COST);
+    return max(min(cost, MAX_COST), MIN_COST);
 }
 
 __host__
@@ -22,13 +22,13 @@ double computeCandidateSimilarity( // [0, 1]
     const Cand& cand2
 ) { 
     double maxDistToLine = SAME_LINE_FACTOR*Cand::dist(cand1, cand2);
-    double sim1 = 1.0 - cand1.distToLine(cand2)/maxDistToLine;
-    double sim2 = 1.0 - cand2.distToLine(cand1)/maxDistToLine;
+    double sim1 = 1.0 - cand1.distToLine(cand2)/(2*maxDistToLine);
+    double sim2 = 1.0 - cand2.distToLine(cand1)/(2*maxDistToLine);
     // candidates are not on the same line or almost => dissimilar
-    if (sim1 <= 0.0 && sim2 <= 0.0) return 0.0;
+    if (min(sim1, sim2) <= 0.0) return 0.0;
     // reward if the line is continuous (no gaps)
     if (checkNoGaps(candidates, cand1, cand2)) {
-        return max(sim1, sim2);
+        return min(sim1, sim2);
     } 
     // line has gaps => dissimilar
     return 0.0;

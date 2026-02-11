@@ -63,6 +63,15 @@ void showScoreDirectionMatrix(
 );
 
 __host__
+void drawClusterImage(
+    int width, int height,
+    const std::vector<Cand>& candidates, 
+    const CandidateGraph& G,
+    const std::vector<char>& edgeLabels,
+    std::string name
+);
+
+__host__
 void drawLineEdgeImage(
     const std::vector<Line>& lines, 
     int width, int height,

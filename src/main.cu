@@ -42,6 +42,13 @@ void performClustering(
     std::string candidateGraph_inName,
     std::string edgeLabels_outName
 ); // 4
+void buildClusterImage(
+    std::string params_inName,
+    std::string candidateList_inName,
+    std::string candidateGraph_inName,
+    std::string edgeLabels_inName,
+    std::string clusterImage_outName
+); // 4.1
 void extractLines(
     std::string candidateList_inName,
     std::string candidateGraph_inName,
@@ -71,20 +78,21 @@ int main() {
     // // loadPreprocessImage("../images/apb2.png", "original", "preprocessed", "params");
     // // loadPreprocessImage("../images/apb3.png", "original", "preprocessed", "params");
 
-    computeThresholdCandidates("preprocessed", "scores", "directions", "t_candidates");
-    showCandidates("scores", "directions", "t_candidates");
+    // computeThresholdCandidates("preprocessed", "scores", "directions", "t_candidates");
+    // showCandidates("scores", "directions", "t_candidates");
     
     // computeIterativeCandidates("preprocessed", "t_candidates", "candidates");
     // showCandidates("scores", "directions", "candidates");
 
-    // buildCandidateGraph("candidates", "cgraph");
-    // performClustering("cgraph", "labels");
+    buildCandidateGraph("candidates", "cgraph");
+    performClustering("cgraph", "labels");
+    buildClusterImage("params", "candidates", "cgraph", "labels", "clusters");
 
-    // extractLines("candidates", "cgraph", "labels", "lines");
-    // buildLineEdgeImage("params", "lines", "edges", false);
+    extractLines("candidates", "cgraph", "labels", "lines");
+    buildLineEdgeImage("params", "lines", "edges", false);
 
-    // reconstructOriginalLines("params", "lines", "or_lines");
-    // buildLineEdgeImage("params", "or_lines", "or_edges");
+    reconstructOriginalLines("params", "lines", "or_lines");
+    buildLineEdgeImage("params", "or_lines", "or_edges");
     
     return 0;
 }
@@ -223,6 +231,32 @@ void performClustering(
 
     // save the working state
     saveEdgeLabels(edgeLabels, edgeLabels_outName);
+}
+
+void buildClusterImage(
+    std::string params_inName,
+    std::string candidateList_inName,
+    std::string candidateGraph_inName,
+    std::string edgeLabels_inName,
+    std::string clusterImage_outName
+) {
+    // load the working state
+    int originalWidth, originalHeight;
+    int width, height;
+    std::tie(originalWidth, originalHeight, width, height) = loadImageParams(params_inName);
+    std::vector<Cand> candidates = loadCandidates(candidateList_inName);
+    CandidateGraph G = loadCandidateGraph(candidateGraph_inName);
+    std::vector<char> edgeLabels = loadEdgeLabels(edgeLabels_inName);
+
+    // draw the clusters as connected candidates
+    drawClusterImage(width, height, candidates, G, edgeLabels, clusterImage_outName);
+
+     // show the line edge image
+    cv::Mat I = cv::imread(
+        (pathPrefix/(clusterImage_outName + ".png")).string().c_str(),
+        cv::IMREAD_GRAYSCALE
+    );
+    showImage(I);
 }
 
 void extractLines(

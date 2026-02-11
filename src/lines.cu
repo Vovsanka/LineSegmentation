@@ -37,7 +37,13 @@ std::vector<std::vector<int>> retrieveClusters(
             }
         }
     }
-    // gather all the clusters with 2+ nodes
+    //
+    for (int node = 0; node < G.n; node++) {
+        if (clusterMap[node] == -1) {
+            clusterMap[node] = clusterCount++;
+        }
+    }
+    // gather all the nodes into clusters
     std::vector<std::vector<int>> clusters(clusterCount, std::vector<int>());
     for (int node = 0; node < G.n; node++) {
         if (clusterMap[node] != -1) {
@@ -68,19 +74,25 @@ std::optional<Line> clusterToLine (
     float x0 = line[2];
     float y0 = line[3];
     //
+    Vec originVec(y0, x0);
     Vec lineVec(vy, vx);
-    double minT = +1e6, maxT = -1e6; // projection factor
+    double minT = +INF, maxT = -INF; // projection factor
     for (int node : cluster) {
         const Cand& cand = candidates[node];
-        Vec v1(cand.y - y0, cand.x - x0);
+        Vec candVec(cand.y, cand.x);
+        Vec v1 = candVec.subtract(originVec);
         double t = v1.dot(lineVec)/lineVec.dot(lineVec);
         minT = min(t, minT);
         maxT = max(t, maxT);
+        //
+        Vec perp = v1.subtract(lineVec*t); 
+        double distToLine = perp.len();
+        if (distToLine > MAX_DIST_TO_LINE) return std::nullopt;
     }
     // 
     double end1Y = y0 + minT*vy;
     double end1X = x0 + minT*vx;
     double end2Y = y0 + maxT*vy;
     double end2X = x0 + maxT*vx;
-    return Line(end1Y, end1X, end2Y, end2X); // TODO: fix min-max-T
+    return Line(end1Y, end1X, end2Y, end2X);
 }

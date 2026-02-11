@@ -4,6 +4,7 @@
 
 // constants
 const double TOL = 1e-6;
+const double INF = 1e6;
 const double PI = 3.141593;
 
 // image scaling (up and down possible)
@@ -23,14 +24,18 @@ const double CAND_THRESHOLD = 0.8;
 const int UP_COUNT = 10;
 const double UP_STEP = 0.1;
 
-// candidate graph 
-const double CONNECTION_RADIUS = 10.0;
-const double SAME_LINE_FACTOR = 0.1;
+// candidate graph
+const double CONNECTION_RADIUS = 20.0;
+const double SAME_LINE_FACTOR = 0.2;
 const double LINE_TRIANGLE_FACTOR = 1.1;
 const double MIN_GAP_SIZE = 5.0;
 
-// clustering and line extraction
-const double MAX_COST = 1;
+// clustering cost
+const double MIN_COST = -100;
+const double MAX_COST = 10;
+
+// line extraction
 const int MIN_LINE_CLUSTER = 5;
+const double MAX_DIST_TO_LINE = 2.0;
 
 #endif

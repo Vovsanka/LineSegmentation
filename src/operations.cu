@@ -114,6 +114,41 @@ void showScoreDirectionMatrix(
 }
 
 __host__
+void drawClusterImage(
+    int width, int height,
+    const std::vector<Cand>& candidates, 
+    const CandidateGraph& G,
+    const std::vector<char>& edgeLabels,
+    std::string name
+) {
+    cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+    cairo_t* cr = cairo_create(surface);
+    // background 
+    cairo_set_source_rgb(cr, 0.0, 0.0, 0.0); 
+    cairo_paint(cr); 
+    // pen
+    cairo_set_source_rgb(cr, 1.0, 1.0, 1.0); 
+    cairo_set_line_width(cr, 0.2); 
+    // draw cluster cliques using lines
+    for (int k = 0; k < G.edges.size(); k++) {
+        if (edgeLabels[k] > 0) continue;
+        const Edge& e = G.edges[k];
+        const Cand& cand1 = candidates[e.c1];
+        const Cand& cand2 = candidates[e.c2];
+        //
+        cairo_move_to(cr, cand1.x, cand1.y); 
+        cairo_line_to(cr, cand2.x, cand2.y); 
+    }
+    cairo_stroke(cr); 
+    //
+    cairo_surface_write_to_png(surface, (pathPrefix/(name + ".png")).string().c_str());
+    //
+    cairo_destroy(cr);
+    cairo_surface_destroy(surface);
+}
+
+
+__host__
 void drawLineEdgeImage(const std::vector<Line>& lines, int width, int height, std::string name) {
     cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
     cairo_t* cr = cairo_create(surface);
