@@ -46,8 +46,13 @@ bool checkNoGaps(
     double maxTriangleDist = LINE_TRIANGLE_FACTOR*candDist;
     std::vector<int> segmentCandidates;
     for (int k = 0; k < candidates.size(); k++) {
-        double triangleDist = Cand::dist(cand1, candidates[k]) + Cand::dist(cand2, candidates[k]);
-        if (triangleDist <= maxTriangleDist) {
+        double side1 = Cand::dist(cand1, candidates[k]);
+        double side2 =  Cand::dist(cand2, candidates[k]); 
+        if (
+            side1 < candDist &&
+            side2 < candDist && 
+            side1 + side2 <= maxTriangleDist
+        ) {
             segmentCandidates.push_back(k);
         }
     }
