@@ -21,14 +21,16 @@ double computeCandidateSimilarity( // [0, 1]
     const Cand& cand1,
     const Cand& cand2
 ) { 
+    //
     double maxDistToLine = SAME_LINE_FACTOR*Cand::dist(cand1, cand2);
     double sim1 = 1.0 - cand1.distToLine(cand2)/(2*maxDistToLine);
     double sim2 = 1.0 - cand2.distToLine(cand1)/(2*maxDistToLine);
+    double sim = min(sim1, sim2);
     // candidates are not on the same line or almost => dissimilar
-    if (min(sim1, sim2) <= 0.0) return 0.0;
+    if (sim <= 0) return 0.5;
     // reward if the line is continuous (no gaps)
     if (checkNoGaps(candidates, cand1, cand2)) {
-        return min(sim1, sim2);
+        return sim;
     } 
     // line has gaps => dissimilar
     return 0.0;

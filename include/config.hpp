@@ -26,12 +26,12 @@ const double UP_STEP = 0.1;
 
 // candidate graph
 const double CONNECTION_RADIUS = 20.0;
-const double SAME_LINE_FACTOR = 0.2;
+const double SAME_LINE_FACTOR = 0.1;
 const double LINE_TRIANGLE_FACTOR = 1.1;
 const double MIN_GAP_SIZE = 5.0;
 
 // clustering cost
-const double MIN_COST = -100;
+const double MIN_COST = -1;
 const double MAX_COST = 10;
 
 // line extraction
