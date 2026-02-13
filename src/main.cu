@@ -70,19 +70,19 @@ void buildLineEdgeImage(
 
 int main() {
 
-    checkGPU();
+    // checkGPU();
 
-    loadPreprocessImage("../images/black.png", "original", "preprocessed", "params");
+    // loadPreprocessImage("../images/black.png", "original", "preprocessed", "params");
     // loadPreprocessImage("../images/table.png", "original", "preprocessed", "params");
     // loadPreprocessImage("../images/apb1.png", "original", "preprocessed", "params");
     // loadPreprocessImage("../images/apb2.png", "original", "preprocessed", "params");
     // loadPreprocessImage("../images/apb3.png", "original", "preprocessed", "params");
 
-    computeThresholdCandidates("preprocessed", "scores", "directions", "t_candidates");
-    showCandidates("scores", "directions", "t_candidates");
+    // computeThresholdCandidates("preprocessed", "scores", "directions", "t_candidates");
+    // showCandidates("scores", "directions", "t_candidates");
     
-    computeIterativeCandidates("preprocessed", "t_candidates", "candidates");
-    showCandidates("scores", "directions", "candidates");
+    // computeIterativeCandidates("preprocessed", "t_candidates", "candidates");
+    // showCandidates("scores", "directions", "candidates");
 
     buildCandidateGraph("candidates", "cgraph");
     performClustering("cgraph", "labels");

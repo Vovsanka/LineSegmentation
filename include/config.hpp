@@ -25,17 +25,18 @@ const int UP_COUNT = 10;
 const double UP_STEP = 0.1;
 
 // candidate graph
-const double CONNECTION_RADIUS = 20.0;
+const double CONNECTION_RADIUS = 5.0;
+const double ALMOST_SAME_DIST = 1.1;
 const double SAME_LINE_FACTOR = 0.1;
 const double LINE_TRIANGLE_FACTOR = 1.1;
-const double MIN_GAP_SIZE = 5.0;
+const double MIN_GAP_SIZE = 1.1;
 
 // clustering cost
-const double MIN_COST = -1;
-const double MAX_COST = 100;
+const double MIN_COST = -10;
+const double MAX_COST = 10;
 
 // line extraction
-const int MIN_LINE_CLUSTER = 5;
-const double MAX_DIST_TO_LINE = 2.0;
+const int MIN_LINE_CLUSTER = 10;
+const double MAX_DIST_TO_LINE = 1.0;
 
 #endif

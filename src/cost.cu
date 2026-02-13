@@ -21,8 +21,11 @@ double computeCandidateSimilarity( // [0, 1]
     const Cand& cand1,
     const Cand& cand2
 ) { 
+    double dist = Cand::dist(cand1, cand2);
     //
-    double maxDistToLine = SAME_LINE_FACTOR*Cand::dist(cand1, cand2);
+    // if (dist <= ALMOST_SAME_DIST) return 1.0;
+    //
+    double maxDistToLine = SAME_LINE_FACTOR*dist;
     double sim1 = 1.0 - cand1.distToLine(cand2)/(2*maxDistToLine);
     double sim2 = 1.0 - cand2.distToLine(cand1)/(2*maxDistToLine);
     double sim = min(sim1, sim2);
