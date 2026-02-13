@@ -16,7 +16,7 @@ CandidateGraph::CandidateGraph(const std::vector<Cand>& candidates) {
         for (int j = i + 1; j < n; j++) {
             if (Cand::dist(candidates[i], candidates[j]) <= CONNECTION_RADIUS) {
                 double cost = computeCandidateCost(candidates, candidates[i], candidates[j]);
-                if (cost > 0.0) {
+                if (cost != 0.0) {
                     edges.push_back(Edge(i, j, cost));
                 }
             }

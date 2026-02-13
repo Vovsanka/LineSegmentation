@@ -87,7 +87,7 @@ std::optional<Line> clusterToLine (
         //
         Vec perp = v1.subtract(lineVec*t); 
         double distToLine = perp.len();
-        if (distToLine > MAX_DIST_TO_LINE) {
+        if (distToLine > MAX_DIST_TO_FITTED_LINE) {
             return std::nullopt;
         }
     }

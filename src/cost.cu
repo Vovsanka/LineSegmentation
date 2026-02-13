@@ -21,13 +21,9 @@ double computeCandidateSimilarity( // [0, 1]
     const Cand& cand1,
     const Cand& cand2
 ) { 
-    double dist = Cand::dist(cand1, cand2);
     //
-    // if (dist <= ALMOST_SAME_DIST) return 1.0;
-    //
-    double maxDistToLine = SAME_LINE_FACTOR*dist;
-    double sim1 = 1.0 - cand1.distToLine(cand2)/(2*maxDistToLine);
-    double sim2 = 1.0 - cand2.distToLine(cand1)/(2*maxDistToLine);
+    double sim1 = 1.0 - cand1.distToLine(cand2)/(2*GOOD_DIST_TO_CAND_LINE);
+    double sim2 = 1.0 - cand2.distToLine(cand1)/(2*GOOD_DIST_TO_CAND_LINE);
     double sim = min(sim1, sim2);
     // candidates are not on the same line or almost => dissimilar
     if (sim <= 0) return 0.5;
@@ -54,8 +50,8 @@ bool checkNoGaps(
         double side1 = Cand::dist(cand1, candidates[k]);
         double side2 =  Cand::dist(cand2, candidates[k]); 
         if (
-            side1 < candDist &&
-            side2 < candDist && 
+            side1 <= candDist + TOL &&
+            side2 <= candDist + TOL && 
             side1 + side2 <= maxTriangleDist
         ) {
             segmentCandidates.push_back(k);
@@ -75,7 +71,7 @@ bool checkNoGaps(
     std::sort(std::begin(projections), std::end(projections));
     int lastProj = 0;
     for (double p : projections) {
-        if (p <= 0 || p >= candDist) continue;
+        if (p + TOL < 0  || p - TOL > candDist) continue;
         if (p - lastProj > MIN_GAP_SIZE) return false;
         lastProj = p;
     }

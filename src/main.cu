@@ -84,15 +84,33 @@ int main() {
     // computeIterativeCandidates("preprocessed", "t_candidates", "candidates");
     // showCandidates("scores", "directions", "candidates");
 
-    buildCandidateGraph("candidates", "cgraph");
-    performClustering("cgraph", "labels");
-    buildClusterImage("params", "candidates", "cgraph", "labels", "clusters");
+    // buildCandidateGraph("candidates", "cgraph");
+    // performClustering("cgraph", "labels");
+    // buildClusterImage("params", "candidates", "cgraph", "labels", "clusters");
 
-    extractLines("candidates", "cgraph", "labels", "lines");
-    buildLineEdgeImage("params", "lines", "edges", false);
+    // extractLines("candidates", "cgraph", "labels", "lines");
+    // buildLineEdgeImage("params", "lines", "edges", false);
 
-    reconstructOriginalLines("params", "lines", "or_lines");
-    buildLineEdgeImage("params", "or_lines", "or_edges");
+    // reconstructOriginalLines("params", "lines", "or_lines");
+    // buildLineEdgeImage("params", "or_lines", "or_edges");
+
+    //// debug start
+    std::vector<Cand> candidates = {
+        Cand(10, 8, 90, 0),
+        Cand(10, 9, 90, 0),
+        Cand(10, 11, 90, 0),
+        Cand(10, 12, 90, 0),
+        Cand(8, 10, 0, 0),
+        Cand(9, 10, 0, 0),
+        Cand(11, 10, 0, 0),
+        Cand(12, 10, 0, 0),
+    };
+    CandidateGraph G(candidates);
+    std::vector<char> edgeLabels = solveClustering(G);
+    for (Edge& e : G.edges) {
+        std::cout << e.c1 << " " << e.c2 << " " << e.w << std::endl;
+    }
+    //// debug end
     
     return 0;
 }
@@ -213,8 +231,6 @@ void buildCandidateGraph(
     std::vector<Cand> candidates = loadCandidates(candidateList_inName);
 
     CandidateGraph G(candidates);
-
-    // TODO: maybe lifted candidate graph
 
     // save the working state
     saveCandidateGraph(G, candidateGraph_outName);
