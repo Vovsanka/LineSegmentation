@@ -85,11 +85,11 @@ std::optional<Line> clusterToLine (
         minT = min(t, minT);
         maxT = max(t, maxT);
         //
-        Vec perp = v1.subtract(lineVec*t); 
-        double distToLine = perp.len();
-        if (distToLine > MAX_DIST_TO_FITTED_LINE) {
-            return std::nullopt;
-        }
+        // Vec perp = v1.subtract(lineVec*t); 
+        // double distToLine = perp.len();
+        // if (distToLine > MAX_DIST_TO_FITTED_LINE) {
+        //     return std::nullopt;
+        // }
     }
     // 
     double end1Y = y0 + minT*vy;

@@ -13,7 +13,6 @@
 // independent steps 
 void checkGPU(); // 0
 void loadPreprocessImage(
-    std::string imagePath,
     std::string originalImage_outName,
     std::string preprocessedImage_outName,
     std::string params_outName
@@ -72,11 +71,7 @@ int main() {
 
     checkGPU();
 
-    loadPreprocessImage("../images/black.png", "original", "preprocessed", "params");
-    // loadPreprocessImage("../images/table.png", "original", "preprocessed", "params");
-    // loadPreprocessImage("../images/apb1.png", "original", "preprocessed", "params");
-    // loadPreprocessImage("../images/apb2.png", "original", "preprocessed", "params");
-    // loadPreprocessImage("../images/apb3.png", "original", "preprocessed", "params");
+    loadPreprocessImage("original", "preprocessed", "params");
 
     computeThresholdCandidates("preprocessed", "scores", "directions", "t_candidates");
     showCandidates("scores", "directions", "t_candidates");
@@ -105,13 +100,12 @@ void checkGPU() {
 }
 
 void loadPreprocessImage(
-    std::string imagePath,
     std::string originalImage_outName,
     std::string preprocessedImage_outName,
     std::string params_outName
 ) {
     // Load an RGB image
-    cv::Mat originalF = cv::imread(imagePath, cv::IMREAD_COLOR);
+    cv::Mat originalF = cv::imread(IMAGE_PATH, cv::IMREAD_COLOR);
     if (originalF.empty()) std::exit(1);
     showImage(originalF);
     
@@ -122,7 +116,7 @@ void loadPreprocessImage(
     cpuF = convertBGRtoLab(originalF);
 
     // apply the noise filtering to LAB-image (preserves the edge perception)
-    cpuF = filterNoise(cpuF);
+    cpuF = filterNoiseLAB(cpuF);
 
     // resize the image (to the reasonable processing size)
     double scale = computeScale(cpuF);
@@ -182,8 +176,10 @@ void computeIterativeCandidates(
     std::vector<Cand> tCandidates = loadCandidates(candidateList_inName);
 
     // iterative search candidates
+    cv::cuda::GpuMat gpuF = uploadToGPU(cpuF);
     std::vector<Cand> candidates = candidateIterativeSearch(
         cpuF.ptr<uchar>(), cpuF.step,
+        gpuF,
         tCandidates,
         cpuF.cols, cpuF.rows
     );

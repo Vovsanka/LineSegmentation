@@ -15,6 +15,7 @@
 __host__ __device__
 Cand upgradeCandidate(
     const uchar* F, size_t Fstep,
+    cv::cuda::GpuMat& gpuF,
     Cand cand,
     int width, int height
 );
@@ -29,6 +30,7 @@ void setBlocked(uchar*B, size_t Bstep, double y, double x, int width, int height
 __host__
 std::vector<Cand> candidateIterativeSearch(
     const uchar* F, size_t Fstep,
+    cv::cuda::GpuMat& gpuF,
     const std::vector<Cand>& tCandidates,
     int width, int height
 );
@@ -36,6 +38,7 @@ std::vector<Cand> candidateIterativeSearch(
 __host__ 
 void candidateExpand(
     const uchar *F, size_t Fstep, 
+    cv::cuda::GpuMat& gpuF,
     uchar* B, size_t Bstep,
     std::vector<Cand> &chosenCand,
     Cand cand,
@@ -52,7 +55,7 @@ void bestPixelScoreKernelDirection(
 );
 
 __host__
-Cand computeBestPixelScore(
+Cand computeBestPixelCandidate(
     cv::cuda::GpuMat& F,
     double y, double x
 );

@@ -4,6 +4,7 @@
 __host__ __device__
 Cand upgradeCandidate(
     const uchar* F, size_t Fstep,
+    cv::cuda::GpuMat& gpuF,
     Cand cand,
     int width, int height
 ) {
@@ -27,9 +28,9 @@ Cand upgradeCandidate(
     //
     if (abs(bestY - cand.y) < UP_STEP && abs(bestX - cand.x) < UP_STEP) return cand;
     // arrive at this point iff the score got upgraded (max score limited => no endless loop)
-    Cand bestScoreDir = bestPossibleScoreDirection(F, Fstep, bestY, bestX, width, height);
+    Cand bestScoreDir = computeBestPixelCandidate(gpuF, bestY, bestX);
     double bestDir = bestScoreDir.dir;
-    return upgradeCandidate(F, Fstep, Cand(bestY, bestX, bestDir, bestScore), width, height);
+    return upgradeCandidate(F, Fstep, gpuF, Cand(bestY, bestX, bestDir, bestScore), width, height);
 }
 
 
@@ -54,6 +55,7 @@ void setBlocked(uchar*B, size_t Bstep, double y, double x, int width, int height
 __host__
 std::vector<Cand> candidateIterativeSearch(
     const uchar* F, size_t Fstep,
+    cv::cuda::GpuMat& gpuF,
     const std::vector<Cand>& tCandidates,
     int width, int height
 ) {
@@ -64,6 +66,7 @@ std::vector<Cand> candidateIterativeSearch(
     for (const Cand& startCand : tCandidates) {
         candidateExpand(
             F, Fstep,
+            gpuF,
             BLOCKED.ptr<uchar>(), BLOCKED.step,
             chosenCandidates,
             startCand, -1, 1.0,
@@ -84,6 +87,7 @@ std::vector<Cand> candidateIterativeSearch(
 __host__ 
 void candidateExpand(
     const uchar *F, size_t Fstep, 
+    cv::cuda::GpuMat& gpuF,
     uchar* B, size_t Bstep,
     std::vector<Cand> &chosenCand,
     Cand cand,
@@ -94,7 +98,7 @@ void candidateExpand(
     if (isBlocked(B, Bstep, cand.y, cand.x, width, height) || cand.score < CAND_THRESHOLD) return;
     //
     if (cand.score < prevScore) {
-        cand = upgradeCandidate(F, Fstep, cand, width, height);
+        cand = upgradeCandidate(F, Fstep, gpuF, cand, width, height);
     }
     //
     if (isBlocked(B, Bstep, cand.y, cand.x, width, height) || cand.score < CAND_THRESHOLD) return;
@@ -113,7 +117,7 @@ void candidateExpand(
         double x1 = cand.x + unitEdge1.x;
         double score1 = computeLabScore(F, Fstep, y1, x1, cand.dir, width, height);
         candidateExpand(
-            F, Fstep, B, Bstep, chosenCand,
+            F, Fstep, gpuF, B, Bstep, chosenCand,
             Cand(y1, x1, cand.dir, score1),
             edge2, cand.score,
             width, height
@@ -125,7 +129,7 @@ void candidateExpand(
         double x2 = cand.x + unitEdge2.x;
         double score2 = computeLabScore(F, Fstep, y2, x2, cand.dir, width, height);
         candidateExpand(
-            F, Fstep, B, Bstep, chosenCand,
+            F, Fstep, gpuF, B, Bstep, chosenCand,
             Cand(y2, x2, cand.dir, score2),
             edge1, cand.score, 
             width, height
@@ -147,7 +151,7 @@ void bestPixelScoreKernelDirection(
 }
 
 __host__
-Cand computeBestPixelScore(
+Cand computeBestPixelCandidate(
     cv::cuda::GpuMat& F,
     double y, double x
 ) {

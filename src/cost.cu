@@ -9,10 +9,10 @@ double computeCandidateCost(
 ) {
     double sim = computeCandidateSimilarity(candidates, cand1, cand2);
     // logit of the similiarity
-    if (sim  < TOL) return MIN_COST;
-    if (sim >= 1.0 - TOL) return MAX_COST;
+    if (sim  < TOL) return -COST_BOUND;
+    if (sim >= 1.0 - TOL) return +COST_BOUND;
     double cost = std::log2(sim/(1.0 - sim));
-    return max(min(cost, MAX_COST), MIN_COST);
+    return max(min(cost, +COST_BOUND), -COST_BOUND);
 }
 
 __host__
