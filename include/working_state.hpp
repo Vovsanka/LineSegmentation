@@ -3,16 +3,15 @@
 
 #include <string>
 #include <fstream>
-#include <filesystem>
 
 #include <opencv2/opencv.hpp>
 
+#include "config.hpp"
 #include "cand_type.hpp"
 #include "cgraph_type.hpp"
 #include "line_type.hpp"
 
 
-const std::filesystem::path pathPrefix("../working-state");
 
 void saveImageParams(
     int originalWidth, int originalHeight,

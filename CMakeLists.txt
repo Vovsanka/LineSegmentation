@@ -37,7 +37,3 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ${OpenCV_LIBS} ${CAIRO_LIBRARIES})
 set_target_properties(${PROJECT_NAME} PROPERTIES
     CUDA_SEPARABLE_COMPILATION ON
 )
-
-set(OUTPUT_DIR "${CMAKE_SOURCE_DIR}/working-state")
-add_custom_target(create_output_dir ALL COMMAND ${CMAKE_COMMAND} -E make_directory "${OUTPUT_DIR}" )
-

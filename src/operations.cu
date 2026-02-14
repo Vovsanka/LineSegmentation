@@ -141,7 +141,7 @@ void drawClusterImage(
     }
     cairo_stroke(cr); 
     //
-    cairo_surface_write_to_png(surface, (pathPrefix/(name + ".png")).string().c_str());
+    cairo_surface_write_to_png(surface, (WORKING_STATE_DIR/(name + ".png")).string().c_str());
     //
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
@@ -165,7 +165,7 @@ void drawLineEdgeImage(const std::vector<Line>& lines, int width, int height, st
     }
     cairo_stroke(cr); 
     //
-    cairo_surface_write_to_png(surface, (pathPrefix/(name + ".png")).string().c_str());
+    cairo_surface_write_to_png(surface, (WORKING_STATE_DIR/(name + ".png")).string().c_str());
     //
     cairo_destroy(cr);
     cairo_surface_destroy(surface);

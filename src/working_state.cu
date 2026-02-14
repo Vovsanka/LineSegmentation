@@ -6,7 +6,7 @@ void saveImageParams(
     int width, int height,
     std::string name
 ) {
-    std::ofstream out(pathPrefix/(name + ".bin"), std::ios::binary);
+    std::ofstream out(WORKING_STATE_DIR/(name + ".bin"), std::ios::binary);
     out.write(reinterpret_cast<const char*>(&originalWidth), sizeof(originalWidth));
     out.write(reinterpret_cast<const char*>(&originalHeight), sizeof(originalHeight));
     out.write(reinterpret_cast<const char*>(&width), sizeof(width));
@@ -14,7 +14,7 @@ void saveImageParams(
 }
 
 std::tuple<int,int,int,int> loadImageParams(std::string name) {
-    std::ifstream in(pathPrefix/(name + ".bin"), std::ios::binary);
+    std::ifstream in(WORKING_STATE_DIR/(name + ".bin"), std::ios::binary);
     int originalWidth = 0, originalHeight = 0;
     int width = 0, height = 0;
     in.read(reinterpret_cast<char*>(&originalWidth), sizeof(originalWidth));
@@ -25,7 +25,7 @@ std::tuple<int,int,int,int> loadImageParams(std::string name) {
 }
 
 void saveMatrix(const cv::Mat& M, std::string name) {
-    std::ofstream out(pathPrefix/(name + ".bin"), std::ios::binary);
+    std::ofstream out(WORKING_STATE_DIR/(name + ".bin"), std::ios::binary);
     int rows = M.rows, cols = M.cols, type = M.type();
     out.write((char*)&rows, sizeof(int)); 
     out.write((char*)&cols, sizeof(int)); 
@@ -34,7 +34,7 @@ void saveMatrix(const cv::Mat& M, std::string name) {
 }
 
 cv::Mat loadMatrix(std::string name) {
-    std::ifstream in(pathPrefix/(name + ".bin"), std::ios::binary); 
+    std::ifstream in(WORKING_STATE_DIR/(name + ".bin"), std::ios::binary); 
     int rows, cols, type; 
     in.read((char*)&rows, sizeof(int)); 
     in.read((char*)&cols, sizeof(int)); 
@@ -46,7 +46,7 @@ cv::Mat loadMatrix(std::string name) {
 }
 
 void saveCandidates(const std::vector<Cand>& candidates, std::string name) {
-    std::ofstream out(pathPrefix/(name + ".bin"), std::ios::binary);
+    std::ofstream out(WORKING_STATE_DIR/(name + ".bin"), std::ios::binary);
     std::size_t count = candidates.size();
     out.write(reinterpret_cast<const char*>(&count), sizeof(count));
     if (count > 0) {
@@ -55,7 +55,7 @@ void saveCandidates(const std::vector<Cand>& candidates, std::string name) {
 }
 
 std::vector<Cand> loadCandidates(std::string name) {
-    std::ifstream in(pathPrefix/(name + ".bin"), std::ios::binary);
+    std::ifstream in(WORKING_STATE_DIR/(name + ".bin"), std::ios::binary);
     std::size_t count = 0;
     in.read(reinterpret_cast<char*>(&count), sizeof(count));
     std::vector<Cand> candidates(count);
@@ -66,7 +66,7 @@ std::vector<Cand> loadCandidates(std::string name) {
 }
 
 void saveCandidateGraph(const CandidateGraph& G, std::string name) {
-    std::ofstream out(pathPrefix/(name + ".bin"), std::ios::binary);
+    std::ofstream out(WORKING_STATE_DIR/(name + ".bin"), std::ios::binary);
     std::size_t vertexCount = G.n;
     std::size_t edgeCount = G.edges.size();
     out.write(reinterpret_cast<const char*>(&vertexCount), sizeof(vertexCount));
@@ -77,7 +77,7 @@ void saveCandidateGraph(const CandidateGraph& G, std::string name) {
 }
 
 CandidateGraph loadCandidateGraph(std::string name) {
-    std::ifstream in(pathPrefix/(name + ".bin"), std::ios::binary);
+    std::ifstream in(WORKING_STATE_DIR/(name + ".bin"), std::ios::binary);
     std::size_t vertexCount = 0;
     std::size_t edgeCount = 0;
     in.read(reinterpret_cast<char*>(&vertexCount), sizeof(vertexCount));
@@ -94,7 +94,7 @@ CandidateGraph loadCandidateGraph(std::string name) {
 }
 
 void saveEdgeLabels(const std::vector<char>& edgeLabels, std::string name) {
-    std::ofstream out(pathPrefix/(name + ".bin"), std::ios::binary);
+    std::ofstream out(WORKING_STATE_DIR/(name + ".bin"), std::ios::binary);
     std::size_t edgeCount = edgeLabels.size();
     out.write(reinterpret_cast<const char*>(&edgeCount), sizeof(edgeCount));
     if (edgeCount > 0) {
@@ -103,7 +103,7 @@ void saveEdgeLabels(const std::vector<char>& edgeLabels, std::string name) {
 }
 
 std::vector<char> loadEdgeLabels(std::string name) {
-    std::ifstream in(pathPrefix/(name + ".bin"), std::ios::binary);
+    std::ifstream in(WORKING_STATE_DIR/(name + ".bin"), std::ios::binary);
     std::size_t edgeCount = 0;
     in.read(reinterpret_cast<char*>(&edgeCount), sizeof(edgeCount));
     std::vector<char> edgeLabels(edgeCount);
@@ -114,7 +114,7 @@ std::vector<char> loadEdgeLabels(std::string name) {
 }
 
 void saveLines(const std::vector<Line>& lines, std::string name) {
-    std::ofstream out(pathPrefix/(name + ".bin"), std::ios::binary);
+    std::ofstream out(WORKING_STATE_DIR/(name + ".bin"), std::ios::binary);
     std::size_t lineCount = lines.size();
     out.write(reinterpret_cast<const char*>(&lineCount), sizeof(lineCount));
     if (lineCount > 0) {
@@ -123,7 +123,7 @@ void saveLines(const std::vector<Line>& lines, std::string name) {
 }
 
 std::vector<Line> loadLines(std::string name) {
-    std::ifstream in(pathPrefix/(name + ".bin"), std::ios::binary);
+    std::ifstream in(WORKING_STATE_DIR/(name + ".bin"), std::ios::binary);
     std::size_t lineCount = 0;
     in.read(reinterpret_cast<char*>(&lineCount), sizeof(lineCount));
     std::vector<Line> lines(lineCount);

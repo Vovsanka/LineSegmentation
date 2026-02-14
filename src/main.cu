@@ -70,29 +70,29 @@ void buildLineEdgeImage(
 
 int main() {
 
-    // checkGPU();
+    checkGPU();
 
-    // loadPreprocessImage("../images/black.png", "original", "preprocessed", "params");
+    loadPreprocessImage("../images/black.png", "original", "preprocessed", "params");
     // loadPreprocessImage("../images/table.png", "original", "preprocessed", "params");
     // loadPreprocessImage("../images/apb1.png", "original", "preprocessed", "params");
     // loadPreprocessImage("../images/apb2.png", "original", "preprocessed", "params");
     // loadPreprocessImage("../images/apb3.png", "original", "preprocessed", "params");
 
-    // computeThresholdCandidates("preprocessed", "scores", "directions", "t_candidates");
-    // showCandidates("scores", "directions", "t_candidates");
+    computeThresholdCandidates("preprocessed", "scores", "directions", "t_candidates");
+    showCandidates("scores", "directions", "t_candidates");
     
-    // computeIterativeCandidates("preprocessed", "t_candidates", "candidates");
-    // showCandidates("scores", "directions", "candidates");
+    computeIterativeCandidates("preprocessed", "t_candidates", "candidates");
+    showCandidates("scores", "directions", "candidates");
 
-    // buildCandidateGraph("candidates", "cgraph");
-    // performClustering("cgraph", "labels");
-    // buildClusterImage("params", "candidates", "cgraph", "labels", "clusters");
+    buildCandidateGraph("candidates", "cgraph");
+    performClustering("cgraph", "labels");
+    buildClusterImage("params", "candidates", "cgraph", "labels", "clusters");
 
-    // extractLines("candidates", "cgraph", "labels", "lines");
-    // buildLineEdgeImage("params", "lines", "edges", false);
+    extractLines("candidates", "cgraph", "labels", "lines");
+    buildLineEdgeImage("params", "lines", "edges", false);
 
-    // reconstructOriginalLines("params", "lines", "or_lines");
-    // buildLineEdgeImage("params", "or_lines", "or_edges");
+    reconstructOriginalLines("params", "lines", "or_lines");
+    buildLineEdgeImage("params", "or_lines", "or_edges");
 
     return 0;
 }
@@ -251,7 +251,7 @@ void buildClusterImage(
 
      // show the line edge image
     cv::Mat I = cv::imread(
-        (pathPrefix/(clusterImage_outName + ".png")).string().c_str(),
+        (WORKING_STATE_DIR/(clusterImage_outName + ".png")).string().c_str(),
         cv::IMREAD_GRAYSCALE
     );
     showImage(I);
@@ -319,7 +319,7 @@ void buildLineEdgeImage(
 
     // show the line edge image
     cv::Mat I = cv::imread(
-        (pathPrefix/(lineEdgeImage_outName + ".png")).string().c_str(),
+        (WORKING_STATE_DIR/(lineEdgeImage_outName + ".png")).string().c_str(),
         cv::IMREAD_GRAYSCALE
     );
     showImage(I);
