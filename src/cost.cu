@@ -26,7 +26,8 @@ double computeCandidateSimilarity( // [0, 1]
     double sim2 = 1.0 - cand2.distToLine(cand1)/(2*GOOD_DIST_TO_CAND_LINE);
     double sim = min(sim1, sim2);
     // candidates are not on the same line or almost => dissimilar
-    if (sim <= 0) return 0.5;
+    if (sim <= 0) return 0.0;
+    // if (sim <= 0) return 0.5;
     // reward if the line is continuous (no gaps)
     if (checkNoGaps(candidates, cand1, cand2)) {
         return sim;
