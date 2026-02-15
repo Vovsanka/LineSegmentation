@@ -4,12 +4,12 @@
 #include <filesystem>
 
 // path constants
-const std::filesystem::path WORKING_STATE_DIR = "../working-state-apb1-18";
-const std::filesystem::path IMAGE_PATH = "../images/apb1.png";
+const std::filesystem::path WORKING_STATE_DIR = "../working-state-table-90";
+const std::filesystem::path IMAGE_PATH = "../images/table.png";
 
 // computation parameters
 const int MAX_SIDE = 640; // image scaling (up and down possible)
-const int DIRECTIONS = 18; // even! // <= 1024 // DIRECTIONS ~ PI //
+const int DIRECTIONS = 90; // even! // <= 1024 // DIRECTIONS ~ PI //
 
 // constants
 const double TOL = 1e-6;
@@ -33,7 +33,7 @@ const double UP_STEP = 0.1;
 
 // candidate graph
 const double CONNECTION_RADIUS = 5.0;
-const double GOOD_DIST_TO_CAND_LINE = 1.1;
+const double GOOD_DIST_TO_CAND_LINE = 1.5;
 const double LINE_TRIANGLE_FACTOR = 1.1;
 const double MIN_GAP_SIZE = 2.5;
 
