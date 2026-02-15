@@ -33,7 +33,7 @@ const double UP_STEP = 0.1;
 
 // candidate graph
 const double CONNECTION_RADIUS = 5.0;
-const double GOOD_DIST_TO_CAND_LINE = 1.5;
+const double GOOD_DIST_TO_CAND_LINE = 0.8;
 const double LINE_TRIANGLE_FACTOR = 1.1;
 const double MIN_GAP_SIZE = 2.5;
 
