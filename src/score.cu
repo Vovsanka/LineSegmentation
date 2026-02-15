@@ -73,13 +73,13 @@ thrust::tuple<uchar,uchar,uchar> getShiftedColorChannels(
     const uchar* F,
     size_t Fstep,
     double y, double x,
-    int d, int c,
+    int d,
     int width, int height
 ) { // d in [0, 2*DIRECTIONS)
     Vec unitVector = getUnitVector(d);
     //
-    double yShifted = y + c*unitVector.y;
-    double xShifted = x + c*unitVector.x;
+    double yShifted = y + CIRCLE_RADIUS*unitVector.y;
+    double xShifted = x + CIRCLE_RADIUS*unitVector.x;
     //
     return getColorChannels(F, Fstep, yShifted, xShifted, width, height);
 }
@@ -92,60 +92,55 @@ double computeLabScore(
     int dir, 
     int width, int height
 ) { // dir in [0, DIRECTIONS)
-    double emdSum = 0.0;
-    for (int c = 1; c <= CIRCLE_COUNT; c++) {
+    int minL = 255, minA = 255, minB = 255;
+    double lArr[2*DIRECTIONS];
+    double aArr[2*DIRECTIONS];
+    double bArr[2*DIRECTIONS];
+    for (int d1 = 0; d1 < DIRECTIONS; d1++) { 
+        int d2 = getOppositeDirection(d1); 
         //
-        int minL = 255, minA = 255, minB = 255;
-        double lArr[2*DIRECTIONS];
-        double aArr[2*DIRECTIONS];
-        double bArr[2*DIRECTIONS];
-        for (int d1 = 0; d1 < DIRECTIONS; d1++) { 
-            int d2 = getOppositeDirection(d1); 
-            //
-            thrust::tuple<uchar,uchar,uchar> lab1 = getShiftedColorChannels(
-                F, Fstep, yPixel, xPixel, d1, c, width, height);
-            int l1 = thrust::get<0>(lab1);
-            int a1 = thrust::get<1>(lab1);
-            int b1 = thrust::get<2>(lab1);
-            //
-            thrust::tuple<uchar,uchar,uchar> lab2 = getShiftedColorChannels(
-                F, Fstep, yPixel, xPixel, d2, c, width, height);
-            int l2 = thrust::get<0>(lab2);
-            int a2 = thrust::get<1>(lab2);
-            int b2 = thrust::get<2>(lab2);
-            //
-            minL = min(minL, min(l1, l2));
-            minA = min(minA, min(a1, a2));
-            minB = min(minB, min(b1, b2));
-            // 
-            lArr[d1] = l1;
-            aArr[d1] = a1;
-            bArr[d1] = b1;
-            //
-            lArr[d2] = l2;
-            aArr[d2] = a2;
-            bArr[d2] = b2;
-          }
+        thrust::tuple<uchar,uchar,uchar> lab1 = getShiftedColorChannels(
+            F, Fstep, yPixel, xPixel, d1, width, height);
+        int l1 = thrust::get<0>(lab1);
+        int a1 = thrust::get<1>(lab1);
+        int b1 = thrust::get<2>(lab1);
         //
-        for (int d1 = 0; d1 < DIRECTIONS; d1++) { 
-            int d2 = getOppositeDirection(d1); 
-            //
-            lArr[d1] += COLOR_OFFSET - minL;
-            aArr[d1] += COLOR_OFFSET - minA;
-            bArr[d1] += COLOR_OFFSET - minB;
-            //
-            lArr[d2] += COLOR_OFFSET - minL;
-            aArr[d2] += COLOR_OFFSET - minA;
-            bArr[d2] += COLOR_OFFSET - minB;
-        }
-        // use the following line!
-        emdSum += min(emd(lArr, dir), min(emd(aArr, dir), emd(bArr, dir)));
-    }
-    // compute the EMD-score
-    double maxEmd = 1.0*DIRECTIONS/4;
-    double emdAv = emdSum/CIRCLE_COUNT;
-    double emdNorm = fmin(emdAv/maxEmd, 1.0);
-    double emdScore = 1.0 - pow(emdNorm, SCORE_BOOSTER); 
+        thrust::tuple<uchar,uchar,uchar> lab2 = getShiftedColorChannels(
+            F, Fstep, yPixel, xPixel, d2, width, height);
+        int l2 = thrust::get<0>(lab2);
+        int a2 = thrust::get<1>(lab2);
+        int b2 = thrust::get<2>(lab2);
+        //
+        minL = min(minL, min(l1, l2));
+        minA = min(minA, min(a1, a2));
+        minB = min(minB, min(b1, b2));
+        // 
+        lArr[d1] = l1;
+        aArr[d1] = a1;
+        bArr[d1] = b1;
+        //
+        lArr[d2] = l2;
+        aArr[d2] = a2;
+        bArr[d2] = b2;
+      }
+    //
+    for (int d1 = 0; d1 < DIRECTIONS; d1++) { 
+        int d2 = getOppositeDirection(d1); 
+        //
+        lArr[d1] += COLOR_OFFSET - minL;
+        aArr[d1] += COLOR_OFFSET - minA;
+        bArr[d1] += COLOR_OFFSET - minB;
+        //
+        lArr[d2] += COLOR_OFFSET - minL;
+        aArr[d2] += COLOR_OFFSET - minA;
+        bArr[d2] += COLOR_OFFSET - minB;
+    }    
+    //
+    double emdCircle = min(emd(lArr, dir), min(emd(aArr, dir), emd(bArr, dir)));
+    double emdMax = 1.0*DIRECTIONS/4;
+    double emdBest = min(emdMax, emdCircle);
+    // compute the score
+    double emdScore = 1.0 - emdBest/emdMax; 
     return emdScore;
 }
 

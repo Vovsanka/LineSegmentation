@@ -64,6 +64,15 @@ std::vector<Cand> candidateIterativeSearch(
     //
     int n = 1;
     for (const Cand& startCand : tCandidates) {
+        //
+        if (n <= 100 || n % 100 == 0) {
+            std::cout << "Iterative search: #candidates = " << chosenCandidates.size();
+            std::cout << " (" << round(100.0*n/tCandidates.size()) << "%)";
+            std::cout << std::endl;
+        }
+        n++;
+        //
+        if (startCand.score < UPPER_THRESHOLD) continue;
         candidateExpand(
             F, Fstep,
             gpuF,
@@ -72,13 +81,6 @@ std::vector<Cand> candidateIterativeSearch(
             startCand, -1, 1.0,
             width, height
         );
-        //
-        if (n <= 100 || n % 100 == 0) {
-            std::cout << "Iterative search: #candidates = " << chosenCandidates.size();
-            std::cout << " (" << round(100.0*n/tCandidates.size()) << "%)";
-            std::cout << std::endl;
-        }
-        n++;
     }
     //
     return chosenCandidates;
@@ -95,13 +97,13 @@ void candidateExpand(
     double prevScore,
     int width, int height
 ) {
-    if (isBlocked(B, Bstep, cand.y, cand.x, width, height) || cand.score < CAND_THRESHOLD) return;
+    if (isBlocked(B, Bstep, cand.y, cand.x, width, height) || cand.score < LOWER_THRESHOLD) return;
     //
     if (cand.score < prevScore) {
         cand = upgradeCandidate(F, Fstep, gpuF, cand, width, height);
     }
     //
-    if (isBlocked(B, Bstep, cand.y, cand.x, width, height) || cand.score < CAND_THRESHOLD) return;
+    if (isBlocked(B, Bstep, cand.y, cand.x, width, height)) return;
     // 
     chosenCand.push_back(cand);
     setBlocked(B, Bstep, cand.y, cand.x, width, height);

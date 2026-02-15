@@ -35,9 +35,6 @@ __host__
 cv::Mat convertBGRtoLab(const cv::Mat& cpuF);
 
 __host__
-cv::Mat filterNoiseLAB(const cv::Mat& cpuF);
-
-__host__
 double computeScale(const cv::Mat& cpuF);
 
 __host__

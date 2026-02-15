@@ -115,9 +115,6 @@ void loadPreprocessImage(
     // Convert the image to the LAB color space
     cpuF = convertBGRtoLab(originalF);
 
-    // apply the noise filtering to LAB-image (preserves the edge perception)
-    cpuF = filterNoiseLAB(cpuF);
-
     // resize the image (to the reasonable processing size)
     double scale = computeScale(cpuF);
     cpuF = resize(cpuF, scale);

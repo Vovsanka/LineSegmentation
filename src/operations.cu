@@ -21,12 +21,6 @@ cv::Mat convertBGRtoLab(const cv::Mat& cpuF) {
     return labF;
 }
 
-__host__
-cv::Mat filterNoiseLAB(const cv::Mat& cpuF) {
-    cv::Mat filteredF;
-    fastNlMeansDenoising(cpuF, filteredF, 20, 7, 21);
-    return filteredF;
-}
 
 __host__
 double computeScale(const cv::Mat& cpuF) {

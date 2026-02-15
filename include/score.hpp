@@ -22,7 +22,7 @@ thrust::tuple<uchar,uchar,uchar> getShiftedColorChannels(
     const uchar* F,
     size_t Fstep,
     double y, double x,
-    int d, int c,
+    int d,
     int width, int height
 ); // d in [0, 2*DIRECTIONS)
 
