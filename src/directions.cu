@@ -8,8 +8,8 @@ double getRad(int d) { // returns [0, 2*PI)
 
 __host__ __device__ 
 Vec getUnitVector(int d) { // (y, x) // d in [0, 2*DIRECTIONS)
-    double rad = getRad(d);
-    return Vec(sin(rad), cos(rad));
+    float rad = static_cast<float>(getRad(d));
+    return Vec(sinf(rad), cosf(rad));
 }
 
 __host__ __device__

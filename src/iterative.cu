@@ -169,6 +169,7 @@ Cand computeBestPixelCandidate(
         dScores,
         F.cols, F.rows
     ); 
+    cudaError_t err = cudaGetLastError(); 
     cudaDeviceSynchronize();
     //
     double scores[DIRECTIONS];

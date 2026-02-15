@@ -84,6 +84,7 @@ thrust::tuple<uchar,uchar,uchar> getShiftedColorChannels(
     return getColorChannels(F, Fstep, yShifted, xShifted, width, height);
 }
 
+
 __host__ __device__
 double computeLabScore(
     const uchar* F,
@@ -96,6 +97,13 @@ double computeLabScore(
     double lArr[2*DIRECTIONS];
     double aArr[2*DIRECTIONS];
     double bArr[2*DIRECTIONS];
+    //
+    for (int k = 0; k < 2*DIRECTIONS; ++k) { 
+        lArr[k] = 0.0; 
+        aArr[k] = 0.0; 
+        bArr[k] = 0.0; 
+    }
+    //
     for (int d1 = 0; d1 < DIRECTIONS; d1++) { 
         int d2 = getOppositeDirection(d1); 
         //
@@ -136,9 +144,9 @@ double computeLabScore(
         bArr[d2] += COLOR_OFFSET - minB;
     }    
     //
-    double emdCircle = min(emd(lArr, dir), min(emd(aArr, dir), emd(bArr, dir)));
-    double emdMax = 1.0*DIRECTIONS/4;
-    double emdBest = min(emdMax, emdCircle);
+    double emdCircle = fmin(emd(lArr, dir), fmin(emd(aArr, dir), emd(bArr, dir)));
+    double emdMax = 1.0*DIRECTIONS/4.0;
+    double emdBest = fmin(emdMax, emdCircle);
     // compute the score
     double emdScore = 1.0 - emdBest/emdMax; 
     return emdScore;
@@ -150,7 +158,7 @@ Cand bestPossibleScoreDirection(
     double yPixel, double xPixel,
     int width, int height
 ) {
-    double bestScore = computeLabScore(F, Fstep, yPixel, xPixel, 0, width, height);;
+    double bestScore = computeLabScore(F, Fstep, yPixel, xPixel, 0, width, height);
     int bestDir = 0;
     for (int d = 1; d < DIRECTIONS; d++) {
         double score = computeLabScore(F, Fstep, yPixel, xPixel, d, width, height);

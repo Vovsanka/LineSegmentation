@@ -1,6 +1,9 @@
 #ifndef DIRECTIONS_HPP
 #define DIRECTIONS_HPP
 
+#include <math.h>
+#include <cmath>
+
 #include "config.hpp"
 #include "vec_type.hpp"
 
