@@ -4,12 +4,12 @@
 #include <filesystem>
 
 // path constants
-const std::filesystem::path WORKING_STATE_DIR = "../working-state-black-18";
-const std::filesystem::path IMAGE_PATH = "../images/black.png";
+const std::filesystem::path WORKING_STATE_DIR = "../working-state-table-90";
+const std::filesystem::path IMAGE_PATH = "../images/table.png";
 
 // computation parameters
 constexpr int MAX_SIDE = 640; // image scaling (up and down possible)
-constexpr int DIRECTIONS = 18; // even! // <= 1024 // DIRECTIONS ~ PI //
+constexpr int DIRECTIONS = 90; // even! // <= 1024 // DIRECTIONS ~ PI //
 
 // constants
 constexpr double TOL = 1e-6;
@@ -17,15 +17,15 @@ constexpr double INF = 1e6;
 constexpr double PI = 3.141593;
 
 // beam score computation
-constexpr int CIRCLE_RADIUS = 3;
+constexpr int CIRCLE_RADIUS = 3.0;
 constexpr double COLOR_OFFSET = 3.0; // avoid 0-arrays & ignore some noise
 
 // threshold candidates
 constexpr double CAND_THRESHOLD = 0.5;
 
 // iterative candidates
-constexpr double UPPER_THRESHOLD = 0.7; // >= CAND_THRESHOLD
-constexpr double LOWER_THRESHOLD = 0.3;
+constexpr double UPPER_THRESHOLD = 0.6; // >= CAND_THRESHOLD
+constexpr double LOWER_THRESHOLD = 0.2;
 
 // candidate upgrade
 constexpr int UP_COUNT = 10;
