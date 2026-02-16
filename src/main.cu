@@ -69,25 +69,25 @@ void buildLineEdgeImage(
 
 int main() {
 
-    // checkGPU();
+    checkGPU();
 
-    // loadPreprocessImage("original", "preprocessed", "params");
+    loadPreprocessImage("original", "preprocessed", "params");
 
-    // computeThresholdCandidates("preprocessed", "scores", "directions", "t_candidates");
-    // showCandidates("scores", "directions", "t_candidates");
+    computeThresholdCandidates("preprocessed", "scores", "directions", "t_candidates");
+    showCandidates("scores", "directions", "t_candidates");
     
-    // computeIterativeCandidates("preprocessed", "t_candidates", "candidates");
-    // showCandidates("scores", "directions", "candidates");
+    computeIterativeCandidates("preprocessed", "t_candidates", "candidates");
+    showCandidates("scores", "directions", "candidates");
 
-    // buildCandidateGraph("candidates", "cgraph");
-    // performClustering("cgraph", "labels");
-    // buildClusterImage("params", "candidates", "cgraph", "labels", "clusters");
+    buildCandidateGraph("candidates", "cgraph");
+    performClustering("cgraph", "labels");
+    buildClusterImage("params", "candidates", "cgraph", "labels", "clusters");
 
-    // extractLines("candidates", "cgraph", "labels", "lines");
-    // buildLineEdgeImage("params", "lines", "edges", false);
+    extractLines("candidates", "cgraph", "labels", "lines");
+    buildLineEdgeImage("params", "lines", "edges", false);
 
-    // reconstructOriginalLines("params", "lines", "or_lines");
-    // buildLineEdgeImage("params", "or_lines", "or_edges");
+    reconstructOriginalLines("params", "lines", "or_lines");
+    buildLineEdgeImage("params", "or_lines", "or_edges");
 
     return 0;
 }
