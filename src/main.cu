@@ -69,14 +69,7 @@ void buildLineEdgeImage(
 
 int main() {
 
-    //// debug start
-    cv::Mat cpuF = loadMatrix("preprocessed");
-    std::cout << computeLabScore(cpuF.ptr<uchar>(), cpuF.step, 150.866, 523.5, 8, cpuF.cols, cpuF.rows) << std::endl;
-    cv::cuda::GpuMat gpuF = uploadToGPU(cpuF);
-    std::cout << computeBestPixelCandidate(gpuF, 150.866, 523.5).score << std::endl;
-    //// debug end
-
-    // checkGPU();
+    checkGPU();
 
     // loadPreprocessImage("original", "preprocessed", "params");
 
@@ -86,15 +79,15 @@ int main() {
     // computeIterativeCandidates("preprocessed", "t_candidates", "candidates");
     // showCandidates("scores", "directions", "candidates");
 
-    // buildCandidateGraph("candidates", "cgraph");
-    // performClustering("cgraph", "labels");
-    // buildClusterImage("params", "candidates", "cgraph", "labels", "clusters");
+    buildCandidateGraph("candidates", "cgraph");
+    performClustering("cgraph", "labels");
+    buildClusterImage("params", "candidates", "cgraph", "labels", "clusters");
 
-    // extractLines("candidates", "cgraph", "labels", "lines");
-    // buildLineEdgeImage("params", "lines", "edges", false);
+    extractLines("candidates", "cgraph", "labels", "lines");
+    buildLineEdgeImage("params", "lines", "edges", false);
 
-    // reconstructOriginalLines("params", "lines", "or_lines");
-    // buildLineEdgeImage("params", "or_lines", "or_edges");
+    reconstructOriginalLines("params", "lines", "or_lines");
+    buildLineEdgeImage("params", "or_lines", "or_edges");
 
     return 0;
 }
