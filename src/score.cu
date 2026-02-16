@@ -15,7 +15,7 @@ void insertionSort(double* a, int n) {
 }
 
 __host__ __device__
-double emd(const double* arr, int d) { // d in [0, 2*DIRECTIONS)
+double emdRing(const double* arr, int d) { // d in [0, 2*DIRECTIONS)
     int edge1 = getOrthogonalDirection(d);
     int edge2 = getOppositeDirection(edge1);
     if (edge1 > edge2) { // make edge1 < edge2
@@ -84,73 +84,6 @@ thrust::tuple<uchar,uchar,uchar> getShiftedColorChannels(
     return getColorChannels(F, Fstep, yShifted, xShifted, width, height);
 }
 
-
-__host__ __device__
-double computeLabScore(
-    const uchar* F,
-    size_t Fstep,
-    double yPixel, double xPixel,
-    int dir, 
-    int width, int height
-) { // dir in [0, DIRECTIONS)
-    int minL = 255, minA = 255, minB = 255;
-    double lArr[2*DIRECTIONS];
-    double aArr[2*DIRECTIONS];
-    double bArr[2*DIRECTIONS];
-    //
-    for (int k = 0; k < 2*DIRECTIONS; ++k) { 
-        lArr[k] = 0.0; 
-        aArr[k] = 0.0; 
-        bArr[k] = 0.0; 
-    }
-    //
-    for (int d1 = 0; d1 < DIRECTIONS; d1++) { 
-        int d2 = getOppositeDirection(d1); 
-        //
-        thrust::tuple<uchar,uchar,uchar> lab1 = getShiftedColorChannels(
-            F, Fstep, yPixel, xPixel, d1, width, height);
-        int l1 = thrust::get<0>(lab1);
-        int a1 = thrust::get<1>(lab1);
-        int b1 = thrust::get<2>(lab1);
-        //
-        thrust::tuple<uchar,uchar,uchar> lab2 = getShiftedColorChannels(
-            F, Fstep, yPixel, xPixel, d2, width, height);
-        int l2 = thrust::get<0>(lab2);
-        int a2 = thrust::get<1>(lab2);
-        int b2 = thrust::get<2>(lab2);
-        //
-        minL = min(minL, min(l1, l2));
-        minA = min(minA, min(a1, a2));
-        minB = min(minB, min(b1, b2));
-        // 
-        lArr[d1] = l1;
-        aArr[d1] = a1;
-        bArr[d1] = b1;
-        //
-        lArr[d2] = l2;
-        aArr[d2] = a2;
-        bArr[d2] = b2;
-      }
-    //
-    for (int d1 = 0; d1 < DIRECTIONS; d1++) { 
-        int d2 = getOppositeDirection(d1); 
-        //
-        lArr[d1] += COLOR_OFFSET - minL;
-        aArr[d1] += COLOR_OFFSET - minA;
-        bArr[d1] += COLOR_OFFSET - minB;
-        //
-        lArr[d2] += COLOR_OFFSET - minL;
-        aArr[d2] += COLOR_OFFSET - minA;
-        bArr[d2] += COLOR_OFFSET - minB;
-    }    
-    //
-    double emdCircle = fmin(emd(lArr, dir), fmin(emd(aArr, dir), emd(bArr, dir)));
-    double emdMax = 1.0*DIRECTIONS/4.0;
-    double emdBest = fmin(emdMax, emdCircle);
-    // compute the score
-    double emdScore = 1.0 - emdBest/emdMax; 
-    return emdScore;
-}
 
 __host__ __device__
 Cand bestPossibleScoreDirection(

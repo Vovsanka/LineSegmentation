@@ -89,13 +89,6 @@ int main() {
     // reconstructOriginalLines("params", "lines", "or_lines");
     // buildLineEdgeImage("params", "or_lines", "or_edges");
 
-    //// debug start
-    cv::Mat cpuF = loadMatrix("preprocessed");
-    std::cout << computeLabScore(cpuF.ptr<uchar>(), cpuF.step, 150.866, 523.5, 8, cpuF.cols, cpuF.rows) << std::endl;
-    cv::cuda::GpuMat gpuF = uploadToGPU(cpuF);
-    std::cout << computeBestPixelCandidate(gpuF, 150.866, 523.5).score << std::endl;
-    //// debug end
-
     return 0;
 }
 
