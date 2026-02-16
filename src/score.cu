@@ -73,13 +73,13 @@ thrust::tuple<uchar,uchar,uchar> getShiftedColorChannels(
     const uchar* F,
     size_t Fstep,
     double y, double x,
-    int d,
+    int d, int c,
     int width, int height
 ) { // d in [0, 2*DIRECTIONS)
     Vec unitVector = getUnitVector(d);
     //
-    double yShifted = y + CIRCLE_RADIUS*unitVector.y;
-    double xShifted = x + CIRCLE_RADIUS*unitVector.x;
+    double yShifted = y + c*CIRCLE_STEP*unitVector.y;
+    double xShifted = x + c*CIRCLE_STEP*unitVector.x;
     //
     return getColorChannels(F, Fstep, yShifted, xShifted, width, height);
 }
