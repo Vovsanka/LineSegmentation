@@ -34,19 +34,16 @@ inline double computeLabScore(
     int dir, 
     int width, int height
 ) {
-    int minL = 255, minA = 255, minB = 255;
-    double lArr[2*DIRECTIONS];
-    double aArr[2*DIRECTIONS];
-    double bArr[2*DIRECTIONS];
+    double emdCircle[CIRCLE_COUNT + 1];
     //
-    for (int k = 0; k < 2*DIRECTIONS; ++k) {
-        lArr[k] = 0.0;
-        aArr[k] = 0.0;
-        bArr[k] = 0.0;
-    }
-    //
-    double emdCircle[CIRCLE_COUNT];
     for (int c = 1; c <= CIRCLE_COUNT; c++) {
+        //
+        int minL = 255, minA = 255, minB = 255;
+        //
+        double lArr[2*DIRECTIONS];
+        double aArr[2*DIRECTIONS];
+        double bArr[2*DIRECTIONS];
+        //
         for (int d1 = 0; d1 < DIRECTIONS; d1++) {
             int d2 = getOppositeDirection(d1);
 
@@ -90,12 +87,12 @@ inline double computeLabScore(
         );
     }
     //
-    double emdMax  = 1.0 * DIRECTIONS / 4.0;
+    double emdMax  = 1.0*DIRECTIONS/4.0;
     double weightedSum = 0.0, weight = 0.0;
     for (int c = 1; c <= CIRCLE_COUNT; c++) {
         double circleScore = 1.0 - fmin(emdMax, emdCircle[c]) / emdMax;
         int w = (CIRCLE_COUNT - c + 1);
-        weightedSum = circleScore*w;
+        weightedSum += circleScore*w;
         weight += w;
     }
     double score = weightedSum / weight;

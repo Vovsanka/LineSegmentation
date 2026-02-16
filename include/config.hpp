@@ -17,8 +17,8 @@ constexpr double INF = 1e6;
 constexpr double PI = 3.141593;
 
 // beam score computation
-constexpr int CIRCLE_COUNT = 3;
-constexpr int CIRCLE_STEP = 1.0;
+constexpr int CIRCLE_COUNT = 1;
+constexpr double CIRCLE_STEP = 3.0;
 constexpr double COLOR_OFFSET = 3.0; // avoid 0-arrays & ignore some noise
 
 // threshold candidates
