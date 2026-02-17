@@ -14,11 +14,11 @@ set(CMAKE_CUDA_STANDARD 17)
 
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --extended-lambda")
 
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+# set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}) # FindGUROBI.cmake
 
 find_package(OpenCV REQUIRED)
-find_package(GUROBI REQUIRED)
-find_package(PkgConfig REQUIRED)
+# find_package(GUROBI REQUIRED)
+find_package(PkgConfig REQUIRED)W
 pkg_check_modules(CAIRO REQUIRED cairo)
 
 file(GLOB SOURCES "src/*.cu")
