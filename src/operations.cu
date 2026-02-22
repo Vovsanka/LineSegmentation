@@ -21,6 +21,13 @@ cv::Mat convertBGRtoLab(const cv::Mat& cpuF) {
     return labF;
 }
 
+__host__
+cv::Mat convertBGRtoGrayscale(const cv::Mat& cpuF) {
+    cv::Mat grayF;
+    cv::cvtColor(cpuF, grayF, cv::COLOR_BGR2GRAY);
+    return grayF;
+}
+
 
 __host__
 double computeScale(const cv::Mat& cpuF) {
@@ -31,7 +38,8 @@ __host__
 cv::Mat resize(const cv::Mat& cpuF, double scale) {
     cv::Size size(std::round(scale*cpuF.cols), std::round(scale*cpuF.rows));
     cv::Mat scaledF;
-    cv::resize(cpuF, scaledF, size, 0, 0, cv::INTER_CUBIC); // clamp-to-edge strategy
+    int interp = scale > 1.0 ? cv::INTER_CUBIC : cv::INTER_AREA;
+    cv::resize(cpuF, scaledF, size, 0, 0, interp); // clamp-to-edge strategy
     return scaledF;
 }
 

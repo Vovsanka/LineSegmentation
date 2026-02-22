@@ -15,13 +15,15 @@ void checkGPU(); // 0
 void loadPreprocessImage(
     std::string originalImage_outName,
     std::string preprocessedImage_outName,
-    std::string params_outName
+    std::string params_outName,
+    bool grayscale = false
 ); // 1
 void computeThresholdCandidates(
     std::string preprocessedImage_inName,
     std::string scoreMatrix_outName,
     std::string directionMatrix_outName,
-    std::string candidateList_outName
+    std::string candidateList_outName,
+    bool beamScore = true
 ); // 2-1
 void computeIterativeCandidates(
     std::string preprocessedImage_inName,
@@ -63,7 +65,7 @@ void buildLineEdgeImage(
     std::string params_inName,
     std::string lines_inName,
     std::string lineEdgeImage_outName,
-    bool originalSize = true
+    bool originalSize = false
 ); // 5.2
 
 
@@ -71,23 +73,23 @@ int main() {
 
     checkGPU();
 
-    // loadPreprocessImage("original", "preprocessed", "params");
+    loadPreprocessImage("original", "preprocessed", "params");
 
-    // computeThresholdCandidates("preprocessed", "scores", "directions", "t_candidates");
-    // showCandidates("scores", "directions", "t_candidates");
+    computeThresholdCandidates("preprocessed", "scores", "directions", "t_candidates");
+    showCandidates("scores", "directions", "t_candidates");
     
-    // computeIterativeCandidates("preprocessed", "t_candidates", "candidates");
-    // showCandidates("scores", "directions", "candidates");
+    computeIterativeCandidates("preprocessed", "t_candidates", "candidates");
+    showCandidates("scores", "directions", "candidates");
 
     buildCandidateGraph("candidates", "cgraph");
     performClustering("cgraph", "labels");
     buildClusterImage("params", "candidates", "cgraph", "labels", "clusters");
 
     extractLines("candidates", "cgraph", "labels", "lines");
-    buildLineEdgeImage("params", "lines", "edges", false);
+    buildLineEdgeImage("params", "lines", "edges");
 
     reconstructOriginalLines("params", "lines", "or_lines");
-    buildLineEdgeImage("params", "or_lines", "or_edges");
+    buildLineEdgeImage("params", "or_lines", "or_edges", true);
 
     return 0;
 }
@@ -102,7 +104,8 @@ void checkGPU() {
 void loadPreprocessImage(
     std::string originalImage_outName,
     std::string preprocessedImage_outName,
-    std::string params_outName
+    std::string params_outName,
+    bool grayscale
 ) {
     // Load an RGB image
     cv::Mat originalF = cv::imread(IMAGE_PATH, cv::IMREAD_COLOR);
@@ -113,7 +116,11 @@ void loadPreprocessImage(
     cv::Mat cpuF;
 
     // Convert the image to the LAB color space
-    cpuF = convertBGRtoLab(originalF);
+    if (grayscale) {
+        cpuF = convertBGRtoGrayscale(originalF);
+    } else {
+        cpuF = convertBGRtoLab(originalF);
+    }
 
     // resize the image (to the reasonable processing size)
     double scale = computeScale(cpuF);
@@ -135,7 +142,8 @@ void computeThresholdCandidates(
     std::string preprocessedImage_inName,
     std::string scoreMatrix_outName,
     std::string directionMatrix_outName,
-    std::string candidateList_outName
+    std::string candidateList_outName,
+    bool beamScore
 ) {
     // load the working state
     cv::Mat cpuF = loadMatrix(preprocessedImage_inName);
@@ -152,7 +160,6 @@ void computeThresholdCandidates(
     // download the matrices to CPU
     cv::Mat cpuS = downloadToCPU(S);
     cv::Mat cpuD = downloadToCPU(D);
-    
 
     // threshold candidates
     std::vector<Cand> tCandidates = extractSortedThresholdCandidates(cpuS, cpuD);

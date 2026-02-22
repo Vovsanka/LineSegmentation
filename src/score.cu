@@ -89,12 +89,23 @@ __host__ __device__
 Cand bestPossibleScoreDirection(
     const uchar* F, size_t Fstep,
     double yPixel, double xPixel,
-    int width, int height
-) {
-    double bestScore = computeLabScore(F, Fstep, yPixel, xPixel, 0, width, height);
+    int width, int height,
+    bool beamScore
+) { 
+    double bestScore;
+    if (beamScore) {
+        bestScore = computeLabScore(F, Fstep, yPixel, xPixel, 0, width, height);
+    } else {
+        bestScore = computeGrayScore(F, Fstep, yPixel, xPixel, 0, width, height);
+    }
     int bestDir = 0;
     for (int d = 1; d < DIRECTIONS; d++) {
-        double score = computeLabScore(F, Fstep, yPixel, xPixel, d, width, height);
+        double score;
+        if (beamScore) {
+            score = computeLabScore(F, Fstep, yPixel, xPixel, d, width, height);
+        } else {
+            score = computeGrayScore(F, Fstep, yPixel, xPixel, d, width, height);
+        }
         if (score > bestScore) {
             bestScore = score;
             bestDir = d;

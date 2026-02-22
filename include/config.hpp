@@ -4,7 +4,7 @@
 #include <filesystem>
 
 // path constants
-const std::filesystem::path WORKING_STATE_DIR = "../working-state-table-180";
+const std::filesystem::path WORKING_STATE_DIR = "../working-state-table-18";
 const std::filesystem::path IMAGE_PATH = "../images/table.png";
 
 // computation parameters

@@ -101,10 +101,22 @@ inline double computeLabScore(
 };
 
 __host__ __device__
+inline double computeGrayScore(
+    const uchar* F,
+    size_t Fstep,
+    double yPixel, double xPixel,
+    int dir, 
+    int width, int height
+) {
+    return 0;
+}
+
+__host__ __device__
 Cand bestPossibleScoreDirection(
     const uchar* F, size_t Fstep,
     double yPixel, double xPixel,
-    int width, int height
+    int width, int height,
+    bool beamScore = true
 );
 
 #endif
