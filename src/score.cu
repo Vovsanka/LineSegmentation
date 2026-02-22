@@ -2,6 +2,60 @@
 
 
 __host__ __device__
+thrust::tuple<double,double,double> computeStructureTensor( // Jxx, Jyy, Jxy
+    const uchar* F,
+    size_t Fstep,
+    double yPixel, double xPixel,
+    int width, int height
+)  {
+    // Sobel kernels
+    const double kx[3][3] = {
+        {-1, 0, 1},
+        {-2, 0, 2},
+        {-1, 0, 1}
+    };
+    const double ky[3][3] = {
+        {-1, -2, -1},
+        { 0,  0,  0},
+        { 1,  2,  1}
+    };
+    // Gaussian window parameters
+    int R = G_WINDOW_SIZE; 
+    double inv2s2 = 1.0 / (2.0 * G_SIGMA * G_SIGMA);
+    //
+    double Jxx = 0.0;
+    double Jyy = 0.0;
+    double Jxy = 0.0;
+    // Loop over Gaussian window
+    for (int dv = -R; dv <= R; dv++) {
+        for (int du = -R; du <= R; du++) {
+            double y = yPixel + dv;
+            double x = xPixel + du;
+            // Compute Sobel gradients at (y,x)
+            double Ix = 0.0, Iy = 0.0;
+            for (int j = -1; j <= 1; j++) {
+                for (int i = -1; i <= 1; i++) {
+                    double yy = y + j;
+                    double xx = x + i;
+                    double val = getGrayColor(F, Fstep, yy, xx, width, height);
+                    //
+                    Ix += val * kx[j+1][i+1];
+                    Iy += val * ky[j+1][i+1];
+                }
+            }
+            // Gaussian weight
+            double w = exp(-(du*du + dv*dv) * inv2s2);
+            // Accumulate tensor components
+            Jxx += w * (Ix * Ix);
+            Jyy += w * (Iy * Iy);
+            Jxy += w * (Ix * Iy);
+        }
+    }
+    //
+    return thrust::make_tuple(Jxx, Jyy, Jxy);
+}
+
+__host__ __device__
 void shellSort(double* a, int n) {
     // Using Ciura's gap sequence (fast for small arrays)
     int gaps[] = {701, 301, 132, 57, 23, 10, 4, 1};

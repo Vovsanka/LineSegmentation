@@ -10,7 +10,23 @@
 
 
 __host__ __device__
-thrust::tuple<uchar,uchar,uchar> bicubicInterpolation(
+uchar bicubicInterpolation1(
+    const uchar* F,
+    size_t Fstep,
+    double y, double x,
+    int width, int height
+);
+
+__host__ __device__
+thrust::tuple<uchar,uchar,uchar> bicubicInterpolation3(
+    const uchar* F,
+    size_t Fstep,
+    double y, double x,
+    int width, int height
+);
+
+__host__ __device__
+uchar getGrayColor(
     const uchar* F,
     size_t Fstep,
     double y, double x,
@@ -24,5 +40,7 @@ thrust::tuple<uchar,uchar,uchar> getColorChannels(
     double y, double x,
     int width, int height
 );
+
+
 
 #endif

@@ -17,6 +17,8 @@ constexpr double INF = 1e6;
 constexpr double PI = 3.141593;
 
 // gray score function
+constexpr int G_WINDOW_SIZE = 2; // Gaussian window size
+constexpr double G_SIGMA = 1.0; // standard deviation of the Gaussian
 
 // beam score function
 constexpr int CIRCLE_COUNT = 3;

@@ -11,7 +11,13 @@
 #include "directions.hpp"
 
 
-
+__host__ __device__
+thrust::tuple<double,double,double> computeStructureTensor( // Jxx, Jyy, Jxy
+    const uchar* F,
+    size_t Fstep,
+    double yPixel, double xPixel,
+    int width, int height
+);
 
 __host__ __device__
 void shellSort(double* a, int n);
@@ -110,8 +116,11 @@ inline double computeGrayScore(
     int dir, 
     int width, int height
 ) {
-    thrust::tuple structureTensor = computeStructureTensor();
-
+    thrust::tuple<double,double,double> structureTensor = computeStructureTensor(
+        F, Fstep, yPixel, xPixel, width, height
+    );
+    // TODO
+    return 0.0;
 }
 
 __host__ __device__
