@@ -122,8 +122,8 @@ uchar getGrayColor(
     if (0 <= rY && rY < height &&
         0 <= rX && rX < width &&
         fabs(y - rY) <= TOL && fabs(x - rX) <= TOL) {
-        uchar c = *(F + rY * Fstep);
-        return c;
+        const uchar* row = F + rY * Fstep; 
+        return row[rX];
     }
     // determine the color of the sub-pixel with the bicubic interpolation (possibly out of range)
     return bicubicInterpolation1(F, Fstep, y, x, width, height);

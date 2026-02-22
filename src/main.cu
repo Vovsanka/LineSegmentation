@@ -72,7 +72,7 @@ void buildLineEdgeImage(
 
 int main() {
 
-    checkGPU();
+    // checkGPU();
 
     loadPreprocessImage("original", "preprocessed", "params", false);
 
@@ -148,6 +148,10 @@ void computeThresholdCandidates(
 ) {
     // load the working state
     cv::Mat cpuF = loadMatrix(preprocessedImage_inName);
+
+    //// debug start
+    computeGrayScore(cpuF.ptr<uchar>(), cpuF.step, 50, 320, 0, cpuF.cols, cpuF.rows);
+    //// debug end
 
     // Upload the preprocessed matrix to GPU
     cv::cuda::GpuMat F = uploadToGPU(cpuF);

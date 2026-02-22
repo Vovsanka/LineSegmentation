@@ -37,7 +37,7 @@ thrust::tuple<double,double,double> computeStructureTensor( // Jxx, Jyy, Jxy
                 for (int i = -1; i <= 1; i++) {
                     double yy = y + j;
                     double xx = x + i;
-                    double val = getGrayColor(F, Fstep, yy, xx, width, height);
+                    int val = getGrayColor(F, Fstep, yy, xx, width, height);
                     //
                     Ix += val * kx[j+1][i+1];
                     Iy += val * ky[j+1][i+1];

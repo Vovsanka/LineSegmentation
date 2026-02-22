@@ -119,8 +119,26 @@ inline double computeGrayScore(
     thrust::tuple<double,double,double> structureTensor = computeStructureTensor(
         F, Fstep, yPixel, xPixel, width, height
     );
-    // TODO
-    return 0.0;
+    double Jxx = thrust::get<0>(structureTensor);
+    double Jyy = thrust::get<1>(structureTensor);
+    double Jxy = thrust::get<2>(structureTensor);
+    // 
+    Vec normalUnitVector = getUnitVector(dir);
+    double nx = normalUnitVector.x;
+    double ny = normalUnitVector.y;
+    // tangent (orthogonal to normal unit vector)  
+    double tx = -ny;
+    double ty = nx;
+    //
+    double En = nx*nx*Jxx + 2.0*nx*ny*Jxy + ny*ny*Jyy;
+    double Et = tx*tx*Jxx + 2.0*tx*ty*Jxy + ty*ty*Jyy;
+    // 1. Directional anisotropy in [0,1] 
+    double rawScoreDir = (En - Et) / (En + Et + 1e-12); 
+    double scoreDir = 0.5 * (rawScoreDir + 1.0); 
+    // 2. Edge strength in [0,1] 
+    double scoreEdge = En / (En + EDGE_SHARPNESS); 
+    // 3. Combined score 
+    return scoreDir*scoreEdge;
 }
 
 __host__ __device__
