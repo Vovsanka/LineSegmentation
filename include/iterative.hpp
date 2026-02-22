@@ -17,7 +17,8 @@ Cand upgradeCandidate(
     const uchar* F, size_t Fstep,
     cv::cuda::GpuMat& gpuF,
     Cand cand,
-    int width, int height
+    int width, int height,
+    bool beamScore = true
 );
 
 __host__
@@ -32,7 +33,8 @@ std::vector<Cand> candidateIterativeSearch(
     const uchar* F, size_t Fstep,
     cv::cuda::GpuMat& gpuF,
     const std::vector<Cand>& tCandidates,
-    int width, int height
+    int width, int height,
+    bool beamScore = true
 );
 
 __host__ 
@@ -43,7 +45,8 @@ void candidateExpand(
     std::vector<Cand> &chosenCand,
     Cand cand,
     int invEdgeDir, double prevScore,
-    int width, int height
+    int width, int height,
+    bool beamScore = true
 );
 
 __global__
@@ -51,13 +54,15 @@ void bestPixelScoreKernelDirection(
     const uchar* F, size_t Fstep,
     double y, double x,
     double* scores,
-    int width, int height
+    int width, int height,
+    bool beamScore = true
 );
 
 __host__
 Cand computeBestPixelCandidate(
     cv::cuda::GpuMat& F,
-    double y, double x
+    double y, double x,
+    bool beamScore = true
 );
 
 

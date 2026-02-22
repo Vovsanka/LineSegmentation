@@ -21,14 +21,16 @@ void bestPixelScoreKernelPixel(
     const uchar* F, size_t Fstep,
     double* S, size_t Sstep,
     int* D, size_t Dstep,
-    int width, int height
+    int width, int height,
+    bool beamScore = true
 );
 
 __host__
 void computeBestPixelScores(
     cv::cuda::GpuMat& F,
     cv::cuda::GpuMat& S,
-    cv::cuda::GpuMat& D
+    cv::cuda::GpuMat& D,
+    bool beamScore = true
 );
 
 __host__ 

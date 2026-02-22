@@ -6,13 +6,14 @@ void bestPixelScoreKernelPixel(
     const uchar* F, size_t Fstep,
     double* S, size_t Sstep,
     int* D, size_t Dstep,
-    int width, int height
+    int width, int height,
+    bool beamScore
 ) {
     int x = blockIdx.x*blockDim.x + threadIdx.x;
     int y = blockIdx.y*blockDim.y + threadIdx.y;
     if (x >= width || y >= height) return;
     //
-    Cand bestScoreDir = bestPossibleScoreDirection(F, Fstep, y, x, width, height);
+    Cand bestScoreDir = bestPossibleScoreDirection(F, Fstep, y, x, width, height, beamScore);
     double bestScore = bestScoreDir.score;
     int bestDir = bestScoreDir.dir;
     //
@@ -24,7 +25,8 @@ __host__
 void computeBestPixelScores(
     cv::cuda::GpuMat& F,
     cv::cuda::GpuMat& S,
-    cv::cuda::GpuMat& D
+    cv::cuda::GpuMat& D,
+    bool beamScore
 ) {
     int width = F.cols;
     int height = F.rows;
@@ -39,7 +41,8 @@ void computeBestPixelScores(
         F.ptr<uchar>(), F.step,
         S.ptr<double>(), S.step,
         D.ptr<int>(), D.step,
-        F.cols, F.rows
+        F.cols, F.rows,
+        beamScore
     );
 }
 

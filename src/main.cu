@@ -16,7 +16,7 @@ void loadPreprocessImage(
     std::string originalImage_outName,
     std::string preprocessedImage_outName,
     std::string params_outName,
-    bool grayscale = false
+    bool colorImage = true
 ); // 1
 void computeThresholdCandidates(
     std::string preprocessedImage_inName,
@@ -28,7 +28,8 @@ void computeThresholdCandidates(
 void computeIterativeCandidates(
     std::string preprocessedImage_inName,
     std::string candidateList_inName,
-    std::string candidateList_outName
+    std::string candidateList_outName,
+    bool beamScore = true
 ); // 2-2
 void showCandidates(
     std::string scoreMatrix_inName,
@@ -73,12 +74,12 @@ int main() {
 
     checkGPU();
 
-    loadPreprocessImage("original", "preprocessed", "params");
+    loadPreprocessImage("original", "preprocessed", "params", false);
 
-    computeThresholdCandidates("preprocessed", "scores", "directions", "t_candidates");
+    computeThresholdCandidates("preprocessed", "scores", "directions", "t_candidates", false);
     showCandidates("scores", "directions", "t_candidates");
     
-    computeIterativeCandidates("preprocessed", "t_candidates", "candidates");
+    computeIterativeCandidates("preprocessed", "t_candidates", "candidates", false);
     showCandidates("scores", "directions", "candidates");
 
     buildCandidateGraph("candidates", "cgraph");
@@ -105,7 +106,7 @@ void loadPreprocessImage(
     std::string originalImage_outName,
     std::string preprocessedImage_outName,
     std::string params_outName,
-    bool grayscale
+    bool colorImage
 ) {
     // Load an RGB image
     cv::Mat originalF = cv::imread(IMAGE_PATH, cv::IMREAD_COLOR);
@@ -116,10 +117,10 @@ void loadPreprocessImage(
     cv::Mat cpuF;
 
     // Convert the image to the LAB color space
-    if (grayscale) {
-        cpuF = convertBGRtoGrayscale(originalF);
-    } else {
+    if (colorImage) {
         cpuF = convertBGRtoLab(originalF);
+    } else {
+        cpuF = convertBGRtoGrayscale(originalF);
     }
 
     // resize the image (to the reasonable processing size)
@@ -154,7 +155,7 @@ void computeThresholdCandidates(
     // compute the best scores for every pixel
     cv::cuda::GpuMat S(F.size(), CV_64F);
     cv::cuda::GpuMat D(F.size(), CV_32S);
-    computeBestPixelScores(F, S, D);
+    computeBestPixelScores(F, S, D, beamScore);
     showMatrix(S);
     
     // download the matrices to CPU
@@ -173,7 +174,8 @@ void computeThresholdCandidates(
 void computeIterativeCandidates(
     std::string preprocessedImage_inName,
     std::string candidateList_inName,
-    std::string candidateList_outName
+    std::string candidateList_outName,
+    bool beamScore
 ) {
     // load the working state
     cv::Mat cpuF = loadMatrix(preprocessedImage_inName);
@@ -185,7 +187,8 @@ void computeIterativeCandidates(
         cpuF.ptr<uchar>(), cpuF.step,
         gpuF,
         tCandidates,
-        cpuF.cols, cpuF.rows
+        cpuF.cols, cpuF.rows,
+        beamScore
     );
 
     // save the working state

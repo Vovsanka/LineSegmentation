@@ -6,7 +6,8 @@ Cand upgradeCandidate(
     const uchar* F, size_t Fstep,
     cv::cuda::GpuMat& gpuF,
     Cand cand,
-    int width, int height
+    int width, int height,
+    bool beamScore
 ) {
     //
     Vec unitNorm = getUnitVector(cand.dir);
@@ -17,7 +18,12 @@ Cand upgradeCandidate(
         double y = cand.y + k*UP_STEP*unitNorm.y;
         double x = cand.x + k*UP_STEP*unitNorm.x;
         //
-        double score = computeLabScore(F, Fstep, y, x, cand.dir, width, height);
+        double score;
+        if (beamScore) {
+            score = computeLabScore(F, Fstep, y, x, cand.dir, width, height);
+        } else {
+            score = computeGrayScore(F, Fstep, y, x, cand.dir, width, height);
+        }
         //
         if (score > bestScore) {
             bestScore = score;
@@ -28,9 +34,9 @@ Cand upgradeCandidate(
     //
     if (abs(bestY - cand.y) < UP_STEP && abs(bestX - cand.x) < UP_STEP) return cand;
     // arrive at this point iff the score got upgraded (max score limited => no endless loop)
-    Cand bestScoreDir = computeBestPixelCandidate(gpuF, bestY, bestX);
+    Cand bestScoreDir = computeBestPixelCandidate(gpuF, bestY, bestX, beamScore);
     double bestDir = bestScoreDir.dir;
-    return upgradeCandidate(F, Fstep, gpuF, Cand(bestY, bestX, bestDir, bestScore), width, height);
+    return upgradeCandidate(F, Fstep, gpuF, Cand(bestY, bestX, bestDir, bestScore), width, height, beamScore);
 }
 
 
@@ -57,7 +63,8 @@ std::vector<Cand> candidateIterativeSearch(
     const uchar* F, size_t Fstep,
     cv::cuda::GpuMat& gpuF,
     const std::vector<Cand>& tCandidates,
-    int width, int height
+    int width, int height,
+    bool beamScore
 ) {
     cv::Mat BLOCKED(height, width, CV_8U, cv::Scalar(0)); 
     std::vector<Cand> chosenCandidates;
@@ -79,7 +86,8 @@ std::vector<Cand> candidateIterativeSearch(
             BLOCKED.ptr<uchar>(), BLOCKED.step,
             chosenCandidates,
             startCand, -1, 1.0,
-            width, height
+            width, height,
+            beamScore
         );
     }
     //
@@ -95,12 +103,13 @@ void candidateExpand(
     Cand cand,
     int invEdgeDir,
     double prevScore,
-    int width, int height
+    int width, int height,
+    bool beamScore
 ) {
     if (isBlocked(B, Bstep, cand.y, cand.x, width, height) || cand.score < LOWER_THRESHOLD) return;
     //
     if (cand.score < prevScore) {
-        cand = upgradeCandidate(F, Fstep, gpuF, cand, width, height);
+        cand = upgradeCandidate(F, Fstep, gpuF, cand, width, height, beamScore);
     }
     //
     if (isBlocked(B, Bstep, cand.y, cand.x, width, height)) return;
@@ -117,24 +126,36 @@ void candidateExpand(
     if (edge1 != invEdgeDir) {
         double y1 = cand.y + unitEdge1.y;
         double x1 = cand.x + unitEdge1.x;
-        double score1 = computeLabScore(F, Fstep, y1, x1, cand.dir, width, height);
+        double score1;
+        if (beamScore) {
+            score1 = computeLabScore(F, Fstep, y1, x1, cand.dir, width, height);
+        } else {
+            score1 = computeGrayScore(F, Fstep, y1, x1, cand.dir, width, height);
+        }
         candidateExpand(
             F, Fstep, gpuF, B, Bstep, chosenCand,
             Cand(y1, x1, cand.dir, score1),
             edge2, cand.score,
-            width, height
+            width, height,
+            beamScore
         );
     }
     //
     if (edge2 != invEdgeDir) {
         double y2 = cand.y + unitEdge2.y;
         double x2 = cand.x + unitEdge2.x;
-        double score2 = computeLabScore(F, Fstep, y2, x2, cand.dir, width, height);
+        double score2;
+        if (beamScore) {
+            score2 = computeLabScore(F, Fstep, y2, x2, cand.dir, width, height);
+        } else {
+            score2 = computeGrayScore(F, Fstep, y2, x2, cand.dir, width, height);
+        }
         candidateExpand(
             F, Fstep, gpuF, B, Bstep, chosenCand,
             Cand(y2, x2, cand.dir, score2),
             edge1, cand.score, 
-            width, height
+            width, height,
+            beamScore
         );
     }
 }
@@ -144,18 +165,24 @@ void bestPixelScoreKernelDirection(
     const uchar* F, size_t Fstep,
     double y, double x,
     double* scores,
-    int width, int height
+    int width, int height,
+    bool beamScore
 ) {
     int dir = threadIdx.x;
     if (dir >= DIRECTIONS) return;
     //
-    scores[dir] = computeLabScore(F, Fstep, y, x, dir, width, height);
+    if (beamScore) {
+        scores[dir] = computeLabScore(F, Fstep, y, x, dir, width, height);
+    } else {
+        scores[dir] = computeGrayScore(F, Fstep, y, x, dir, width, height);
+    }
 }
 
 __host__
 Cand computeBestPixelCandidate(
     cv::cuda::GpuMat& F,
-    double y, double x
+    double y, double x,
+    bool beamScore
 ) {
     dim3 block(DIRECTIONS); // one thread for every direction;
     dim3 grid(1); // one block for the one pixel
@@ -167,7 +194,8 @@ Cand computeBestPixelCandidate(
         F.ptr<uchar>(), F.step,
         y, x,
         dScores,
-        F.cols, F.rows
+        F.cols, F.rows,
+        beamScore
     ); 
     cudaError_t err = cudaGetLastError(); 
     cudaDeviceSynchronize();
