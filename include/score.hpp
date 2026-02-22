@@ -11,8 +11,10 @@
 #include "directions.hpp"
 
 
-__host__ __device__ 
-void insertionSort(double* a, int n);
+
+
+__host__ __device__
+void shellSort(double* a, int n);
 
 __host__ __device__
 double emdRing(const double* arr, int d);
@@ -108,7 +110,8 @@ inline double computeGrayScore(
     int dir, 
     int width, int height
 ) {
-    return 0;
+    thrust::tuple structureTensor = computeStructureTensor();
+
 }
 
 __host__ __device__

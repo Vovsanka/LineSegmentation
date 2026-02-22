@@ -16,7 +16,9 @@ constexpr double TOL = 1e-6;
 constexpr double INF = 1e6;
 constexpr double PI = 3.141593;
 
-// beam score computation
+// gray score function
+
+// beam score function
 constexpr int CIRCLE_COUNT = 3;
 constexpr double CIRCLE_STEP = 1.0;
 constexpr double COLOR_OFFSET = 3.0; // avoid 0-arrays & ignore some noise

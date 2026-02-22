@@ -1,18 +1,27 @@
 #include "score.hpp"
 
 
-__host__ __device__ 
-void insertionSort(double* a, int n) {
-    for (int i = 1; i < n; ++i) {
-        double key = a[i];
-        int j = i - 1;
-        while (j >= 0 && a[j] > key) {
-            a[j + 1] = a[j];
-            --j;
+__host__ __device__
+void shellSort(double* a, int n) {
+    // Using Ciura's gap sequence (fast for small arrays)
+    int gaps[] = {701, 301, 132, 57, 23, 10, 4, 1};
+
+    for (int g = 0; g < 8; ++g) {
+        int gap = gaps[g];
+        if (gap >= n) continue;
+
+        for (int i = gap; i < n; ++i) {
+            double temp = a[i];
+            int j = i;
+            while (j >= gap && a[j - gap] > temp) {
+                a[j] = a[j - gap];
+                j -= gap;
+            }
+            a[j] = temp;
         }
-        a[j + 1] = key;
     }
 }
+
 
 __host__ __device__
 double emdRing(const double* arr, int d) { // d in [0, 2*DIRECTIONS)
@@ -55,8 +64,8 @@ double emdRing(const double* arr, int d) { // d in [0, 2*DIRECTIONS)
         }
     }
     // median computation
-    insertionSort(prefixSum1, 2*DIRECTIONS);
-    insertionSort(prefixSum2, 2*DIRECTIONS);
+    shellSort(prefixSum1, 2*DIRECTIONS);
+    shellSort(prefixSum2, 2*DIRECTIONS);
     double med1 = (prefixSum1[DIRECTIONS - 1] + prefixSum1[DIRECTIONS])/2.0;
     double med2 = (prefixSum2[DIRECTIONS - 1] + prefixSum2[DIRECTIONS])/2.0; // ring EMD
     double emd1 = 0.0, emd2 = 0.0;
