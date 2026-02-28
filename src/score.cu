@@ -20,7 +20,7 @@ thrust::tuple<double,double,double> computeStructureTensor( // Jxx, Jyy, Jxy
         { 1,  2,  1}
     };
     // Gaussian window parameters
-    int R = G_WINDOW_SIZE; 
+    int R = G_WINDOW_RADIUS; 
     double inv2s2 = 1.0 / (2.0 * G_SIGMA * G_SIGMA);
     //
     double Jxx = 0.0;
