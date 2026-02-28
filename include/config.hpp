@@ -2,14 +2,16 @@
 #define CONFIG_HPP
 
 #include <filesystem>
-
-// path constants
-const std::filesystem::path WORKING_STATE_DIR = "../working-state-table-18";
-const std::filesystem::path IMAGE_PATH = "../images/table.png";
+#include <string>
 
 // computation parameters
 constexpr int MAX_SIDE = 640; // image scaling (up and down possible)
 constexpr int DIRECTIONS = 18; // even! // <= 1024 // DIRECTIONS ~ PI //
+
+// path constants
+const std::string imageName = "apb2";
+const std::filesystem::path IMAGE_PATH = "../images/" + imageName + ".png";
+const std::filesystem::path WORKING_STATE_DIR = "../working-state-" + imageName + "-" + std::to_string(DIRECTIONS);
 
 // constants
 constexpr double TOL = 1e-6;
@@ -19,7 +21,7 @@ constexpr double PI = 3.141593;
 // gray score function
 constexpr int G_WINDOW_SIZE = 3; // Gaussian window size
 constexpr double G_SIGMA = 1.0; // standard deviation of the Gaussian
-constexpr double EDGE_SHARPNESS = 5000.0;
+constexpr double EDGE_SHARPNESS = 700.0;
 
 // beam score function
 constexpr int CIRCLE_COUNT = 3;

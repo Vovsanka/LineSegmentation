@@ -26,6 +26,7 @@ thrust::tuple<double,double,double> computeStructureTensor( // Jxx, Jyy, Jxy
     double Jxx = 0.0;
     double Jyy = 0.0;
     double Jxy = 0.0;
+    double W = 0.0; // weight sum
     // Loop over Gaussian window
     for (int dv = -R; dv <= R; dv++) {
         for (int du = -R; du <= R; du++) {
@@ -49,8 +50,14 @@ thrust::tuple<double,double,double> computeStructureTensor( // Jxx, Jyy, Jxy
             Jxx += w * (Ix * Ix);
             Jyy += w * (Iy * Iy);
             Jxy += w * (Ix * Iy);
+            W += w;
         }
     }
+    // Normalize by total Gaussian weight 
+    double invW = 1.0 / (W + TOL); 
+    Jxx *= invW; 
+    Jyy *= invW; 
+    Jxy *= invW;
     //
     return thrust::make_tuple(Jxx, Jyy, Jxy);
 }
