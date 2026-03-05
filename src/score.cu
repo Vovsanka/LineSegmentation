@@ -135,7 +135,7 @@ double emdRing(const double* arr, int d) { // d in [0, 2*DIRECTIONS)
         emd2 += fabs(prefixSum2[k] - med2);
     }
     //
-    return fmin(emd1, emd2); // the value is bounded by DIRECTIONS/2.0 (uniform <-> one side uniform)
+    return fmin(emd1, emd2); // the value is bounded by DIRECTIONS/4.0 for one-side uniform half-rings
 }
 
 __host__ __device__
