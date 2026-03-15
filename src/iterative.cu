@@ -124,8 +124,8 @@ void candidateExpand(
     Vec unitEdge2 = getUnitVector(edge2);
     //
     if (edge1 != invEdgeDir) {
-        double y1 = cand.y + unitEdge1.y;
-        double x1 = cand.x + unitEdge1.x;
+        double y1 = cand.y +  EXPANSION_STEP*unitEdge1.y;
+        double x1 = cand.x + EXPANSION_STEP*unitEdge1.x;
         double score1;
         if (beamScore) {
             score1 = computeLabScore(F, Fstep, y1, x1, cand.dir, width, height);
@@ -142,8 +142,8 @@ void candidateExpand(
     }
     //
     if (edge2 != invEdgeDir) {
-        double y2 = cand.y + unitEdge2.y;
-        double x2 = cand.x + unitEdge2.x;
+        double y2 = cand.y + EXPANSION_STEP*unitEdge2.y;
+        double x2 = cand.x + EXPANSION_STEP*unitEdge2.x;
         double score2;
         if (beamScore) {
             score2 = computeLabScore(F, Fstep, y2, x2, cand.dir, width, height);

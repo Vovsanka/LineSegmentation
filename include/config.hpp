@@ -34,6 +34,7 @@ constexpr double CAND_THRESHOLD = 0.5;
 // iterative candidates
 constexpr double UPPER_THRESHOLD = 0.6; // >= CAND_THRESHOLD
 constexpr double LOWER_THRESHOLD = 0.2;
+constexpr double EXPANSION_STEP = 1.5;
 
 // candidate upgrade
 constexpr int UP_COUNT = 10;
