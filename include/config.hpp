@@ -10,7 +10,7 @@ constexpr int DIRECTIONS = 18; // even! // <= 1024 // DIRECTIONS ~ PI //
 
 // path constants
 const std::string imageName = "apb2";
-const std::filesystem::path IMAGE_PATH = "../images/" + imageName + ".png";
+const std::filesystem::path IMAGE_PATH = "../apb-images/" + imageName + ".png";
 const std::filesystem::path WORKING_STATE_DIR = "../working-state-" + imageName + "-" + std::to_string(DIRECTIONS);
 
 // constants
