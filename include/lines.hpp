@@ -3,8 +3,6 @@
 
 #include <optional>
 
-#include <opencv2/opencv.hpp>
-
 #include "cand_type.hpp"
 #include "cgraph_type.hpp"
 #include "line_type.hpp"

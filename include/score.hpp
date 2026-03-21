@@ -1,11 +1,6 @@
 #ifndef SCORE_HPP
 #define SCORE_HPP
 
-#include <opencv2/opencv.hpp>
-#include <opencv2/core/cuda.hpp>
-
-#include <thrust/tuple.h>
-
 #include "config.hpp"
 #include "color.hpp"
 #include "directions.hpp"

@@ -1,7 +1,6 @@
 #ifndef CLUSTERING_HPP
 #define CLUSTERING_HPP
 
-#include <opencv2/opencv.hpp>
 
 #include <andres-graph/graph.hxx>
 #include <andres-graph/greedy-additive.hxx>

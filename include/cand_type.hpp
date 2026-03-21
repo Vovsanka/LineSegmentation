@@ -1,9 +1,6 @@
 #ifndef CAND_TYPE_HPP
 #define CAND_TYPE_HPP
 
-#include <opencv2/opencv.hpp>
-#include <thrust/tuple.h>
-
 #include "config.hpp"
 #include "vec_type.hpp"
 #include "directions.hpp"

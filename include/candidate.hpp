@@ -4,11 +4,6 @@
 #include <iostream>
 #include <vector>
 
-#include <opencv2/opencv.hpp>
-#include <opencv2/core/cuda.hpp>
-
-#include <thrust/tuple.h>
-
 #include "cand_type.hpp"
 #include "config.hpp"
 #include "operations.hpp"

@@ -1,7 +1,6 @@
 #include "cost.hpp"
 
 
-__host__ 
 double computeCandidateCost(
     const std::vector<Cand>& candidates,
     const Cand& cand1,
@@ -15,7 +14,6 @@ double computeCandidateCost(
     return max(min(cost, +COST_BOUND), -COST_BOUND);
 }
 
-__host__
 double computeCandidateSimilarity( // [0, 1]
     const std::vector<Cand>& candidates,
     const Cand& cand1,
@@ -37,7 +35,6 @@ double computeCandidateSimilarity( // [0, 1]
     return 0.0;
 }
 
-__host__
 bool checkNoGaps(
     const std::vector<Cand>& candidates,
     const Cand& cand1, 

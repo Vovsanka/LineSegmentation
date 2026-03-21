@@ -1,8 +1,6 @@
 #ifndef LINE_TYPE_HPP
 #define LINE_TYPE_HPP
 
-#include <opencv2/opencv.hpp>
-
 
 struct Line {
     double y1, x1, y2, x2;

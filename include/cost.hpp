@@ -3,8 +3,6 @@
 
 #include <cmath>
 
-#include <opencv2/opencv.hpp>
-
 #include "cand_type.hpp"
 #include "config.hpp"
 

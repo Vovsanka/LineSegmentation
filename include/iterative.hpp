@@ -1,10 +1,6 @@
 #ifndef ITERATIVE_HPP
 #define ITERATIVE_HPP
 
-#include <opencv2/opencv.hpp>
-#include <opencv2/core/cuda.hpp>
-
-#include <thrust/tuple.h>
 
 #include "cand_type.hpp"
 #include "config.hpp"

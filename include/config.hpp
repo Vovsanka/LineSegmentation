@@ -1,22 +1,21 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
-#include <filesystem>
-#include <string>
-
-// computation parameters
-constexpr int MAX_SIDE = 640; // image scaling (up and down possible)
-constexpr int DIRECTIONS = 18; // even! // <= 1024 // DIRECTIONS ~ PI //
-
-// path constants
-const std::string imageName = "apb2";
-const std::filesystem::path IMAGE_PATH = "../apb-images/" + imageName + ".png";
-const std::filesystem::path WORKING_STATE_DIR = "../working-state-" + imageName + "-" + std::to_string(DIRECTIONS);
+// opencv cuda includes
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/cuda.hpp>
+#include <opencv2/cudafilters.hpp>
+#include <opencv2/cudaimgproc.hpp>
+#include <thrust/tuple.h>
 
 // constants
 constexpr double TOL = 1e-6;
 constexpr double INF = 1e6;
 constexpr double PI = 3.141593;
+
+// computation parameters
+constexpr int MAX_SIDE = 640; // image scaling down (set infinity to never scale down)
+constexpr int DIRECTIONS = 18; // even! // <= 1024 // DIRECTIONS ~ PI //
 
 // gray score function
 constexpr int G_WINDOW_RADIUS = 3; // Gaussian window size

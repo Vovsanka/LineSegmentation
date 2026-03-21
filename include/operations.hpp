@@ -3,16 +3,12 @@
 
 #include <string>
 
-#include <opencv2/opencv.hpp>
-#include <opencv2/cudafilters.hpp>
-#include <opencv2/cudaimgproc.hpp>
 #include <cairo/cairo.h>
 
 #include "config.hpp"
 #include "cand_type.hpp"
 #include "directions.hpp"
 #include "line_type.hpp"
-#include "working_state.hpp"
 
 
 template <typename T>
@@ -41,7 +37,7 @@ __host__
 double computeScale(const cv::Mat& cpuF);
 
 __host__
-cv::Mat resize(const cv::Mat& cpuF, double scale);
+cv::Mat resizeDown(const cv::Mat& cpuF, double scale);
 
 __host__
 void showImage(const cv::Mat& cpuF);
@@ -54,28 +50,5 @@ void showMatrix(const cv::Mat &cpuF);
 
 __host__
 void showMatrix(const cv::cuda::GpuMat& gpuF);
-
-__host__
-void showScoreDirectionMatrix(
-    cv::Mat &S,
-    cv::Mat &D,
-    std::vector<Cand>& candidates
-);
-
-__host__
-void drawClusterImage(
-    int width, int height,
-    const std::vector<Cand>& candidates, 
-    const CandidateGraph& G,
-    const std::vector<char>& edgeLabels,
-    std::string name
-);
-
-__host__
-void drawLineEdgeImage(
-    const std::vector<Line>& lines, 
-    int width, int height,
-    std::string name
-);
 
 #endif
