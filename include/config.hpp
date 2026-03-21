@@ -14,7 +14,7 @@ constexpr double INF = 1e6;
 constexpr double PI = 3.141593;
 
 // computation parameters
-constexpr int MAX_SIDE = 640; // image scaling down (set infinity to never scale down)
+constexpr int MAX_SIDE = int(INF); // image scaling down (set infinity to never scale down)
 constexpr int DIRECTIONS = 18; // even! // <= 1024 // DIRECTIONS ~ PI //
 
 // gray score function
