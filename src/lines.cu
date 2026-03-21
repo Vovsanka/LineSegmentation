@@ -81,15 +81,9 @@ std::optional<Line> clusterToLine (
         const Cand& cand = candidates[node];
         Vec candVec(cand.y, cand.x);
         Vec v1 = candVec.subtract(originVec);
-        double t = v1.dot(lineVec)/lineVec.dot(lineVec);
+        double t = v1.dot(lineVec)/lineVec.dot(lineVec); // TODO: clamp projections to the image edges
         minT = min(t, minT);
         maxT = max(t, maxT);
-        //
-        // Vec perp = v1.subtract(lineVec*t); 
-        // double distToLine = perp.len();
-        // if (distToLine > MAX_DIST_TO_FITTED_LINE) {
-        //     return std::nullopt;
-        // }
     }
     // 
     double end1Y = y0 + minT*vy;

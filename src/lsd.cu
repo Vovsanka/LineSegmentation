@@ -15,7 +15,6 @@ namespace lsd {
         // Load an RGB image
         cv::Mat originalF = cv::imread(imagePath, cv::IMREAD_COLOR);
         if (originalF.empty()) std::exit(1);
-        // showImage(originalF);
         
         // preprocessed original
         cv::Mat cpuF;
@@ -34,12 +33,6 @@ namespace lsd {
         } else {
             cpuF = resizeDown(cpuF, scale);
         }
-        // showImage(cpuF);
-        
-        // print image size
-        std::cout << "Original image size: " << originalF.cols << "x" << originalF.rows << std::endl; 
-        std::cout << "Scale factor: " << scale << std::endl;
-        std::cout << "cpu image size: " << cpuF.cols << "x" << cpuF.rows << std::endl;    
 
         // save the working state
         saveMatrix(originalF, originalImage_outName);
@@ -68,7 +61,6 @@ namespace lsd {
         cv::cuda::GpuMat S(F.size(), CV_64F);
         cv::cuda::GpuMat D(F.size(), CV_32S);
         computeBestPixelScores(F, S, D, beamScore);
-        // showMatrix(S);
         
         // download the matrices to CPU
         cv::Mat cpuS = downloadToCPU(S);
@@ -177,6 +169,59 @@ namespace lsd {
         } 
         // save the working state
         saveLines(originalLines, originalLines_outName);
+    }
+
+    void buildShowStateImages(
+        std::string originalImage_inName,
+        std::string params_inName,
+        std::string preprocessedImage_inName,
+        std::string scoreMatrix_inName,
+        std::string directionMatrix_inName,
+        std::string scoreDirection_outName,
+        std::string thresholdCandidates_outName,
+        std::string iterativeCandidates_inName,
+        std::string iterativeCandidates_outName,
+        std::string candidateGraph_inName,
+        std::string edgeLabels_inName,
+        std::string scaledLines_inName,
+        std::string originalLines_inName
+    ) {
+        if (!originalImage_inName.empty()) {
+            cv::Mat originalF = loadMatrix(originalImage_inName);
+            showImage(originalF);
+        }
+        if (!originalImage_inName.empty()) {
+            int originalWidth, originalHeight;
+            double scale;
+            int width, height;
+            loadImageParams(params_inName, originalWidth, originalHeight, scale, width, height);
+            std::cout << "Original image size: " << originalWidth << "x" << originalHeight << std::endl; 
+            std::cout << "Scale factor: " << scale << std::endl;
+            std::cout << "cpu image size: " << width << "x" << height << std::endl;    
+        }
+        if (!preprocessedImage_inName.empty()) {
+            cv::Mat preprocessedF = loadMatrix(preprocessedImage_inName);
+            showImage(preprocessedF);
+        }
+        if (!scoreMatrix_inName.empty() && !directionMatrix_inName.empty()) {
+            cv::Mat S = loadMatrix(scoreMatrix_inName);
+            cv::Mat D = loadMatrix(directionMatrix_inName);
+            if (!scoreDirection_outName.empty()) {
+                cv::Mat R = buildScoreDirectionMatrix(S, D);
+                cv::imwrite(workingStateDir/(scoreDirection_outName + ".png"), R);
+                showMatrix(R);
+            }
+            if (!thresholdCandidates_outName.empty()) {
+                cv::Mat T = buildScoreDirectionMatrix(S, D, CAND_THRESHOLD);
+                cv::imwrite(workingStateDir/(thresholdCandidates_outName + ".png"), T);
+                showMatrix(T);
+            }
+        }
+        // TODO: iterative (vector thick color points)
+        // TODO: candidate graph (vector thick white points, connected edges)
+        // TODO: clusters (vector thick random color cluster points, connected joint edges)
+        // TODO: scaled lines (vector thick white lines)
+        // TODO: original lines (thick red lines on top of the original image) 
     }
 
     ////////////////////
@@ -357,5 +402,52 @@ namespace lsd {
 
         return lines;
     }
+
+
+    //////////
+
+    cv::Mat buildScoreDirectionMatrix(
+        cv::Mat& S,
+        cv::Mat& D,
+        double threshold
+    ) {
+        // 
+        int demoWidth = 500;
+        int demoHeight = 100;
+        cv::Mat Clab(demoHeight, demoWidth, CV_8UC3);
+        for (int x = 0; x < demoWidth; x++) {
+            int dir = 2*round(1.0*x/demoWidth*DIRECTIONS);
+            Vec unitVector = getUnitVector(dir);
+            int l = 255.0;
+            int a = round(127.5 + unitVector.x*127.5);
+            int b = round(127.5 + unitVector.y*127.5);
+            for (int y = 0; y < demoHeight; y++) {
+                Clab.at<cv::Vec3b>(y, x) = cv::Vec3b(l, a, b);
+            }
+        }
+        cv::Mat Cbgr;
+        cv::cvtColor(Clab, Cbgr, cv::COLOR_Lab2BGR);
+        showImage(Cbgr);
+        //
+        int width = S.cols;
+        int height = S.rows;
+        cv::Mat Mlab(height, width, CV_8UC3, cv::Scalar(0, 128, 128)); // LAB
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                double score = S.at<double>(y, x);
+                if (score < threshold) continue;
+                int dir = D.at<int>(y, x);
+                Vec unitVector = getUnitVector(2*dir);
+                int l = round(score*255.0);
+                int a = round(127.5 + unitVector.x*127.5);
+                int b = round(127.5 + unitVector.y*127.5);
+                Mlab.at<cv::Vec3b>(y, x) = cv::Vec3b(l, a, b);
+            }
+        }
+        cv::Mat Mbgr;
+        cv::cvtColor(Mlab, Mbgr, cv::COLOR_Lab2BGR);
+        return Mbgr;
+    }
+
 
 }

@@ -72,8 +72,12 @@ namespace lsd { // Line Segment Detection
         std::string originalImage_inName = "",
         std::string params_inName = "",
         std::string preprocessedImage_inName = "",
-        std::string thresholdCandidates_inName = "",
+        std::string scoreMatrix_inName = "",
+        std::string directionMatrix_inName = "",
+        std::string scoreDirection_outName = "",
+        std::string thresholdCandidates_outName = "",
         std::string iterativeCandidates_inName = "",
+        std::string iterativeCandidates_outName = "",
         std::string candidateGraph_inName = "",
         std::string edgeLabels_inName = "",
         std::string scaledLines_inName = "",
@@ -119,7 +123,11 @@ namespace lsd { // Line Segment Detection
 
     /////////////////
 
-    
+    cv::Mat buildScoreDirectionMatrix(
+        cv::Mat& S,
+        cv::Mat& D,
+        double threshold = 0
+    );
 };
 
 #endif
