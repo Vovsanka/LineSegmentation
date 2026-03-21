@@ -92,7 +92,10 @@ namespace lsd { // Line Segment Detection
         std::string clustering_outName = "",
         //
         std::string scaledLines_inName = "",
-        std::string originalLines_inName = ""
+        std::string scaledLines_outName = "",
+        //
+        std::string originalLines_inName = "",
+        std::string originalLines_outName = ""
     );
 
     /////////////////
@@ -111,6 +114,12 @@ namespace lsd { // Line Segment Detection
         const std::vector<char>& edgeLabels = std::vector<char>()
     );
 
+    void buildLineImage(
+        std::string& originalLines_outName, 
+        int width, int height,
+        const std::vector<Line>& lines,
+        std::string originalName = ""
+    );
 
     /////////////////
 

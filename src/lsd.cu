@@ -188,7 +188,9 @@ namespace lsd {
         std::string edgeLabels_inName,
         std::string clustering_outName,
         std::string scaledLines_inName,
-        std::string originalLines_inName
+        std::string scaledLines_outName,
+        std::string originalLines_inName,
+        std::string originalLines_outName
     ) {
         if (!originalImage_inName.empty()) {
             cv::Mat originalF = loadMatrix(originalImage_inName);
@@ -253,8 +255,26 @@ namespace lsd {
                 showImage("Clustering", clusteringF);
             }
         }
-        // TODO: scaled lines (vector thick white lines)
-        // TODO: original lines (thick red lines on top of the original image) 
+        if (!params_inName.empty() && !scaledLines_inName.empty() && !scaledLines_outName.empty()) {
+            int originalWidth, originalHeight;
+            double scale;
+            int width, height;
+            loadImageParams(params_inName, originalWidth, originalHeight, scale, width, height);
+            std::vector<Line> lines = loadLines(scaledLines_inName);
+            buildLineImage(scaledLines_outName, width, height, lines);
+            cv::Mat scaledLinesF = cv::imread(workingStateDir/(scaledLines_outName + ".png"), cv::IMREAD_COLOR);
+            showImage("Scaled lines", scaledLinesF);
+        }
+        if (!originalImage_outName.empty() && !params_inName.empty() && !originalLines_inName.empty() && !originalLines_outName.empty()) {
+            int originalWidth, originalHeight;
+            double scale;
+            int width, height;
+            loadImageParams(params_inName, originalWidth, originalHeight, scale, width, height);
+            std::vector<Line> lines = loadLines(originalLines_inName);
+            buildLineImage(originalLines_outName, originalWidth, originalHeight, lines, originalImage_outName);
+            cv::Mat originalLinesF = cv::imread(workingStateDir/(originalLines_outName + ".png"), cv::IMREAD_COLOR);
+            showImage("Original lines", originalLinesF);
+        }
     }
 
     //////////
@@ -399,6 +419,60 @@ namespace lsd {
         cairo_destroy(cr);
         cairo_surface_destroy(surface);
     }
+
+    void buildLineImage(
+        std::string& name, 
+        int width, int height,
+        const std::vector<Line>& lines,
+        std::string originalName
+    ) {
+        //
+        cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+        cairo_t* cr = cairo_create(surface);
+        //
+        std::vector<thrust::tuple<double,double,double>> colorMapping(lines.size());
+        if (!originalName.empty()) {
+            cairo_surface_t* bg = cairo_image_surface_create_from_png((workingStateDir/(originalName + ".png")).string().c_str());
+            cairo_set_source_surface(cr, bg, 0, 0);
+            cairo_paint(cr); 
+        } else {
+            cairo_set_source_rgb(cr, 0.0, 0.0, 0.0); 
+            cairo_paint(cr); 
+            //
+            std::mt19937 rng(12345); // deterministic seed
+            std::uniform_real_distribution<double> dist(0.0, 1.0);
+            //
+            for (int k = 0; k < lines.size(); k++) {
+                thrust::tuple<double,double,double> color = thrust::make_tuple(dist(rng), dist(rng), dist(rng));
+                colorMapping[k] = color;
+            }
+        }
+        // draw lines
+        cairo_set_line_width(cr, 0.2); 
+       for (int k = 0; k < lines.size(); k++) {
+            const Line& line = lines[k];
+            //
+            if (!originalName.empty()) {
+                cairo_set_source_rgb(cr, 0, 1.0, 0); 
+                cairo_set_line_width(cr, 2); 
+            } else {
+                double r = thrust::get<0>(colorMapping[k]);
+                double g = thrust::get<1>(colorMapping[k]);
+                double b = thrust::get<2>(colorMapping[k]);
+                cairo_set_source_rgb(cr, r, g, b); 
+                cairo_set_line_width(cr, 1); 
+            }
+            //
+            cairo_move_to(cr, line.x1, line.y1); 
+            cairo_line_to(cr, line.x2, line.y2); 
+            cairo_stroke(cr); 
+        }
+        //
+        cairo_surface_write_to_png(surface, (workingStateDir/(name + ".png")).string().c_str());
+        //
+        cairo_destroy(cr);
+        cairo_surface_destroy(surface);
+    }   
 
     ////////////////////
 
