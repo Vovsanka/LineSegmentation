@@ -7,7 +7,6 @@ namespace lsd {
     std::filesystem::path workingStateDir;
 
     void loadPreprocessImage(
-        std::filesystem::path imagePath,
         std::string originalImage_outName,
         std::string preprocessedImage_outName,
         std::string params_outName,

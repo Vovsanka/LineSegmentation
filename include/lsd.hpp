@@ -24,7 +24,6 @@ namespace lsd { // Line Segment Detection
     void checkGPU(); // 0
 
     void loadPreprocessImage( // 1
-        std::filesystem::path imagePath,
         std::string originalImage_outName,
         std::string preprocessedImage_outName,
         std::string params_outName,
