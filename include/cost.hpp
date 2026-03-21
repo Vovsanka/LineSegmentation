@@ -1,10 +1,9 @@
 #ifndef COST_HPP
 #define COST_HPP
 
-#include <cmath>
 
-#include "cand_type.hpp"
 #include "config.hpp"
+#include "cand_type.hpp"
 
 
 __host__

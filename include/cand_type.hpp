@@ -29,6 +29,12 @@ struct Cand {
     __host__ __device__
     static int dirDiff(const Cand& cand1, const Cand& cand2);
 
+    __host__ __device__
+    thrust::tuple<uchar,uchar,uchar> getColorLab() const; 
+
+    __host__ __device__
+    thrust::tuple<uchar,uchar,uchar> getColorRgb() const;
+
 };
 
 #endif

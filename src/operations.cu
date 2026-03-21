@@ -36,63 +36,29 @@ cv::Mat resizeDown(const cv::Mat& cpuF, double scale) {
     return scaledF;
 }
 
-void showImage(const cv::Mat& cpuF) {
-    cv::imshow("", cpuF);
+void showImage(std::string name, const cv::Mat& cpuF) {
+    cv::imshow(name, cpuF);
     cv::waitKey(0);
 }
 
-void showImage(const cv::cuda::GpuMat& gpuF) {
+void showImage(std::string name, const cv::cuda::GpuMat& gpuF) {
     cv::Mat cpuF;
     gpuF.download(cpuF);
-    showImage(cpuF);
+    showImage(name, cpuF);
 }
 
-void showMatrix(const cv::Mat& cpuF) {
+void showMatrix(std::string name, const cv::Mat& cpuF) {
     cv::Mat Norm;
     cv::normalize(cpuF, Norm, 0, 255, cv::NORM_MINMAX);
     Norm.convertTo(Norm, CV_8U);
-    showImage(Norm);
+    showImage(name, Norm);
 }
 
-void showMatrix(const cv::cuda::GpuMat& gpuF) {
+void showMatrix(std::string name, const cv::cuda::GpuMat& gpuF) {
     cv::Mat cpuF;
     gpuF.download(cpuF);
-    showMatrix(cpuF);
+    showMatrix(name, cpuF);
 }
-
-
-// void drawClusterImage(
-//     int width, int height,
-//     const std::vector<Cand>& candidates, 
-//     const CandidateGraph& G,
-//     const std::vector<char>& edgeLabels,
-//     std::string name
-// ) {
-//     cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-//     cairo_t* cr = cairo_create(surface);
-//     // background 
-//     cairo_set_source_rgb(cr, 0.0, 0.0, 0.0); 
-//     cairo_paint(cr); 
-//     // pen
-//     cairo_set_source_rgb(cr, 1.0, 1.0, 1.0); 
-//     cairo_set_line_width(cr, 0.2); 
-//     // draw cluster cliques using lines
-//     for (int k = 0; k < G.edges.size(); k++) {
-//         if (edgeLabels[k] > 0) continue;
-//         const Edge& e = G.edges[k];
-//         const Cand& cand1 = candidates[e.c1];
-//         const Cand& cand2 = candidates[e.c2];
-//         //
-//         cairo_move_to(cr, cand1.x, cand1.y); 
-//         cairo_line_to(cr, cand2.x, cand2.y); 
-//     }
-//     cairo_stroke(cr); 
-//     //
-//     cairo_surface_write_to_png(surface, (workingStateDir/(name + ".png")).string().c_str());
-//     //
-//     cairo_destroy(cr);
-//     cairo_surface_destroy(surface);
-// }
 
 
 // void drawLineEdgeImage(const std::vector<Line>& lines, int width, int height, std::string name) {

@@ -40,15 +40,15 @@ __host__
 cv::Mat resizeDown(const cv::Mat& cpuF, double scale);
 
 __host__
-void showImage(const cv::Mat& cpuF);
+void showImage(std::string name, const cv::Mat& cpuF);
 
 __host__
-void showImage(const cv::cuda::GpuMat& gpuF);
+void showImage(std::string name, const cv::cuda::GpuMat& gpuF);
 
 __host__
-void showMatrix(const cv::Mat &cpuF);
+void showMatrix(std::string name, const cv::Mat &cpuF);
 
 __host__
-void showMatrix(const cv::cuda::GpuMat& gpuF);
+void showMatrix(std::string name, const cv::cuda::GpuMat& gpuF);
 
 #endif

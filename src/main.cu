@@ -23,11 +23,11 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    /// 1: load the image, convert to LAB, scale down if needed
-    lsd::loadPreprocessImage("original", "preprocessed", "params", true);
+    // /// 1: load the image, convert to LAB, scale down if needed
+    // lsd::loadPreprocessImage("original", "preprocessed", "params", true);
 
-    /// 2: compute threshold and iterative candidates (using structure tensor score function or beam score function)
-    lsd::computeThresholdCandidates("preprocessed", "scores", "directions", "t_candidates", true); 
+    // /// 2: compute threshold and iterative candidates (using structure tensor score function or beam score function)
+    // lsd::computeThresholdCandidates("preprocessed", "scores", "directions", "t_candidates", true); 
     // lsd::computeIterativeCandidates("preprocessed", "t_candidates", "candidates", true);
 
     // /// 3: build the candidate graph and group the candidates by line segments, extract and reconstruct the line segments
@@ -37,7 +37,14 @@ int main(int argc, char* argv[]) {
     // lsd::reconstructOriginalLines("params", "lines", "or_lines");
 
     /// extra
-    lsd::buildShowStateImages("original", "params", "preprocessed", "scores", "directions", "score-direction", "t_candidates");
+    lsd::buildShowStateImages(
+        "original", "", // "original",
+        "params", "", // "preprocessed", 
+        "scores", "directions", "", "", // "score-direction", "t_candidates",
+        "candidates", "candidates",
+        "candidates", "cgraph", "cgraph",
+        "labels", "clustering"
+    );
 
     return 0;
 }

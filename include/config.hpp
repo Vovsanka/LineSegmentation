@@ -1,6 +1,10 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
+// math includes
+#include <math.h>
+#include <cmath>
+
 // opencv cuda includes
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/cuda.hpp>
@@ -24,7 +28,7 @@ constexpr double EDGE_SHARPNESS = 700.0;
 
 // beam score function
 constexpr int CIRCLE_COUNT = 3;
-constexpr double CIRCLE_STEP = 1.0;
+constexpr double CIRCLE_STEP = 1.5;
 constexpr double COLOR_OFFSET = 3.0; // avoid 0-arrays & ignore some noise
 
 // threshold candidates
@@ -40,7 +44,7 @@ constexpr int UP_COUNT = 10;
 constexpr double UP_STEP = 0.1;
 
 // candidate graph
-constexpr double CONNECTION_RADIUS = 10.0;
+constexpr double CONNECTION_RADIUS = 7.0;
 constexpr double GOOD_DIST_TO_CAND_LINE = 1.5;
 constexpr double LINE_TRIANGLE_FACTOR = 1.1;
 constexpr double MIN_GAP_SIZE = 5.0;

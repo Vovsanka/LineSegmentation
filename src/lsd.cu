@@ -173,6 +173,7 @@ namespace lsd {
 
     void buildShowStateImages(
         std::string originalImage_inName,
+        std::string originalImage_outName,
         std::string params_inName,
         std::string preprocessedImage_inName,
         std::string scoreMatrix_inName,
@@ -181,14 +182,20 @@ namespace lsd {
         std::string thresholdCandidates_outName,
         std::string iterativeCandidates_inName,
         std::string iterativeCandidates_outName,
+        std::string candidateList_inName,
         std::string candidateGraph_inName,
+        std::string candidateGraph_outName,
         std::string edgeLabels_inName,
+        std::string clustering_outName,
         std::string scaledLines_inName,
         std::string originalLines_inName
     ) {
         if (!originalImage_inName.empty()) {
             cv::Mat originalF = loadMatrix(originalImage_inName);
-            showImage(originalF);
+            showImage("Original image", originalF);
+            if (!originalImage_outName.empty()) {
+                cv::imwrite(workingStateDir/(originalImage_outName + ".png"), originalF);
+            }
         }
         if (!originalImage_inName.empty()) {
             int originalWidth, originalHeight;
@@ -201,7 +208,7 @@ namespace lsd {
         }
         if (!preprocessedImage_inName.empty()) {
             cv::Mat preprocessedF = loadMatrix(preprocessedImage_inName);
-            showImage(preprocessedF);
+            showImage("Preprocessed image", preprocessedF);
         }
         if (!scoreMatrix_inName.empty() && !directionMatrix_inName.empty()) {
             cv::Mat S = loadMatrix(scoreMatrix_inName);
@@ -209,19 +216,188 @@ namespace lsd {
             if (!scoreDirection_outName.empty()) {
                 cv::Mat R = buildScoreDirectionMatrix(S, D);
                 cv::imwrite(workingStateDir/(scoreDirection_outName + ".png"), R);
-                showMatrix(R);
+                showMatrix("Score-direction matrix", R);
             }
             if (!thresholdCandidates_outName.empty()) {
                 cv::Mat T = buildScoreDirectionMatrix(S, D, CAND_THRESHOLD);
                 cv::imwrite(workingStateDir/(thresholdCandidates_outName + ".png"), T);
-                showMatrix(T);
+                showMatrix("Theshold candidates", T);
             }
         }
-        // TODO: iterative (vector thick color points)
-        // TODO: candidate graph (vector thick white points, connected edges)
-        // TODO: clusters (vector thick random color cluster points, connected joint edges)
+        if (!params_inName.empty() && !iterativeCandidates_inName.empty() && !iterativeCandidates_outName.empty()) {
+            int originalWidth, originalHeight;
+            double scale;
+            int width, height;
+            loadImageParams(params_inName, originalWidth, originalHeight, scale, width, height);
+            std::vector<Cand> candidates = loadCandidates(iterativeCandidates_inName);
+            buildGraphImage(iterativeCandidates_outName, width, height, candidates);
+            cv::Mat F = cv::imread(workingStateDir/(iterativeCandidates_outName + ".png"), cv::IMREAD_COLOR);
+            showImage("Iterative candidates", F);
+        }
+        if (!params_inName.empty() && !candidateList_inName.empty() && !candidateGraph_inName.empty()) {
+            int originalWidth, originalHeight;
+            double scale;
+            int width, height;
+            loadImageParams(params_inName, originalWidth, originalHeight, scale, width, height);
+            std::vector<Cand> candidates = loadCandidates(candidateList_inName);
+            CandidateGraph cgraph = loadCandidateGraph(candidateGraph_inName);
+            if (!candidateGraph_outName.empty()) {
+                buildGraphImage(candidateGraph_outName, width, height, candidates, cgraph);
+                cv::Mat cgraphF = cv::imread(workingStateDir/(candidateGraph_outName + ".png"), cv::IMREAD_COLOR);
+                showImage("Candidate graph", cgraphF);
+            }
+            if (!edgeLabels_inName.empty() && !clustering_outName.empty()) {
+                std::vector<char> edgeLabels = loadEdgeLabels(edgeLabels_inName);
+                buildGraphImage(clustering_outName, width, height, candidates, cgraph, edgeLabels);
+                cv::Mat clusteringF = cv::imread(workingStateDir/(clustering_outName + ".png"), cv::IMREAD_COLOR);
+                showImage("Clustering", clusteringF);
+            }
+        }
         // TODO: scaled lines (vector thick white lines)
         // TODO: original lines (thick red lines on top of the original image) 
+    }
+
+    //////////
+
+    cv::Mat buildScoreDirectionMatrix(
+        cv::Mat& S,
+        cv::Mat& D,
+        double threshold
+    ) {
+        // /// demo for direction-color circular mapping
+        // int demoWidth = 500;
+        // int demoHeight = 100;
+        // cv::Mat Clab(demoHeight, demoWidth, CV_8UC3);
+        // for (int x = 0; x < demoWidth; x++) {
+        //     int dir = round(1.0*x/demoWidth*DIRECTIONS);
+        //     thrust::tuple<uchar,uchar,uchar> lab = Cand(x, 0, dir, 1).getColorLab();
+        //     int l = thrust::get<0>(lab);
+        //     int a = thrust::get<1>(lab);
+        //     int b = thrust::get<2>(lab);
+        //     for (int y = 0; y < demoHeight; y++) {
+        //         Clab.at<cv::Vec3b>(y, x) = cv::Vec3b(l, a, b);
+        //     }
+        // }
+        // cv::Mat Cbgr;
+        // cv::cvtColor(Clab, Cbgr, cv::COLOR_Lab2BGR);
+        // showImage(Cbgr);
+        //
+        int width = S.cols;
+        int height = S.rows;
+        cv::Mat Mlab(height, width, CV_8UC3, cv::Scalar(0, 128, 128)); // LAB
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                double score = S.at<double>(y, x);
+                if (score < threshold) continue;
+                int dir = D.at<int>(y, x);
+                thrust::tuple<uchar,uchar,uchar> lab = Cand(x, y, dir, score).getColorLab();
+                int l = thrust::get<0>(lab);
+                int a = thrust::get<1>(lab);
+                int b = thrust::get<2>(lab);
+                Mlab.at<cv::Vec3b>(y, x) = cv::Vec3b(l, a, b);
+            }
+        }
+        cv::Mat Mbgr;
+        cv::cvtColor(Mlab, Mbgr, cv::COLOR_Lab2BGR);
+        return Mbgr;
+    }
+
+    void buildGraphImage(
+        std::string& name, 
+        int width, int height,
+        const std::vector<Cand>& candidates, 
+        const CandidateGraph& cgraph,
+        const std::vector<char>& edgeLabels
+    ) { 
+        // /// demo for direction-color circular mapping
+        // int demoWidth = 500;
+        // int demoHeight = 100;
+        // cv::Mat Cbgr(demoHeight, demoWidth, CV_8UC3);
+        // for (int x = 0; x < demoWidth; x++) {
+        //     int dir = round(1.0*x/demoWidth*DIRECTIONS);
+        //     thrust::tuple<uchar,uchar,uchar> rgb = Cand(x, 0, dir, 1).getColorRgb();
+        //     int r = thrust::get<0>(rgb);
+        //     int g = thrust::get<1>(rgb);
+        //     int b = thrust::get<2>(rgb);
+        //     for (int y = 0; y < demoHeight; y++) {
+        //         Cbgr.at<cv::Vec3b>(y, x) = cv::Vec3b(b, g, r);
+        //     }
+        // }
+        // showImage(Cbgr);
+        ///
+        std::vector<thrust::tuple<double,double,double>> colorMapping(candidates.size());
+        if (!edgeLabels.empty()) {
+            std::mt19937 rng(12345); // deterministic seed
+            std::uniform_real_distribution<double> dist(0.0, 1.0);
+            //
+            std::vector<std::vector<int>> clusters = retrieveClusters(cgraph, edgeLabels);
+            for (const std::vector<int>& cluster : clusters) {
+                thrust::tuple<double,double,double> color = thrust::make_tuple(dist(rng), dist(rng), dist(rng));
+                for (int node : cluster) {
+                    colorMapping[node] = color;
+                }
+            }
+        }
+        //
+        cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+        cairo_t* cr = cairo_create(surface);
+        // background 
+        cairo_set_source_rgb(cr, 0.0, 0.0, 0.0); 
+        cairo_paint(cr); 
+        // draw candidate points
+        cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);                    
+        for (int k = 0; k < candidates.size(); k++) {
+            const Cand& cand = candidates[k];
+            if (cgraph.edges.empty()) {
+                thrust::tuple<uchar,uchar,uchar> rgb = cand.getColorRgb();
+                double r = thrust::get<0>(rgb)/255.0;
+                double g = thrust::get<1>(rgb)/255.0;
+                double b = thrust::get<2>(rgb)/255.0;
+                cairo_set_source_rgb(cr, r, g, b); 
+            } else if (!edgeLabels.empty()) {
+                double r = thrust::get<0>(colorMapping[k]);
+                double g = thrust::get<1>(colorMapping[k]);
+                double b = thrust::get<2>(colorMapping[k]);
+                cairo_set_source_rgb(cr, r, g, b); 
+            }
+            cairo_arc(cr, cand.x, cand.y, 1.0, 1, 2*PI);
+            cairo_fill(cr);
+        }
+        // draw all or labeled edges
+        cairo_set_line_width(cr, 0.2); 
+        for (int k = 0; k < cgraph.edges.size(); k++) {
+            const Edge& e = cgraph.edges[k];
+            //
+            if (edgeLabels.empty()) {
+                if (abs(e.w) < TOL) continue;
+                if (e.w > 0) {
+                    cairo_set_source_rgb(cr, 0, 0, 1.0); 
+                    cairo_set_line_width(cr, 1); 
+                } else {
+                    cairo_set_source_rgb(cr, 1.0, 0, 0); 
+                    cairo_set_line_width(cr, 0.2); 
+                }
+            } else {
+                if (edgeLabels[k] > 0) continue;
+                double r = thrust::get<0>(colorMapping[e.c1]);
+                double g = thrust::get<1>(colorMapping[e.c1]);
+                double b = thrust::get<2>(colorMapping[e.c1]);
+                cairo_set_source_rgb(cr, r, g, b); 
+                cairo_set_line_width(cr, 1); 
+            }
+            //
+            const Cand& cand1 = candidates[e.c1];
+            const Cand& cand2 = candidates[e.c2];
+            //
+            cairo_move_to(cr, cand1.x, cand1.y); 
+            cairo_line_to(cr, cand2.x, cand2.y); 
+            cairo_stroke(cr); 
+        }
+        //
+        cairo_surface_write_to_png(surface, (workingStateDir/(name + ".png")).string().c_str());
+        //
+        cairo_destroy(cr);
+        cairo_surface_destroy(surface);
     }
 
     ////////////////////
@@ -404,50 +580,6 @@ namespace lsd {
     }
 
 
-    //////////
-
-    cv::Mat buildScoreDirectionMatrix(
-        cv::Mat& S,
-        cv::Mat& D,
-        double threshold
-    ) {
-        // 
-        int demoWidth = 500;
-        int demoHeight = 100;
-        cv::Mat Clab(demoHeight, demoWidth, CV_8UC3);
-        for (int x = 0; x < demoWidth; x++) {
-            int dir = 2*round(1.0*x/demoWidth*DIRECTIONS);
-            Vec unitVector = getUnitVector(dir);
-            int l = 255.0;
-            int a = round(127.5 + unitVector.x*127.5);
-            int b = round(127.5 + unitVector.y*127.5);
-            for (int y = 0; y < demoHeight; y++) {
-                Clab.at<cv::Vec3b>(y, x) = cv::Vec3b(l, a, b);
-            }
-        }
-        cv::Mat Cbgr;
-        cv::cvtColor(Clab, Cbgr, cv::COLOR_Lab2BGR);
-        showImage(Cbgr);
-        //
-        int width = S.cols;
-        int height = S.rows;
-        cv::Mat Mlab(height, width, CV_8UC3, cv::Scalar(0, 128, 128)); // LAB
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                double score = S.at<double>(y, x);
-                if (score < threshold) continue;
-                int dir = D.at<int>(y, x);
-                Vec unitVector = getUnitVector(2*dir);
-                int l = round(score*255.0);
-                int a = round(127.5 + unitVector.x*127.5);
-                int b = round(127.5 + unitVector.y*127.5);
-                Mlab.at<cv::Vec3b>(y, x) = cv::Vec3b(l, a, b);
-            }
-        }
-        cv::Mat Mbgr;
-        cv::cvtColor(Mlab, Mbgr, cv::COLOR_Lab2BGR);
-        return Mbgr;
-    }
-
+    
 
 }

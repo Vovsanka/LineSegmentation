@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <string>
 #include <fstream>
+#include <random>
 
 #include "config.hpp"
 #include "operations.hpp"
@@ -70,18 +71,44 @@ namespace lsd { // Line Segment Detection
 
     void buildShowStateImages( // extra
         std::string originalImage_inName = "",
+        std::string originalImage_outName = "",
+        //
         std::string params_inName = "",
         std::string preprocessedImage_inName = "",
+        //
         std::string scoreMatrix_inName = "",
         std::string directionMatrix_inName = "",
         std::string scoreDirection_outName = "",
         std::string thresholdCandidates_outName = "",
+        //
         std::string iterativeCandidates_inName = "",
         std::string iterativeCandidates_outName = "",
+        //
+        std::string candidateList_inName = "",
         std::string candidateGraph_inName = "",
+        std::string candidateGraph_outName = "",        
+        //
         std::string edgeLabels_inName = "",
+        std::string clustering_outName = "",
+        //
         std::string scaledLines_inName = "",
         std::string originalLines_inName = ""
+    );
+
+    /////////////////
+
+    cv::Mat buildScoreDirectionMatrix(
+        cv::Mat& S,
+        cv::Mat& D,
+        double threshold = 0
+    );
+
+    void buildGraphImage(
+        std::string& name, 
+        int width, int height,
+        const std::vector<Cand>& candidates, 
+        const CandidateGraph& cgraph = CandidateGraph(),
+        const std::vector<char>& edgeLabels = std::vector<char>()
     );
 
 
@@ -121,13 +148,8 @@ namespace lsd { // Line Segment Detection
 
     std::vector<Line> loadLines(std::string& name);
 
-    /////////////////
+    
 
-    cv::Mat buildScoreDirectionMatrix(
-        cv::Mat& S,
-        cv::Mat& D,
-        double threshold = 0
-    );
 };
 
 #endif
