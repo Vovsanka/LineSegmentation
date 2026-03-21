@@ -44,14 +44,14 @@ namespace lsd {
         // save the working state
         saveMatrix(originalF, originalImage_outName);
         saveMatrix(cpuF, preprocessedImage_outName);
-        saveImageParams(originalF.cols, originalF.rows, cpuF.cols, cpuF.rows, params_outName);
+        saveImageParams(originalF.cols, originalF.rows, scale, cpuF.cols, cpuF.rows, params_outName);
     }
 
     void computeThresholdCandidates(
         std::string preprocessedImage_inName,
         std::string scoreMatrix_outName,
         std::string directionMatrix_outName,
-        std::string candidateList_outName,
+        std::string thresholdCandidates_outName,
         bool beamScore
     ) {
         // load the working state
@@ -80,18 +80,18 @@ namespace lsd {
         // save the working state
         saveMatrix(cpuS, scoreMatrix_outName);
         saveMatrix(cpuD, directionMatrix_outName);
-        saveCandidates(tCandidates, candidateList_outName);
+        saveCandidates(tCandidates, thresholdCandidates_outName);
     }
 
     void computeIterativeCandidates(
         std::string preprocessedImage_inName,
-        std::string candidateList_inName,
-        std::string candidateList_outName,
+        std::string thresholdCandidates_inName,
+        std::string iterativeCandidates_outName,
         bool beamScore
     ) {
         // load the working state
         cv::Mat cpuF = loadMatrix(preprocessedImage_inName);
-        std::vector<Cand> tCandidates = loadCandidates(candidateList_inName);
+        std::vector<Cand> tCandidates = loadCandidates(thresholdCandidates_inName);
 
         // iterative search candidates
         cv::cuda::GpuMat gpuF = uploadToGPU(cpuF);
@@ -104,7 +104,7 @@ namespace lsd {
         );
 
         // save the working state
-        saveCandidates(candidates, candidateList_outName);
+        saveCandidates(candidates, iterativeCandidates_outName);
     }
 
     void buildCandidateGraph(
@@ -152,30 +152,34 @@ namespace lsd {
 
     void reconstructOriginalLines(
         std::string params_inName,
-        std::string lines_inName,
-        std::string lines_outName
+        std::string scaledLines_inName,
+        std::string originalLines_outName
     ) {
         // load the working state
         int originalWidth, originalHeight;
+        double scale;
         int width, height;
-        std::tie(originalWidth, originalHeight, width, height) = loadImageParams(params_inName);
-        std::vector<Line> lines = loadLines(lines_inName);
+        loadImageParams(params_inName, originalWidth, originalHeight, scale, width, height);
+        std::vector<Line> scaledLines = loadLines(scaledLines_inName);
         
-        double scaleY = 1.0*originalHeight/height;
-        double scaleX = 1.0*originalWidth/width;
-        std::vector<Line> originalLines(lines.size());
-        for (int k = 0; k < lines.size(); k++) {
-            const Line& l = lines[k];
-            originalLines[k] = Line(scaleY*l.y1, scaleX*l.x1, scaleY*l.y2, scaleX*l.x2);
+        if (scale > 1.0 - TOL) {
+            // save the working state
+            saveLines(scaledLines, originalLines_outName);
+            return;
         } 
 
+        double scaleY = 1.0*originalHeight/height;
+        double scaleX = 1.0*originalWidth/width;
+        std::vector<Line> originalLines(scaledLines.size());
+        for (int k = 0; k < scaledLines.size(); k++) {
+            const Line& l = scaledLines[k];
+            originalLines[k] = Line(scaleY*l.y1, scaleX*l.x1, scaleY*l.y2, scaleX*l.x2);
+        } 
         // save the working state
-        saveLines(originalLines, lines_outName);
+        saveLines(originalLines, originalLines_outName);
     }
 
-
-
-    
+    ////////////////////
 
     void saveMatrix(const cv::Mat& M, std::string name) {
         std::ofstream out(workingStateDir/(name + ".bin"), std::ios::binary);
@@ -200,112 +204,157 @@ namespace lsd {
 
     void saveImageParams(
         int originalWidth, int originalHeight,
+        double scale,
         int width, int height,
-        std::string name
+        std::string& name
     ) {
-        std::ofstream out(workingStateDir/(name + ".bin"), std::ios::binary);
-        out.write(reinterpret_cast<const char*>(&originalWidth), sizeof(originalWidth));
-        out.write(reinterpret_cast<const char*>(&originalHeight), sizeof(originalHeight));
-        out.write(reinterpret_cast<const char*>(&width), sizeof(width));
-        out.write(reinterpret_cast<const char*>(&height), sizeof(height));
+        std::ofstream out(workingStateDir / (name + ".txt"));
+
+        out << originalWidth  << "\n"
+            << originalHeight << "\n"
+            << scale          << '\n'
+            << width          << "\n"
+            << height         << "\n";
     }
 
-    std::tuple<int,int,int,int> loadImageParams(std::string name) {
-        std::ifstream in(workingStateDir/(name + ".bin"), std::ios::binary);
-        int originalWidth = 0, originalHeight = 0;
-        int width = 0, height = 0;
-        in.read(reinterpret_cast<char*>(&originalWidth), sizeof(originalWidth));
-        in.read(reinterpret_cast<char*>(&originalHeight), sizeof(originalHeight));
-        in.read(reinterpret_cast<char*>(&width), sizeof(width));
-        in.read(reinterpret_cast<char*>(&height), sizeof(height));
-        return std::make_tuple(originalWidth, originalHeight, width, height);
+    void loadImageParams(
+        std::string& name,
+        int& originalWidth, int& originalHeight,
+        double &scale,
+        int& width, int& height
+    ) {
+        std::ifstream in(workingStateDir / (name + ".txt"));
+
+        in >> originalWidth
+           >> originalHeight
+           >> scale
+           >> width
+           >> height;
     }
 
-    void saveCandidates(const std::vector<Cand>& candidates, std::string name) {
-        std::ofstream out(workingStateDir/(name + ".bin"), std::ios::binary);
-        std::size_t count = candidates.size();
-        out.write(reinterpret_cast<const char*>(&count), sizeof(count));
-        if (count > 0) {
-            out.write(reinterpret_cast<const char*>(candidates.data()), count*sizeof(Cand)); 
+    void saveCandidates(const std::vector<Cand>& candidates, std::string& name) {
+        std::ofstream out(workingStateDir / (name + ".txt"));
+
+        out << candidates.size() << "\n";
+
+        for (const Cand& c : candidates) {
+            out << c.y << " "
+                << c.x << " "
+                << c.dir << " "
+                << c.score << "\n";
         }
     }
 
-    std::vector<Cand> loadCandidates(std::string name) {
-        std::ifstream in(workingStateDir/(name + ".bin"), std::ios::binary);
+    std::vector<Cand> loadCandidates(std::string& name) {
+        std::ifstream in(workingStateDir / (name + ".txt"));
+
         std::size_t count = 0;
-        in.read(reinterpret_cast<char*>(&count), sizeof(count));
+        in >> count;
+
         std::vector<Cand> candidates(count);
-        if (count > 0) { 
-            in.read(reinterpret_cast<char*>(candidates.data()), count*sizeof(Cand)); 
-        } 
+
+        for (std::size_t i = 0; i < count; i++) {
+            in >> candidates[i].y
+            >> candidates[i].x
+            >> candidates[i].dir
+            >> candidates[i].score;
+        }
+
         return candidates;
     }
 
-    void saveCandidateGraph(const CandidateGraph& G, std::string name) {
-        std::ofstream out(workingStateDir/(name + ".bin"), std::ios::binary);
-        std::size_t vertexCount = G.n;
-        std::size_t edgeCount = G.edges.size();
-        out.write(reinterpret_cast<const char*>(&vertexCount), sizeof(vertexCount));
-        out.write(reinterpret_cast<const char*>(&edgeCount), sizeof(edgeCount));
-        if (edgeCount > 0) {
-            out.write(reinterpret_cast<const char*>(G.edges.data()), edgeCount*sizeof(Edge)); 
+    void saveCandidateGraph(const CandidateGraph& G, std::string& name) {
+        std::ofstream out(workingStateDir / (name + ".txt"));
+
+        out << G.n << "\n";
+        out << G.edges.size() << "\n";
+
+        for (const Edge& e : G.edges) {
+            out << e.c1 << " "
+                << e.c2 << " "
+                << e.w  << "\n";
         }
     }
 
-    CandidateGraph loadCandidateGraph(std::string name) {
-        std::ifstream in(workingStateDir/(name + ".bin"), std::ios::binary);
+    CandidateGraph loadCandidateGraph(std::string& name) {
+        std::ifstream in(workingStateDir / (name + ".txt"));
+
+        CandidateGraph G;
+
         std::size_t vertexCount = 0;
         std::size_t edgeCount = 0;
-        in.read(reinterpret_cast<char*>(&vertexCount), sizeof(vertexCount));
-        in.read(reinterpret_cast<char*>(&edgeCount), sizeof(edgeCount));
-        std::vector<Edge> edges(edgeCount);
-        if (edgeCount > 0) { 
-            in.read(reinterpret_cast<char*>(edges.data()), edgeCount*sizeof(Edge)); 
-        } 
-        //
-        CandidateGraph G;
+
+        in >> vertexCount;
+        in >> edgeCount;
+
         G.n = vertexCount;
-        G.edges = edges;
+        G.edges.resize(edgeCount);
+
+        for (std::size_t i = 0; i < edgeCount; i++) {
+            in >> G.edges[i].c1
+            >> G.edges[i].c2
+            >> G.edges[i].w;
+        }
+
         return G;
     }
 
-    void saveEdgeLabels(const std::vector<char>& edgeLabels, std::string name) {
-        std::ofstream out(workingStateDir/(name + ".bin"), std::ios::binary);
-        std::size_t edgeCount = edgeLabels.size();
-        out.write(reinterpret_cast<const char*>(&edgeCount), sizeof(edgeCount));
-        if (edgeCount > 0) {
-            out.write(reinterpret_cast<const char*>(edgeLabels.data()), edgeCount); 
+    void saveEdgeLabels(const std::vector<char>& edgeLabels, std::string& name) {
+        std::ofstream out(workingStateDir / (name + ".txt"));
+
+        out << edgeLabels.size() << "\n";
+
+        for (char c : edgeLabels) {
+            out << int(c) << "\n";   // write 0 or 1 as integer
         }
     }
 
-    std::vector<char> loadEdgeLabels(std::string name) {
-        std::ifstream in(workingStateDir/(name + ".bin"), std::ios::binary);
-        std::size_t edgeCount = 0;
-        in.read(reinterpret_cast<char*>(&edgeCount), sizeof(edgeCount));
-        std::vector<char> edgeLabels(edgeCount);
-        if (edgeCount > 0) { 
-            in.read(reinterpret_cast<char*>(edgeLabels.data()), edgeCount); 
-        } 
+    std::vector<char> loadEdgeLabels(std::string& name) {
+        std::ifstream in(workingStateDir / (name + ".txt"));
+
+        std::size_t count = 0;
+        in >> count;
+
+        std::vector<char> edgeLabels(count);
+
+        for (std::size_t i = 0; i < count; i++) {
+            int temp;
+            in >> temp;              // read 0 or 1
+            edgeLabels[i] = char(temp);
+        }
+
         return edgeLabels;
     }
 
-    void saveLines(const std::vector<Line>& lines, std::string name) {
-        std::ofstream out(workingStateDir/(name + ".bin"), std::ios::binary);
-        std::size_t lineCount = lines.size();
-        out.write(reinterpret_cast<const char*>(&lineCount), sizeof(lineCount));
-        if (lineCount > 0) {
-            out.write(reinterpret_cast<const char*>(lines.data()), lineCount*sizeof(Line)); 
+    void saveLines(const std::vector<Line>& lines, std::string& name) {
+        std::ofstream out(workingStateDir / (name + ".txt"));
+
+        out << lines.size() << "\n";
+
+        for (const Line& L : lines) {
+            out << L.y1 << " "
+                << L.x1 << " "
+                << L.y2 << " "
+                << L.x2 << "\n";
         }
     }
 
-    std::vector<Line> loadLines(std::string name) {
-        std::ifstream in(workingStateDir/(name + ".bin"), std::ios::binary);
-        std::size_t lineCount = 0;
-        in.read(reinterpret_cast<char*>(&lineCount), sizeof(lineCount));
-        std::vector<Line> lines(lineCount);
-        if (lineCount > 0) { 
-            in.read(reinterpret_cast<char*>(lines.data()), lineCount*sizeof(Line)); 
-        } 
+
+    std::vector<Line> loadLines(std::string& name) {
+        std::ifstream in(workingStateDir / (name + ".txt"));
+
+        std::size_t count = 0;
+        in >> count;
+
+        std::vector<Line> lines(count);
+
+        for (std::size_t i = 0; i < count; i++) {
+            in >> lines[i].y1
+            >> lines[i].x1
+            >> lines[i].y2
+            >> lines[i].x2;
+        }
+
         return lines;
     }
 

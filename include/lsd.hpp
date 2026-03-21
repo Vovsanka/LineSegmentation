@@ -34,14 +34,14 @@ namespace lsd { // Line Segment Detection
         std::string preprocessedImage_inName,
         std::string scoreMatrix_outName,
         std::string directionMatrix_outName,
-        std::string candidateList_outName,
+        std::string thresholdCandidates_outName,
         bool beamScore = true
     ); 
 
     void computeIterativeCandidates( // 2.2
         std::string preprocessedImage_inName,
-        std::string candidateList_inName,
-        std::string candidateList_outName,
+        std::string thresholdCandidates_inName,
+        std::string iterativeCandidates_outName,
         bool beamScore = true
     ); 
 
@@ -89,28 +89,33 @@ namespace lsd { // Line Segment Detection
 
     void saveImageParams(
         int originalWidth, int originalHeight,
+        double scale,
         int width, int height,
-        std::string name
+        std::string& name
     );
 
-    std::tuple<int,int,int,int> loadImageParams(std::string name);
-    
+    void loadImageParams(
+        std::string& name,
+        int& originalWidth, int& originalHeight,
+        double &scale,
+        int& width, int& height
+    );
 
-    void saveCandidates(const std::vector<Cand>& candidates, std::string name);
+    void saveCandidates(const std::vector<Cand>& candidates, std::string& name);
 
-    std::vector<Cand> loadCandidates(std::string name);
+    std::vector<Cand> loadCandidates(std::string& name);
 
-    void saveCandidateGraph(const CandidateGraph& G, std::string name);
+    void saveCandidateGraph(const CandidateGraph& G, std::string& name);
+    CandidateGraph loadCandidateGraph(std::string& name);
 
-    CandidateGraph loadCandidateGraph(std::string name);
+    void saveEdgeLabels(const std::vector<char>& edgeLabels, std::string& name);
 
-    void saveEdgeLabels(const std::vector<char>& edgeLabels, std::string name);
+    std::vector<char> loadEdgeLabels(std::string& name);
 
-    std::vector<char> loadEdgeLabels(std::string name);
+    void saveLines(const std::vector<Line>& lines, std::string& name);
 
-    void saveLines(const std::vector<Line>& lines, std::string name);
 
-    std::vector<Line> loadLines(std::string name);
+    std::vector<Line> loadLines(std::string& name);
 
     /////////////////
 
