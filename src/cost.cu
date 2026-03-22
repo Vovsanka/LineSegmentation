@@ -19,11 +19,15 @@ double computeCandidateSimilarity( // [0, 1]
     const Cand& cand1,
     const Cand& cand2
 ) { 
-    // if (Cand::dist(cand1, cand2) <= ALMOST_SAME_DIST) return 1.0;
     //
-    double sim1 = 1.0 - cand1.distToLine(cand2)/(2*GOOD_DIST_TO_CAND_LINE);
-    double sim2 = 1.0 - cand2.distToLine(cand1)/(2*GOOD_DIST_TO_CAND_LINE);
-    return max(0.0, max(sim1, sim2));
+    int dirDiff = getDirDifference(cand1.dir, cand2.dir);
+    double dirSim = 1.0 - 2*dirDiff/DIRECTIONS;
+    //
+    double distSim1 = 1.0 - cand1.distToLine(cand2)/(2*GOOD_DIST_TO_CAND_LINE);
+    double distSim2 = 1.0 - cand2.distToLine(cand1)/(2*GOOD_DIST_TO_CAND_LINE);
+    double distSim = max(0.0, max(distSim1, distSim2));
+    //
+    return dirSim*distSim;
     // // reward if the line is continuous (no gaps)
     // if (checkNoGaps(candidates, cand1, cand2)) {
     //     return sim;

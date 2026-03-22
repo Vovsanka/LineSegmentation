@@ -266,11 +266,11 @@ namespace lsd {
             std::vector<Line> lines = loadLines(lines_inName);
             buildLineImage(lines_outName, width, height, lines);
             cv::Mat linesF = cv::imread(workingStateDir/(lines_outName + ".png"), cv::IMREAD_COLOR);
-            showImage("Scaled lines", linesF);
+            showImage("Reconstructed lines", linesF);
             if (!originalImage_outName.empty()) {
                 buildLineImage(originalLines_outName, width, height, lines, originalImage_outName);
                 cv::Mat originalLinesF = cv::imread(workingStateDir/(originalLines_outName + ".png"), cv::IMREAD_COLOR);
-                showImage("Original lines", originalLinesF);
+                showImage("Original with lines", originalLinesF);
             }
         }
     }

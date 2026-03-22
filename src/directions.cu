@@ -26,3 +26,10 @@ __host__ __device__
 Vec getOrthogonalUnitVector(int d) { // (y, x) // d in [0, 2*DIRECTIONS)
     return getUnitVector(getOrthogonalDirection(d));
 }
+
+__host__ __device__
+int getDirDifference(int d1, int d2) { // d1, d2 in [0, DIRECTIONS)
+    int dirSmaller = min(d1, d2);
+    int dirLarger = max(d1, d2);
+    return min(dirLarger - dirSmaller, DIRECTIONS - dirLarger + dirSmaller);
+}

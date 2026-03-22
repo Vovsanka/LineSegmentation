@@ -91,12 +91,14 @@ inline double computeLabScore(
     }
     //
     double emdMax  = 1.0*DIRECTIONS/4.0;
-    double sum = 0.0;
+    double weightedSum = 0.0, weight = 0.0;
     for (int c = 1; c <= CIRCLE_COUNT; c++) {
         double circleScore = 1.0 - fmin(emdMax, emdCircle[c]) / emdMax;
-        sum += circleScore;
+        int w = (CIRCLE_COUNT - c + 1);
+        weightedSum += circleScore*w;
+        weight += w;
     }
-    double score = sum / CIRCLE_COUNT;
+    double score = weightedSum / weight;
     //
     return score;
 };
