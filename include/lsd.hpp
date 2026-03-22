@@ -63,11 +63,11 @@ namespace lsd { // Line Segment Detection
         std::string scaledLines_outName
     ); 
 
-    void reconstructOriginalLines( // 3.3
-        std::string params_inName,
-        std::string scaledLines_inName,
-        std::string originalLines_outName
-    ); 
+    // void reconstructOriginalLines( // 3.3
+    //     std::string params_inName,
+    //     std::string scaledLines_inName,
+    //     std::string originalLines_outName
+    // ); 
 
     void buildShowStateImages( // extra
         std::string originalImage_inName = "",
@@ -91,10 +91,8 @@ namespace lsd { // Line Segment Detection
         std::string edgeLabels_inName = "",
         std::string clustering_outName = "",
         //
-        std::string scaledLines_inName = "",
-        std::string scaledLines_outName = "",
-        //
-        std::string originalLines_inName = "",
+        std::string lines_inName = "",
+        std::string lines_outName = "",
         std::string originalLines_outName = ""
     );
 
@@ -128,16 +126,12 @@ namespace lsd { // Line Segment Detection
     cv::Mat loadMatrix(std::string name);
 
     void saveImageParams(
-        int originalWidth, int originalHeight,
-        double scale,
         int width, int height,
         std::string& name
     );
 
     void loadImageParams(
         std::string& name,
-        int& originalWidth, int& originalHeight,
-        double &scale,
         int& width, int& height
     );
 
@@ -153,7 +147,6 @@ namespace lsd { // Line Segment Detection
     std::vector<char> loadEdgeLabels(std::string& name);
 
     void saveLines(const std::vector<Line>& lines, std::string& name);
-
 
     std::vector<Line> loadLines(std::string& name);
 

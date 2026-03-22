@@ -94,7 +94,8 @@ inline double computeLabScore(
     double weightedSum = 0.0, weight = 0.0;
     for (int c = 1; c <= CIRCLE_COUNT; c++) {
         double circleScore = 1.0 - fmin(emdMax, emdCircle[c]) / emdMax;
-        int w = (CIRCLE_COUNT - c + 1);
+        // int w = (CIRCLE_COUNT - c + 1);
+        int w = 1;
         weightedSum += circleScore*w;
         weight += w;
     }

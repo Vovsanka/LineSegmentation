@@ -25,16 +25,16 @@ cv::Mat convertBGRtoGrayscale(const cv::Mat& cpuF) {
 }
 
 
-double computeScale(const cv::Mat& cpuF) {
-    return std::min(1.0*MAX_SIDE/cpuF.cols, 1.0*MAX_SIDE/cpuF.rows);
-}
+// double computeScale(const cv::Mat& cpuF) {
+//     return std::min(1.0*MAX_SIDE/cpuF.cols, 1.0*MAX_SIDE/cpuF.rows);
+// }
 
-cv::Mat resizeDown(const cv::Mat& cpuF, double scale) {
-    cv::Size size(std::round(scale*cpuF.cols), std::round(scale*cpuF.rows));
-    cv::Mat scaledF;
-    cv::resize(cpuF, scaledF, size, 0, 0, cv::INTER_AREA); // clamp-to-edge strategy
-    return scaledF;
-}
+// cv::Mat resizeDown(const cv::Mat& cpuF, double scale) {
+//     cv::Size size(std::round(scale*cpuF.cols), std::round(scale*cpuF.rows));
+//     cv::Mat scaledF;
+//     cv::resize(cpuF, scaledF, size, 0, 0, cv::INTER_AREA); // clamp-to-edge strategy
+//     return scaledF;
+// }
 
 void showImage(std::string name, const cv::Mat& cpuF) {
     cv::imshow(name, cpuF);
@@ -59,33 +59,6 @@ void showMatrix(std::string name, const cv::cuda::GpuMat& gpuF) {
     gpuF.download(cpuF);
     showMatrix(name, cpuF);
 }
-
-
-// void drawLineEdgeImage(const std::vector<Line>& lines, int width, int height, std::string name) {
-//     cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-//     cairo_t* cr = cairo_create(surface);
-//     // background 
-//     cairo_set_source_rgb(cr, 0.0, 0.0, 0.0); 
-//     cairo_paint(cr); 
-//     // pen
-//     cairo_set_source_rgb(cr, 1.0, 1.0, 1.0); 
-//     cairo_set_line_width(cr, 1.0); 
-//     // draw lines
-//     for (const Line& l : lines) {
-//         cairo_move_to(cr, l.x1, l.y1); 
-//         cairo_line_to(cr, l.x2, l.y2); 
-//     }
-//     cairo_stroke(cr); 
-//     //
-//     cairo_surface_write_to_png(surface, (workingStateDir/(name + ".png")).string().c_str());
-//     //
-//     cairo_destroy(cr);
-//     cairo_surface_destroy(surface);
-// }
-
-
-
-
 
 
 

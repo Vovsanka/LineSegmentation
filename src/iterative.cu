@@ -69,15 +69,12 @@ std::vector<Cand> candidateIterativeSearch(
     cv::Mat BLOCKED(height, width, CV_8U, cv::Scalar(0)); 
     std::vector<Cand> chosenCandidates;
     //
-    int n = 1;
+    int n = 0;
     for (const Cand& startCand : tCandidates) {
         //
-        if (n <= 100 || n % 100 == 0) {
-            std::cout << "Iterative search: #candidates = " << chosenCandidates.size();
-            std::cout << " (" << round(100.0*n/tCandidates.size()) << "%)";
-            std::cout << std::endl;
+        if (n++ % 1000 == 0) {
+            std::cout << "Iterative search: threshold = " << UPPER_THRESHOLD << ", current = " << startCand.score << std::endl;
         }
-        n++;
         //
         if (startCand.score < UPPER_THRESHOLD) continue;
         candidateExpand(

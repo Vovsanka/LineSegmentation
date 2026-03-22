@@ -27,17 +27,23 @@ namespace lsd {
         }
 
         // resize the image (to the reasonable processing size)
-        double scale = computeScale(cpuF);
-        if (scale >= 1.0) {
-            scale = 1;
-        } else {
-            cpuF = resizeDown(cpuF, scale);
-        }
+        // double scale = computeScale(cpuF);
+        // if (scale >= 1.0) {
+        //     scale = 1;
+        // } else {
+        //     cpuF = resizeDown(cpuF, scale);
+        // }
+
+        //
+        int width = cpuF.cols;
+        int height = cpuF.rows;
+
+        std::cout << "Image: width x height = " << width << "x" << height << std::endl; 
 
         // save the working state
         saveMatrix(originalF, originalImage_outName);
         saveMatrix(cpuF, preprocessedImage_outName);
-        saveImageParams(originalF.cols, originalF.rows, scale, cpuF.cols, cpuF.rows, params_outName);
+        saveImageParams(width, height, params_outName);
     }
 
     void computeThresholdCandidates(
@@ -69,6 +75,8 @@ namespace lsd {
         // threshold candidates
         std::vector<Cand> tCandidates = extractSortedThresholdCandidates(cpuS, cpuD);
 
+        std::cout << "Threshold candidates: amount = " << tCandidates.size() << std::endl; 
+
         // save the working state
         saveMatrix(cpuS, scoreMatrix_outName);
         saveMatrix(cpuD, directionMatrix_outName);
@@ -95,6 +103,8 @@ namespace lsd {
             beamScore
         );
 
+        std::cout << "Iterative candidates: amount = " << candidates.size() << std::endl; 
+
         // save the working state
         saveCandidates(candidates, iterativeCandidates_outName);
     }
@@ -108,6 +118,8 @@ namespace lsd {
 
         CandidateGraph G(candidates);
 
+        std::cout << "Candidate graph: (vertices x edges) = " << G.n << "x" << G.edges.size() << std::endl;
+
         // save the working state
         saveCandidateGraph(G, candidateGraph_outName);
     }
@@ -120,6 +132,8 @@ namespace lsd {
         CandidateGraph G = loadCandidateGraph(candidateGraph_inName);
 
         std::vector<char> edgeLabels = solveClustering(G);
+
+        std::cout << "Clustering completed" << std::endl;
 
         // save the working state
         saveEdgeLabels(edgeLabels, edgeLabels_outName);
@@ -138,38 +152,38 @@ namespace lsd {
 
         std::vector<Line> lines = extractLinesFromClusters(candidates, G, edgeLabels);
 
+        std::cout << "Reconstructed lines: amount = " << lines.size() << std::endl;
+
         // save the working state
         saveLines(lines, lines_outName);
     }
 
-    void reconstructOriginalLines(
-        std::string params_inName,
-        std::string scaledLines_inName,
-        std::string originalLines_outName
-    ) {
-        // load the working state
-        int originalWidth, originalHeight;
-        double scale;
-        int width, height;
-        loadImageParams(params_inName, originalWidth, originalHeight, scale, width, height);
-        std::vector<Line> scaledLines = loadLines(scaledLines_inName);
+    // void reconstructOriginalLines(
+    //     std::string params_inName,
+    //     std::string scaledLines_inName,
+    //     std::string originalLines_outName
+    // ) {
+    //     // load the working state
+    //     int width, height;
+    //     loadImageParams(params_inName, width, height);
+    //     std::vector<Line> scaledLines = loadLines(scaledLines_inName);
         
-        if (scale > 1.0 - TOL) {
-            // save the working state
-            saveLines(scaledLines, originalLines_outName);
-            return;
-        } 
+    //     if (scale > 1.0 - TOL) {
+    //         // save the working state
+    //         saveLines(scaledLines, originalLines_outName);
+    //         return;
+    //     } 
 
-        double scaleY = 1.0*originalHeight/height;
-        double scaleX = 1.0*originalWidth/width;
-        std::vector<Line> originalLines(scaledLines.size());
-        for (int k = 0; k < scaledLines.size(); k++) {
-            const Line& l = scaledLines[k];
-            originalLines[k] = Line(scaleY*l.y1, scaleX*l.x1, scaleY*l.y2, scaleX*l.x2);
-        } 
-        // save the working state
-        saveLines(originalLines, originalLines_outName);
-    }
+    //     double scaleY = 1.0*originalHeight/height;
+    //     double scaleX = 1.0*originalWidth/width;
+    //     std::vector<Line> originalLines(scaledLines.size());
+    //     for (int k = 0; k < scaledLines.size(); k++) {
+    //         const Line& l = scaledLines[k];
+    //         originalLines[k] = Line(scaleY*l.y1, scaleX*l.x1, scaleY*l.y2, scaleX*l.x2);
+    //     } 
+    //     // save the working state
+    //     saveLines(originalLines, originalLines_outName);
+    // }
 
     void buildShowStateImages(
         std::string originalImage_inName,
@@ -187,9 +201,8 @@ namespace lsd {
         std::string candidateGraph_outName,
         std::string edgeLabels_inName,
         std::string clustering_outName,
-        std::string scaledLines_inName,
-        std::string scaledLines_outName,
-        std::string originalLines_inName,
+        std::string lines_inName,
+        std::string lines_outName,
         std::string originalLines_outName
     ) {
         if (!originalImage_inName.empty()) {
@@ -200,13 +213,9 @@ namespace lsd {
             }
         }
         if (!originalImage_inName.empty()) {
-            int originalWidth, originalHeight;
-            double scale;
             int width, height;
-            loadImageParams(params_inName, originalWidth, originalHeight, scale, width, height);
-            std::cout << "Original image size: " << originalWidth << "x" << originalHeight << std::endl; 
-            std::cout << "Scale factor: " << scale << std::endl;
-            std::cout << "cpu image size: " << width << "x" << height << std::endl;    
+            loadImageParams(params_inName, width, height);
+            std::cout << "Image size: " << width << "x" << height << std::endl;    
         }
         if (!preprocessedImage_inName.empty()) {
             cv::Mat preprocessedF = loadMatrix(preprocessedImage_inName);
@@ -227,20 +236,16 @@ namespace lsd {
             }
         }
         if (!params_inName.empty() && !iterativeCandidates_inName.empty() && !iterativeCandidates_outName.empty()) {
-            int originalWidth, originalHeight;
-            double scale;
             int width, height;
-            loadImageParams(params_inName, originalWidth, originalHeight, scale, width, height);
+            loadImageParams(params_inName, width, height);
             std::vector<Cand> candidates = loadCandidates(iterativeCandidates_inName);
             buildGraphImage(iterativeCandidates_outName, width, height, candidates);
             cv::Mat F = cv::imread(workingStateDir/(iterativeCandidates_outName + ".png"), cv::IMREAD_COLOR);
             showImage("Iterative candidates", F);
         }
         if (!params_inName.empty() && !candidateList_inName.empty() && !candidateGraph_inName.empty()) {
-            int originalWidth, originalHeight;
-            double scale;
             int width, height;
-            loadImageParams(params_inName, originalWidth, originalHeight, scale, width, height);
+            loadImageParams(params_inName, width, height);
             std::vector<Cand> candidates = loadCandidates(candidateList_inName);
             CandidateGraph cgraph = loadCandidateGraph(candidateGraph_inName);
             if (!candidateGraph_outName.empty()) {
@@ -255,25 +260,18 @@ namespace lsd {
                 showImage("Clustering", clusteringF);
             }
         }
-        if (!params_inName.empty() && !scaledLines_inName.empty() && !scaledLines_outName.empty()) {
-            int originalWidth, originalHeight;
-            double scale;
+        if (!params_inName.empty() && !lines_inName.empty() && !lines_outName.empty()) {
             int width, height;
-            loadImageParams(params_inName, originalWidth, originalHeight, scale, width, height);
-            std::vector<Line> lines = loadLines(scaledLines_inName);
-            buildLineImage(scaledLines_outName, width, height, lines);
-            cv::Mat scaledLinesF = cv::imread(workingStateDir/(scaledLines_outName + ".png"), cv::IMREAD_COLOR);
-            showImage("Scaled lines", scaledLinesF);
-        }
-        if (!originalImage_outName.empty() && !params_inName.empty() && !originalLines_inName.empty() && !originalLines_outName.empty()) {
-            int originalWidth, originalHeight;
-            double scale;
-            int width, height;
-            loadImageParams(params_inName, originalWidth, originalHeight, scale, width, height);
-            std::vector<Line> lines = loadLines(originalLines_inName);
-            buildLineImage(originalLines_outName, originalWidth, originalHeight, lines, originalImage_outName);
-            cv::Mat originalLinesF = cv::imread(workingStateDir/(originalLines_outName + ".png"), cv::IMREAD_COLOR);
-            showImage("Original lines", originalLinesF);
+            loadImageParams(params_inName, width, height);
+            std::vector<Line> lines = loadLines(lines_inName);
+            buildLineImage(lines_outName, width, height, lines);
+            cv::Mat linesF = cv::imread(workingStateDir/(lines_outName + ".png"), cv::IMREAD_COLOR);
+            showImage("Scaled lines", linesF);
+            if (!originalImage_outName.empty()) {
+                buildLineImage(originalLines_outName, width, height, lines, originalImage_outName);
+                cv::Mat originalLinesF = cv::imread(workingStateDir/(originalLines_outName + ".png"), cv::IMREAD_COLOR);
+                showImage("Original lines", originalLinesF);
+            }
         }
     }
 
@@ -454,7 +452,7 @@ namespace lsd {
             //
             if (!originalName.empty()) {
                 cairo_set_source_rgb(cr, 0, 1.0, 0); 
-                cairo_set_line_width(cr, 5); 
+                cairo_set_line_width(cr, 3); 
             } else {
                 double r = thrust::get<0>(colorMapping[k]);
                 double g = thrust::get<1>(colorMapping[k]);
@@ -498,33 +496,19 @@ namespace lsd {
     }
 
     void saveImageParams(
-        int originalWidth, int originalHeight,
-        double scale,
         int width, int height,
         std::string& name
     ) {
         std::ofstream out(workingStateDir / (name + ".txt"));
-
-        out << originalWidth  << "\n"
-            << originalHeight << "\n"
-            << scale          << '\n'
-            << width          << "\n"
-            << height         << "\n";
+        out << width << " " << height << "\n";
     }
 
     void loadImageParams(
         std::string& name,
-        int& originalWidth, int& originalHeight,
-        double &scale,
         int& width, int& height
     ) {
         std::ifstream in(workingStateDir / (name + ".txt"));
-
-        in >> originalWidth
-           >> originalHeight
-           >> scale
-           >> width
-           >> height;
+        in >> width >> height;
     }
 
     void saveCandidates(const std::vector<Cand>& candidates, std::string& name) {

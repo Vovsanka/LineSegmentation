@@ -33,11 +33,11 @@ cv::Mat convertBGRtoLab(const cv::Mat& cpuF);
 __host__
 cv::Mat convertBGRtoGrayscale(const cv::Mat& cpuF);
 
-__host__
-double computeScale(const cv::Mat& cpuF);
+// __host__
+// double computeScale(const cv::Mat& cpuF);
 
-__host__
-cv::Mat resizeDown(const cv::Mat& cpuF, double scale);
+// __host__
+// cv::Mat resizeDown(const cv::Mat& cpuF, double scale);
 
 __host__
 void showImage(std::string name, const cv::Mat& cpuF);

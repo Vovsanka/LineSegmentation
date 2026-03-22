@@ -34,7 +34,6 @@ int main(int argc, char* argv[]) {
     lsd::buildCandidateGraph("candidates", "cgraph");
     lsd::performClustering("cgraph", "labels");
     lsd::extractLines("candidates", "cgraph", "labels", "lines");
-    lsd::reconstructOriginalLines("params", "lines", "or_lines");
 
     /// extra
     lsd::buildShowStateImages(
@@ -44,8 +43,7 @@ int main(int argc, char* argv[]) {
         "candidates", "candidates",
         "candidates", "cgraph", "cgraph",
         "labels", "clustering",
-        "lines", "scaled-lines",
-        "or_lines", "result"
+        "lines", "result", "original-lines"
     );
 
     return 0;
