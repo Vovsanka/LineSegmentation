@@ -27,6 +27,6 @@ for img_path in "${wireframe_src_dir}/test"/*.jpg; do
     base=$(basename "$img_path" .jpg)
     src="${working_state_dir}/or_lines.txt"
     dst="${wireframe_out_dir}/${base}.txt"
-    mv "$src" "$dst"
+    cp "$src" "$dst"
 done
 

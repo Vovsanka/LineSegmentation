@@ -37,16 +37,16 @@ int main(int argc, char* argv[]) {
     lsd::reconstructOriginalLines("params", "lines", "or_lines");
 
     /// extra
-    // lsd::buildShowStateImages(
-    //     "original", "original",
-    //     "params", "", // "preprocessed", 
-    //     "scores", "directions", "", "", // "score-direction", "t_candidates",
-    //     "candidates", "", // "candidates",
-    //     "candidates", "cgraph", "", // "cgraph",
-    //     "labels", "", // "clustering",
-    //     "lines", "scaled-lines",
-    //     "or_lines", "result"
-    // );
+    lsd::buildShowStateImages(
+        "original", "original",
+        "params", "preprocessed", 
+        "scores", "directions", "score-direction", "t_candidates",
+        "candidates", "candidates",
+        "candidates", "cgraph", "cgraph",
+        "labels", "clustering",
+        "lines", "scaled-lines",
+        "or_lines", "result"
+    );
 
     return 0;
 }

@@ -454,7 +454,7 @@ namespace lsd {
             //
             if (!originalName.empty()) {
                 cairo_set_source_rgb(cr, 0, 1.0, 0); 
-                cairo_set_line_width(cr, 2); 
+                cairo_set_line_width(cr, 5); 
             } else {
                 double r = thrust::get<0>(colorMapping[k]);
                 double g = thrust::get<1>(colorMapping[k]);

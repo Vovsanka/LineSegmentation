@@ -44,10 +44,8 @@ constexpr int UP_COUNT = 10;
 constexpr double UP_STEP = 0.1;
 
 // candidate graph
-constexpr double CONNECTION_RADIUS = 7.0;
+constexpr double CONNECTION_RADIUS = 10.0;
 constexpr double GOOD_DIST_TO_CAND_LINE = 1.5;
-constexpr double LINE_TRIANGLE_FACTOR = 1.1;
-constexpr double MIN_GAP_SIZE = 5.0;
 
 // clustering cost
 constexpr double COST_BOUND = 10;
