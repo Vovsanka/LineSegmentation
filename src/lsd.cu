@@ -387,6 +387,7 @@ namespace lsd {
                 if (e.w > 0) {
                     cairo_set_source_rgb(cr, 0, 0, 1.0); 
                     cairo_set_line_width(cr, 1); 
+                    continue;
                 } else {
                     cairo_set_source_rgb(cr, 1.0, 0, 0); 
                     cairo_set_line_width(cr, 0.2); 

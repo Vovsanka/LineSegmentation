@@ -21,7 +21,7 @@ double computeCandidateSimilarity( // [0, 1]
 ) { 
     //
     int dirDiff = getDirDifference(cand1.dir, cand2.dir);
-    double dirSim = 1.0 - 2*dirDiff/DIRECTIONS;
+    double dirSim = 1.0 - (2.0*dirDiff)/DIRECTIONS;
     //
     double distSim1 = 1.0 - cand1.distToLine(cand2)/(2*GOOD_DIST_TO_CAND_LINE);
     double distSim2 = 1.0 - cand2.distToLine(cand1)/(2*GOOD_DIST_TO_CAND_LINE);

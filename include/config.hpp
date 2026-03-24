@@ -18,7 +18,7 @@ constexpr double INF = 1e6;
 constexpr double PI = 3.141593;
 
 // computation parameters
-constexpr int DIRECTIONS = 180; // even! <= 1024 // DIRECTIONS ~ PI // intention: 90 or 180 or 360 or 720 
+constexpr int DIRECTIONS = 36; // even! <= 1024 // DIRECTIONS ~ PI // intention: 90 or 180 or 360 or 720 
 
 // gray score function
 constexpr int G_WINDOW_RADIUS = 3; // Gaussian window size

@@ -69,14 +69,13 @@ std::vector<Cand> candidateIterativeSearch(
     std::vector<Cand> chosenCandidates;
     //
     int n = 0;
-    for (const Cand& tCand : tCandidates) {
+    for (const Cand& startCand : tCandidates) {
         //
         if (n++ % 1000 == 0) {
-            std::cout << "Iterative search: threshold = " << UPPER_THRESHOLD << ", current = " << tCand.score << std::endl;
+            std::cout << "Iterative search: threshold = " << UPPER_THRESHOLD << ", current = " << startCand.score << std::endl;
         }
         //
-        if (tCand.score < UPPER_THRESHOLD) break; // assume tCandidates are already sorted by descending score
-        Cand startCand = upgradeCandidate(F, Fstep, gpuF, tCand, width, height, beamScore);
+        if (startCand.score < UPPER_THRESHOLD) break; // assume tCandidates are already sorted by descending score
         candidateExpand(
             F, Fstep,
             gpuF,
@@ -155,6 +154,7 @@ void candidateExpand(
         );
     }
 }
+
 __global__
 void bestPixelScoreKernelDirection(
     const uchar* F, size_t Fstep,
