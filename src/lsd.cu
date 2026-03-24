@@ -56,10 +56,6 @@ namespace lsd {
         // load the working state
         cv::Mat cpuF = loadMatrix(preprocessedImage_inName);
 
-        //// debug start
-        computeGrayScore(cpuF.ptr<uchar>(), cpuF.step, 50, 320, 0, cpuF.cols, cpuF.rows);
-        //// debug end
-
         // Upload the preprocessed matrix to GPU
         cv::cuda::GpuMat F = uploadToGPU(cpuF);
 
@@ -396,12 +392,7 @@ namespace lsd {
                     cairo_set_line_width(cr, 0.2); 
                 }
             } else {
-                if (edgeLabels[k] > 0) continue;
-                double r = thrust::get<0>(colorMapping[e.c1]);
-                double g = thrust::get<1>(colorMapping[e.c1]);
-                double b = thrust::get<2>(colorMapping[e.c1]);
-                cairo_set_source_rgb(cr, r, g, b); 
-                cairo_set_line_width(cr, 1); 
+                break;
             }
             //
             const Cand& cand1 = candidates[e.c1];

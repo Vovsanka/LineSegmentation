@@ -76,20 +76,13 @@ std::vector<Cand> candidateIterativeSearch(
         }
         //
         if (tCand.score < UPPER_THRESHOLD) break; // assume tCandidates are already sorted by descending score
-        if (isBlocked(
-            BLOCKED.ptr<uchar>(), BLOCKED.step, 
-            tCand.y, tCand.x, 
-            width, height
-        )) {
-            continue;
-        };
         Cand startCand = upgradeCandidate(F, Fstep, gpuF, tCand, width, height, beamScore);
         candidateExpand(
             F, Fstep,
             gpuF,
             BLOCKED.ptr<uchar>(), BLOCKED.step,
             chosenCandidates,
-            startCand,
+            startCand, -1, -1.0,
             width, height,
             beamScore
         );
@@ -105,9 +98,17 @@ void candidateExpand(
     uchar* B, size_t Bstep,
     std::vector<Cand> &chosenCand,
     Cand cand,
+    int invEdgeDir,
+    double prevScore,
     int width, int height,
     bool beamScore
 ) {
+    if (cand.score < LOWER_THRESHOLD || isBlocked(B, Bstep, cand.y, cand.x, width, height)) return;
+    //
+    if (cand.score < prevScore) {
+        cand = upgradeCandidate(F, Fstep, gpuF, cand, width, height, beamScore);
+        if (isBlocked(B, Bstep, cand.y, cand.x, width, height)) return;
+    }
     // 
     chosenCand.push_back(cand);
     setBlocked(B, Bstep, cand.y, cand.x, width, height);
@@ -118,47 +119,42 @@ void candidateExpand(
     Vec unitEdge1 = getUnitVector(edge1);
     Vec unitEdge2 = getUnitVector(edge2);
     //
-    double y1 = cand.y +  EXPANSION_STEP*unitEdge1.y;
-    double x1 = cand.x + EXPANSION_STEP*unitEdge1.x;
-    //
-    if (!isBlocked(B, Bstep, y1, x1, width, height)) {
+    if (edge1 != invEdgeDir) {
+        double y1 = cand.y +  EXPANSION_STEP*unitEdge1.y;
+        double x1 = cand.x + EXPANSION_STEP*unitEdge1.x;
         double score1;
         if (beamScore) {
             score1 = computeLabScore(F, Fstep, y1, x1, cand.dir, width, height);
         } else {
             score1 = computeGrayScore(F, Fstep, y1, x1, cand.dir, width, height);
         }
-        if (score1 >= LOWER_THRESHOLD) {
-            candidateExpand(
-                F, Fstep, gpuF, B, Bstep, chosenCand,
-                Cand(y1, x1, cand.dir, score1),
-                width, height,
-                beamScore
-            );
-        }
+        candidateExpand(
+            F, Fstep, gpuF, B, Bstep, chosenCand,
+            Cand(y1, x1, cand.dir, score1),
+            edge2, cand.score,
+            width, height,
+            beamScore
+        );
     }
     //
-    double y2 = cand.y + EXPANSION_STEP*unitEdge2.y;
-    double x2 = cand.x + EXPANSION_STEP*unitEdge2.x;
-    //
-    if (!isBlocked(B, Bstep, y2, x2, width, height)) {
+    if (edge2 != invEdgeDir) {
+        double y2 = cand.y + EXPANSION_STEP*unitEdge2.y;
+        double x2 = cand.x + EXPANSION_STEP*unitEdge2.x;
         double score2;
         if (beamScore) {
             score2 = computeLabScore(F, Fstep, y2, x2, cand.dir, width, height);
         } else {
             score2 = computeGrayScore(F, Fstep, y2, x2, cand.dir, width, height);
         }
-        if (score2 >= LOWER_THRESHOLD) {
-            candidateExpand(
-                F, Fstep, gpuF, B, Bstep, chosenCand,
-                Cand(y2, x2, cand.dir, score2),
-                width, height,
-                beamScore
-            );
-        }
+        candidateExpand(
+            F, Fstep, gpuF, B, Bstep, chosenCand,
+            Cand(y2, x2, cand.dir, score2),
+            edge1, cand.score, 
+            width, height,
+            beamScore
+        );
     }
 }
-
 __global__
 void bestPixelScoreKernelDirection(
     const uchar* F, size_t Fstep,
