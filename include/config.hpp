@@ -27,7 +27,7 @@ constexpr double EDGE_SHARPNESS = 700.0;
 
 // beam score function
 constexpr int CIRCLE_COUNT = 3;
-constexpr double CIRCLE_STEP = 1.5;
+constexpr double CIRCLE_STEP = 1.8;
 constexpr double COLOR_OFFSET = 3.0; // avoid 0-arrays & ignore some noise
 
 // threshold candidates
@@ -44,8 +44,8 @@ constexpr double UP_STEP = 0.1;
 
 // candidate graph
 constexpr double CONNECTION_RADIUS = 10.0;
-constexpr double GOOD_ANGLE = 1*(PI/2.0); // rad
-constexpr double GOOD_DIST_FACTOR = 0.2;
+constexpr double GOOD_ANGLE = 0.5*(PI/2.0); // rad
+constexpr double GOOD_DIST_FACTOR = 0.5;
 
 // clustering cost
 constexpr double COST_BOUND = 10;
