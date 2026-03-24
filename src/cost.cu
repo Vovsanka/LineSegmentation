@@ -19,21 +19,30 @@ double computeCandidateSimilarity( // [0, 1]
     const Cand& cand1,
     const Cand& cand2
 ) { 
-    //
-    int dirDiff = getDirDifference(cand1.dir, cand2.dir);
-    double dirSim = 1.0 - (2.0*dirDiff)/DIRECTIONS;
-    //
-    double distSim1 = 1.0 - cand1.distToLine(cand2)/(2*GOOD_DIST_TO_CAND_LINE);
-    double distSim2 = 1.0 - cand2.distToLine(cand1)/(2*GOOD_DIST_TO_CAND_LINE);
+    // normal unit vector of the line segment between the candidates
+    Vec orient = Vec(cand2.y, cand2.x).subtract(Vec(cand1.y, cand1.x));
+    Vec normal(-orient.y, orient.x);
+    Vec normalUnit = normal*(1.0/normal.len());
+    if (normalUnit.y < 0) {
+        normalUnit = normalUnit*(-1.0);
+    }
+    // angles between the unit vector and the candidate directions 
+    double angle1 = acos(normalUnit.dot(getUnitVector(cand1.dir)));
+    angle1 = min(angle1, PI - angle1); // angles between the lines are up to PI/2
+    double angle2 = acos(normalUnit.dot(getUnitVector(cand2.dir)));
+    angle2 = min(angle2, PI - angle2); // angles between the lines are up to PI/2
+    // pick the best min angle
+    double angle = min(angle1, angle2);
+    // transform the angle into angle similarity
+    double angleSim = max(0.0, 1.0 - angle/(2*GOOD_ANGLE)); 
+    // distances to lines
+    double goodDistToLine = GOOD_DIST_FACTOR*orient.len(); 
+    double distSim1 = 1.0 - cand1.distToLine(cand2)/(2*goodDistToLine);
+    double distSim2 = 1.0 - cand2.distToLine(cand1)/(2*goodDistToLine);
+    // transform distances to lines into distance similarity
     double distSim = max(0.0, max(distSim1, distSim2));
     //
-    return dirSim*distSim;
-    // // reward if the line is continuous (no gaps)
-    // if (checkNoGaps(candidates, cand1, cand2)) {
-    //     return sim;
-    // } 
-    // // line has gaps => dissimilar
-    // return 0.0;
+    return angleSim*distSim;
 }
 
 // bool checkNoGaps(

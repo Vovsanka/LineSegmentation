@@ -186,6 +186,7 @@ namespace lsd {
         std::string originalImage_outName,
         std::string params_inName,
         std::string preprocessedImage_inName,
+        std::string colorDirection_outName,
         std::string scoreMatrix_inName,
         std::string directionMatrix_inName,
         std::string scoreDirection_outName,
@@ -216,6 +217,11 @@ namespace lsd {
         if (!preprocessedImage_inName.empty()) {
             cv::Mat preprocessedF = loadMatrix(preprocessedImage_inName);
             showImage("Preprocessed image", preprocessedF);
+        }
+        if (!colorDirection_outName.empty()) {
+            cv::Mat P = buildColorDirectionMap();
+            cv::imwrite(workingStateDir/(colorDirection_outName + ".png"), P);
+            showMatrix("Color-direction map", P);
         }
         if (!scoreMatrix_inName.empty() && !directionMatrix_inName.empty()) {
             cv::Mat S = loadMatrix(scoreMatrix_inName);
@@ -278,23 +284,6 @@ namespace lsd {
         cv::Mat& D,
         double threshold
     ) {
-        // /// demo for direction-color circular mapping
-        // int demoWidth = 500;
-        // int demoHeight = 100;
-        // cv::Mat Clab(demoHeight, demoWidth, CV_8UC3);
-        // for (int x = 0; x < demoWidth; x++) {
-        //     int dir = round(1.0*x/demoWidth*DIRECTIONS);
-        //     thrust::tuple<uchar,uchar,uchar> lab = Cand(x, 0, dir, 1).getColorLab();
-        //     int l = thrust::get<0>(lab);
-        //     int a = thrust::get<1>(lab);
-        //     int b = thrust::get<2>(lab);
-        //     for (int y = 0; y < demoHeight; y++) {
-        //         Clab.at<cv::Vec3b>(y, x) = cv::Vec3b(l, a, b);
-        //     }
-        // }
-        // cv::Mat Cbgr;
-        // cv::cvtColor(Clab, Cbgr, cv::COLOR_Lab2BGR);
-        // showImage(Cbgr);
         //
         int width = S.cols;
         int height = S.rows;
@@ -304,7 +293,7 @@ namespace lsd {
                 double score = S.at<double>(y, x);
                 if (score < threshold) continue;
                 int dir = D.at<int>(y, x);
-                thrust::tuple<uchar,uchar,uchar> lab = Cand(x, y, dir, score).getColorLab();
+                thrust::tuple<uchar,uchar,uchar> lab = getDirColorLab(dir);
                 int l = thrust::get<0>(lab);
                 int a = thrust::get<1>(lab);
                 int b = thrust::get<2>(lab);
@@ -316,6 +305,41 @@ namespace lsd {
         return Mbgr;
     }
 
+    cv::Mat buildColorDirectionMap() {
+        // /// demo for direction-color circular mapping
+        // int demoWidth = 500;
+        // int demoHeight = 100;
+        // cv::Mat Clab(demoHeight, demoWidth, CV_8UC3);
+        // for (int x = 0; x < demoWidth; x++) {
+        //     int dir = round(1.0*x/demoWidth*DIRECTIONS);
+        //     thrust::tuple<uchar,uchar,uchar> lab = getDirColorLab(dir);
+        //     int l = thrust::get<0>(lab);
+        //     int a = thrust::get<1>(lab);
+        //     int b = thrust::get<2>(lab);
+        //     for (int y = 0; y < demoHeight; y++) {
+        //         Clab.at<cv::Vec3b>(y, x) = cv::Vec3b(l, a, b);
+        //     }
+        // }
+        // cv::Mat Cbgr;
+        // cv::cvtColor(Clab, Cbgr, cv::COLOR_Lab2BGR);
+        // return Cbgr;
+        /// demo for direction-color circular mapping
+        int demoWidth = 500;
+        int demoHeight = 100;
+        cv::Mat Cbgr(demoHeight, demoWidth, CV_8UC3);
+        for (int x = 0; x < demoWidth; x++) {
+            int dir = round(1.0*x/demoWidth*DIRECTIONS);
+            thrust::tuple<uchar,uchar,uchar> rgb = getDirColorRgb(dir);
+            int r = thrust::get<0>(rgb);
+            int g = thrust::get<1>(rgb);
+            int b = thrust::get<2>(rgb);
+            for (int y = 0; y < demoHeight; y++) {
+                Cbgr.at<cv::Vec3b>(y, x) = cv::Vec3b(b, g, r);
+            }
+        }
+        return Cbgr;
+    }
+
     void buildGraphImage(
         std::string& name, 
         int width, int height,
@@ -323,22 +347,7 @@ namespace lsd {
         const CandidateGraph& cgraph,
         const std::vector<char>& edgeLabels
     ) { 
-        // /// demo for direction-color circular mapping
-        // int demoWidth = 500;
-        // int demoHeight = 100;
-        // cv::Mat Cbgr(demoHeight, demoWidth, CV_8UC3);
-        // for (int x = 0; x < demoWidth; x++) {
-        //     int dir = round(1.0*x/demoWidth*DIRECTIONS);
-        //     thrust::tuple<uchar,uchar,uchar> rgb = Cand(x, 0, dir, 1).getColorRgb();
-        //     int r = thrust::get<0>(rgb);
-        //     int g = thrust::get<1>(rgb);
-        //     int b = thrust::get<2>(rgb);
-        //     for (int y = 0; y < demoHeight; y++) {
-        //         Cbgr.at<cv::Vec3b>(y, x) = cv::Vec3b(b, g, r);
-        //     }
-        // }
-        // showImage(Cbgr);
-        ///
+        //
         std::vector<thrust::tuple<double,double,double>> colorMapping(candidates.size());
         if (!edgeLabels.empty()) {
             std::mt19937 rng(12345); // deterministic seed
@@ -363,7 +372,7 @@ namespace lsd {
         for (int k = 0; k < candidates.size(); k++) {
             const Cand& cand = candidates[k];
             if (cgraph.edges.empty()) {
-                thrust::tuple<uchar,uchar,uchar> rgb = cand.getColorRgb();
+                thrust::tuple<uchar,uchar,uchar> rgb = getDirColorRgb(cand.dir);
                 double r = thrust::get<0>(rgb)/255.0;
                 double g = thrust::get<1>(rgb)/255.0;
                 double b = thrust::get<2>(rgb)/255.0;
@@ -387,7 +396,6 @@ namespace lsd {
                 if (e.w > 0) {
                     cairo_set_source_rgb(cr, 0, 0, 1.0); 
                     cairo_set_line_width(cr, 1); 
-                    continue;
                 } else {
                     cairo_set_source_rgb(cr, 1.0, 0, 0); 
                     cairo_set_line_width(cr, 0.2); 

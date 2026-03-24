@@ -76,6 +76,8 @@ namespace lsd { // Line Segment Detection
         std::string params_inName = "",
         std::string preprocessedImage_inName = "",
         //
+        std::string colorDirection_outName = "",
+        //
         std::string scoreMatrix_inName = "",
         std::string directionMatrix_inName = "",
         std::string scoreDirection_outName = "",
@@ -97,6 +99,8 @@ namespace lsd { // Line Segment Detection
     );
 
     /////////////////
+
+    cv::Mat buildColorDirectionMap();
 
     cv::Mat buildScoreDirectionMatrix(
         cv::Mat& S,

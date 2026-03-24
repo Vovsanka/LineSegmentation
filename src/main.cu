@@ -35,10 +35,11 @@ int main(int argc, char* argv[]) {
     // lsd::performClustering("cgraph", "labels");
     // lsd::extractLines("candidates", "cgraph", "labels", "lines");
 
-    /// extra
+    // /// extra
     lsd::buildShowStateImages(
         "original", "original",
         "params", "preprocessed", 
+        "palette",
         "scores", "directions", "score-direction", "t_candidates",
         "candidates", "candidates",
         "candidates", "cgraph", "cgraph",

@@ -18,7 +18,7 @@ constexpr double INF = 1e6;
 constexpr double PI = 3.141593;
 
 // computation parameters
-constexpr int DIRECTIONS = 36; // even! <= 1024 // DIRECTIONS ~ PI // intention: 90 or 180 or 360 or 720 
+constexpr int DIRECTIONS = 18; // even! <= 1024 // DIRECTIONS ~ PI // intention: 90 or 180 or 360 or 720 
 
 // gray score function
 constexpr int G_WINDOW_RADIUS = 3; // Gaussian window size
@@ -43,8 +43,9 @@ constexpr int UP_COUNT = 10;
 constexpr double UP_STEP = 0.1;
 
 // candidate graph
-constexpr double CONNECTION_RADIUS = 7.0;
-constexpr double GOOD_DIST_TO_CAND_LINE = 1.5;
+constexpr double CONNECTION_RADIUS = 10.0;
+constexpr double GOOD_ANGLE = 1*(PI/2.0); // rad
+constexpr double GOOD_DIST_FACTOR = 0.2;
 
 // clustering cost
 constexpr double COST_BOUND = 10;
