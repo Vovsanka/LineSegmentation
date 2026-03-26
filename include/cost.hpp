@@ -21,6 +21,10 @@ double computeCandidateSimilarity( // [0, 1]
 );
 
 __host__
+double computeDirectionAngle(Vec unitNorm1, Vec unitNorm2);
+
+
+__host__
 bool checkNoGaps(
     const std::vector<Cand>& candidates,
     const Cand& cand1, 

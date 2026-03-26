@@ -36,6 +36,13 @@ thrust::tuple<uchar,uchar,uchar> getColorChannels(
     int width, int height
 );
 
+__host__ __device__
+thrust::tuple<uchar,uchar,uchar> getDirColorRgb(int dir); // dir in [0, 2*DIRECTIONS)
+
+__host__ __device__
+thrust::tuple<uchar,uchar,uchar> getDirColorLab(int dir); // dir in [0, 2*DIRECTIONS)
+
+
 
 
 #endif

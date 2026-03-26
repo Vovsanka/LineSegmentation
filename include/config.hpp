@@ -26,8 +26,8 @@ constexpr double G_SIGMA = 1.0; // standard deviation of the Gaussian
 constexpr double EDGE_SHARPNESS = 700.0;
 
 // beam score function
-constexpr int CIRCLE_COUNT = 3;
-constexpr double CIRCLE_STEP = 1.8;
+constexpr int CIRCLE_COUNT = 2;
+constexpr double CIRCLE_STEP = 2.5;
 constexpr double COLOR_OFFSET = 3.0; // avoid 0-arrays & ignore some noise
 
 // threshold candidates
@@ -44,13 +44,17 @@ constexpr double UP_STEP = 0.1;
 
 // candidate graph
 constexpr double CONNECTION_RADIUS = 10.0;
-constexpr double GOOD_ANGLE = 0.5*(PI/2.0); // rad
-constexpr double GOOD_DIST_FACTOR = 0.5;
+constexpr double TOO_SMALL_DIST = 3.0; 
+constexpr double MIN_GAP_SIZE = 5.0;
+constexpr double SIMILAR_DIR_ANGLE = 0.2*(PI/2.0);
+constexpr double GOOD_DIST_FACTOR = 0.2;
+constexpr double BAD_DIST_FACTOR = 0.5;
+constexpr double LINE_TRIANGLE_FACTOR = 1.05;
 
 // clustering cost
 constexpr double COST_BOUND = 10;
 
 // line extraction
-constexpr int MIN_LINE_CLUSTER = 5;
+constexpr int MIN_LINE_CLUSTER = 7;
 
 #endif

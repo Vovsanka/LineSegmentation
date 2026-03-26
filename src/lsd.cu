@@ -202,6 +202,19 @@ namespace lsd {
         std::string lines_outName,
         std::string originalLines_outName
     ) {
+        ///// debug start
+        // std::vector<Cand> cands = {
+        //     Cand(100, 100, 12, 1),
+        //     Cand(99, 99, 12, 1),
+        //     Cand(99, 98, 12, 1),
+        //     Cand(98, 97, 12, 1),
+        //     Cand(100, 101, 12, 1),
+        //     Cand(101, 102, 12, 1),
+        //     Cand(101, 103, 12, 1),
+        // };
+        // CandidateGraph cgraph(cands);
+        // return;
+        ///// debug end
         if (!originalImage_inName.empty()) {
             cv::Mat originalF = loadMatrix(originalImage_inName);
             showImage("Original image", originalF);
@@ -396,7 +409,6 @@ namespace lsd {
                 if (e.w > 0) {
                     cairo_set_source_rgb(cr, 0, 0, 1.0); 
                     cairo_set_line_width(cr, 1); 
-                    continue;
                 } else {
                     cairo_set_source_rgb(cr, 1.0, 0, 0); 
                     cairo_set_line_width(cr, 0.2); 

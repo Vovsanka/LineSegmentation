@@ -20,13 +20,4 @@ Vec getOrthogonalUnitVector(int d); // (y, x) // d in [0, 2*DIRECTIONS)
 __host__ __device__
 int getOppositeDirection(int d); // d in [0, 2*DIRECTIONS)
 
-__host__ __device__
-int getDirDifference(int d1, int d2); // d1, d2 in [0, DIRECTIONS)
-
-__host__ __device__
-thrust::tuple<uchar,uchar,uchar> getDirColorRgb(int dir); // dir in [0, 2*DIRECTIONS)
-
-__host__ __device__
-thrust::tuple<uchar,uchar,uchar> getDirColorLab(int dir); // dir in [0, 2*DIRECTIONS)
-
 #endif
