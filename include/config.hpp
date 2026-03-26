@@ -36,13 +36,11 @@ constexpr double CAND_THRESHOLD = 0.5;
 // iterative candidates
 constexpr double UPPER_THRESHOLD = 0.6; // >= CAND_THRESHOLD
 constexpr double LOWER_THRESHOLD = 0.2;
-constexpr double EXPANSION_STEP = 1.5;
-
-// candidate upgrade
 constexpr int UP_COUNT = 10;
 constexpr double UP_STEP = 0.1;
+constexpr double EXPANSION_STEP = 1.5;
 
-// candidate graph
+// candidate graph for clustering
 constexpr double CONNECTION_RADIUS = 10.0;
 constexpr double TOO_SMALL_DIST = 3.0; 
 constexpr double MIN_GAP_SIZE = 3.0;
@@ -50,8 +48,6 @@ constexpr double SIMILAR_DIR_ANGLE = 0.15*(PI/2.0);
 constexpr double GOOD_DIST_FACTOR = 0.2;
 constexpr double BAD_DIST_FACTOR = 0.5;
 constexpr double LINE_TRIANGLE_FACTOR = 1.05;
-
-// clustering cost
 constexpr double COST_BOUND = 10;
 
 // line extraction
