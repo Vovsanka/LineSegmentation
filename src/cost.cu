@@ -44,18 +44,14 @@ double computeCandidateSimilarity( // [0, 1]
     if (angle12 <= SIMILAR_DIR_ANGLE) { 
         // similar candidate directions
         if (angle1S <= SIMILAR_DIR_ANGLE && angle2S <= SIMILAR_DIR_ANGLE) {
-            // candidate directions similar to the segment direction
-            if (checkNoGaps(candidates, cand1, cand2)) {
-                // same line => similar
-                double minDistToLine = min(cand1.distToLine(cand2), cand2.distToLine(cand1));
-                double goodSim = max(0.5, 1.0 - minDistToLine/(GOOD_DIST_FACTOR*candDist));
-                return goodSim; 
-            }
-            // gaps => unclear similarity
-            return 0.5;
+            // candidate directions similar to the segment direction 
+            // => same line (same line segment if in proximity) => similar
+            double minDistToLine = min(cand1.distToLine(cand2), cand2.distToLine(cand1));
+            double goodSim = max(0.5, 1.0 - minDistToLine/(GOOD_DIST_FACTOR*candDist));
+            return goodSim; 
         }
         // candidate directions differ from the segment direction
-        if (!checkNoGaps(candidates, cand1, cand2)) {
+        if (isEmptySpace(candidates, cand1, cand2)) {
             // parallel lines => dissimilar
             double minDistToLine = min(cand1.distToLine(cand2), cand2.distToLine(cand1));
             double badSim = max(0.0, min(0.5, 1.0 - minDistToLine/(BAD_DIST_FACTOR*candDist)));
@@ -65,7 +61,7 @@ double computeCandidateSimilarity( // [0, 1]
         return 0.5;
     }
     // dissimilar candidate directions
-    if (angle1S > SIMILAR_DIR_ANGLE && angle2S > SIMILAR_DIR_ANGLE && !checkNoGaps(candidates, cand1, cand2)) {
+    if (angle1S > SIMILAR_DIR_ANGLE && angle2S > SIMILAR_DIR_ANGLE && isEmptySpace(candidates, cand1, cand2)) {
         // candidates represent different line segments => dissimilar
         double minDistToLine = min(cand1.distToLine(cand2), cand2.distToLine(cand1));
         double badSim = max(0.0, min(0.5, 1.0 - minDistToLine/(BAD_DIST_FACTOR*candDist)));
@@ -83,44 +79,23 @@ double computeDirectionAngle(Vec unitNorm1, Vec unitNorm2) {
 }
 
 __host__
-bool checkNoGaps(
+bool isEmptySpace(
     const std::vector<Cand>& candidates,
     const Cand& cand1, 
     const Cand& cand2
 ) { 
     double candDist = Cand::dist(cand1, cand2);
-    if (candDist < MIN_GAP_SIZE) return true;
     //
     double maxTriangleDist = LINE_TRIANGLE_FACTOR*candDist;
-    std::vector<int> segmentCandidates;
     for (int k = 0; k < candidates.size(); k++) {
         double side1 = Cand::dist(cand1, candidates[k]);
+        if (side1 > candDist || side1 < TOL) continue;
         double side2 =  Cand::dist(cand2, candidates[k]); 
-        if (
-            side1 <= candDist + TOL &&
-            side2 <= candDist + TOL && 
-            side1 + side2 <= maxTriangleDist
-        ) {
-            segmentCandidates.push_back(k);
+        if (side2 > candDist || side2 < TOL) continue;
+        if (side1 + side2 <= maxTriangleDist) {
+            return false;
         }
     }
     //
-    Vec lineVec(cand2.y - cand1.y, cand2.x - cand1.x);
-    std::vector<double> projections;
-    for (int k : segmentCandidates) {
-        const Cand& cand = candidates[k];
-        Vec v1(cand.y - cand1.y, cand.x - cand1.x);
-        double t = v1.dot(lineVec)/lineVec.dot(lineVec);
-        double projectionDist = t*lineVec.len(); // dist from cand1 
-        projections.push_back(projectionDist);
-    }
-    // check for the gaps in the projections
-    std::sort(std::begin(projections), std::end(projections));
-    int lastProj = 0;
-    for (double p : projections) {
-        if (p + TOL < 0  || p - TOL > candDist) continue;
-        if (p - lastProj > MIN_GAP_SIZE) return false;
-        lastProj = p;
-    }
     return true;
 }
