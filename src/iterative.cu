@@ -61,12 +61,10 @@ __host__
 std::vector<Cand> candidateIterativeSearch(
     const uchar* F, size_t Fstep,
     cv::cuda::GpuMat& gpuF,
-    std::vector<Cand>& tCandidates,
+    const std::vector<Cand>& tCandidates,
     int width, int height,
     bool beamScore
 ) {
-    std::sort(std::begin(tCandidates), std::end(tCandidates));
-    //
     cv::Mat BLOCKED(height, width, CV_8U, cv::Scalar(0)); 
     std::vector<Cand> chosenCandidates;
     //
