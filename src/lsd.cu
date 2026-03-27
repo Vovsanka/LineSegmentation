@@ -136,50 +136,26 @@ namespace lsd {
     }
 
     void extractLines(
+        std::string params_inName,
         std::string candidateList_inName,
         std::string candidateGraph_inName,
         std::string edgeLabels_inName,
         std::string lines_outName
     ) {
         // load the working state
+        int width, height;
+        loadImageParams(params_inName, width, height);
         std::vector<Cand> candidates = loadCandidates(candidateList_inName);
         CandidateGraph G = loadCandidateGraph(candidateGraph_inName);
         std::vector<char> edgeLabels = loadEdgeLabels(edgeLabels_inName);
-
-        std::vector<Line> lines = extractLinesFromClusters(candidates, G, edgeLabels);
+        
+        std::vector<Line> lines = extractLinesFromClusters(candidates, G, edgeLabels, width, height);
 
         std::cout << "Reconstructed lines: amount = " << lines.size() << std::endl;
 
         // save the working state
         saveLines(lines, lines_outName);
     }
-
-    // void reconstructOriginalLines(
-    //     std::string params_inName,
-    //     std::string scaledLines_inName,
-    //     std::string originalLines_outName
-    // ) {
-    //     // load the working state
-    //     int width, height;
-    //     loadImageParams(params_inName, width, height);
-    //     std::vector<Line> scaledLines = loadLines(scaledLines_inName);
-        
-    //     if (scale > 1.0 - TOL) {
-    //         // save the working state
-    //         saveLines(scaledLines, originalLines_outName);
-    //         return;
-    //     } 
-
-    //     double scaleY = 1.0*originalHeight/height;
-    //     double scaleX = 1.0*originalWidth/width;
-    //     std::vector<Line> originalLines(scaledLines.size());
-    //     for (int k = 0; k < scaledLines.size(); k++) {
-    //         const Line& l = scaledLines[k];
-    //         originalLines[k] = Line(scaleY*l.y1, scaleX*l.x1, scaleY*l.y2, scaleX*l.x2);
-    //     } 
-    //     // save the working state
-    //     saveLines(originalLines, originalLines_outName);
-    // }
 
     void buildShowStateImages(
         std::string originalImage_inName,
@@ -477,8 +453,8 @@ namespace lsd {
             cairo_set_source_rgb(cr, r, g, b); 
             cairo_set_line_width(cr, 2); 
             //
-            cairo_move_to(cr, line.x1, line.y1); 
-            cairo_line_to(cr, line.x2, line.y2); 
+            cairo_move_to(cr, line.y1, line.x1);
+            cairo_line_to(cr, line.y2, line.x2); 
             cairo_stroke(cr); 
         }
         //

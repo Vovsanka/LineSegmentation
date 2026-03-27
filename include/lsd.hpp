@@ -56,17 +56,12 @@ namespace lsd { // Line Segment Detection
     ); 
 
     void extractLines( // 3.2
+        std::string params_inName,
         std::string candidateList_inName,
         std::string candidateGraph_inName,
         std::string edgeLabels_inName,
         std::string scaledLines_outName
     ); 
-
-    // void reconstructOriginalLines( // 3.3
-    //     std::string params_inName,
-    //     std::string scaledLines_inName,
-    //     std::string originalLines_outName
-    // ); 
 
     void buildShowStateImages( // extra
         std::string originalImage_inName = "",

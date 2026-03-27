@@ -13,7 +13,8 @@ __host__
 std::vector<Line> extractLinesFromClusters(
     const std::vector<Cand>& candidates,
     const CandidateGraph& G,
-    const std::vector<char>& edgeLabels
+    const std::vector<char>& edgeLabels,
+    int width, int height
 );
 
 __host__
@@ -25,7 +26,16 @@ std::vector<std::vector<int>> retrieveClusters(
 __host__
 std::optional<Line> clusterToLine(
     const std::vector<Cand>& candidates,
-    const std::vector<int>& cluster
+    const std::vector<int>& cluster,
+    int width, int height
+);
+
+__host__
+void computeLineImageIntersections( // Liang–Barsky line clipping
+    double& tMin, double& tMax,
+    double y0, double x0,
+    double vy, double vx,
+    int width, int height
 );
 
 #endif
