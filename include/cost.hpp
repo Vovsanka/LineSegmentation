@@ -25,6 +25,13 @@ double computeDirectionAngle(Vec unitNorm1, Vec unitNorm2);
 
 
 __host__
+bool checkNoGaps(
+    const std::vector<Cand>& candidates,
+    const Cand& cand1, 
+    const Cand& cand2
+);
+
+__host__
 bool isEmptySpace(
     const std::vector<Cand>& candidates,
     const Cand& cand1, 

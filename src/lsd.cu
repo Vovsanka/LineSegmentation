@@ -361,17 +361,25 @@ namespace lsd {
         const std::vector<char>& edgeLabels
     ) { 
         //
+        thrust::tuple<double,double,double> colors[6] = {
+            thrust::make_tuple(0.0, 0.0, 1.0),
+            thrust::make_tuple(0.0, 1.0, 0.0),
+            thrust::make_tuple(0.0, 1.0, 1.0),
+            thrust::make_tuple(1.0, 0.0, 0.0),
+            thrust::make_tuple(1.0, 0.0, 1.0),
+            thrust::make_tuple(1.0, 1.1, 0.0)
+        };
+        //
         std::vector<thrust::tuple<double,double,double>> colorMapping(candidates.size());
         if (!edgeLabels.empty()) {
-            std::mt19937 rng(12345); // deterministic seed
-            std::uniform_real_distribution<double> dist(0.0, 1.0);
             //
             std::vector<std::vector<int>> clusters = retrieveClusters(cgraph, edgeLabels);
+            int k = 0;
             for (const std::vector<int>& cluster : clusters) {
-                thrust::tuple<double,double,double> color = thrust::make_tuple(dist(rng), dist(rng), dist(rng));
                 for (int node : cluster) {
-                    colorMapping[node] = color;
+                    colorMapping[node] = colors[k%6];
                 }
+                k++;
             }
         }
         //
@@ -441,7 +449,6 @@ namespace lsd {
         cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
         cairo_t* cr = cairo_create(surface);
         //
-        std::vector<thrust::tuple<double,double,double>> colorMapping(lines.size());
         if (!originalName.empty()) {
             cairo_surface_t* bg = cairo_image_surface_create_from_png((workingStateDir/(originalName + ".png")).string().c_str());
             cairo_set_source_surface(cr, bg, 0, 0);
@@ -449,30 +456,26 @@ namespace lsd {
         } else {
             cairo_set_source_rgb(cr, 0.0, 0.0, 0.0); 
             cairo_paint(cr); 
-            //
-            std::mt19937 rng(12345); // deterministic seed
-            std::uniform_real_distribution<double> dist(0.0, 1.0);
-            //
-            for (int k = 0; k < lines.size(); k++) {
-                thrust::tuple<double,double,double> color = thrust::make_tuple(dist(rng), dist(rng), dist(rng));
-                colorMapping[k] = color;
-            }
         }
+        //
+        thrust::tuple<double,double,double> colors[6] = {
+            thrust::make_tuple(0.0, 0.0, 1.0),
+            thrust::make_tuple(0.0, 1.0, 0.0),
+            thrust::make_tuple(0.0, 1.0, 1.0),
+            thrust::make_tuple(1.0, 0.0, 0.0),
+            thrust::make_tuple(1.0, 0.0, 1.0),
+            thrust::make_tuple(1.0, 1.1, 0.0)
+        };
         // draw lines
         cairo_set_line_width(cr, 0.2); 
-       for (int k = 0; k < lines.size(); k++) {
+        for (int k = 0; k < lines.size(); k++) {
             const Line& line = lines[k];
             //
-            if (!originalName.empty()) {
-                cairo_set_source_rgb(cr, 0, 1.0, 0); 
-                cairo_set_line_width(cr, 3); 
-            } else {
-                double r = thrust::get<0>(colorMapping[k]);
-                double g = thrust::get<1>(colorMapping[k]);
-                double b = thrust::get<2>(colorMapping[k]);
-                cairo_set_source_rgb(cr, r, g, b); 
-                cairo_set_line_width(cr, 1); 
-            }
+            double r = thrust::get<0>(colors[k%6]);
+            double g = thrust::get<1>(colors[k%6]);
+            double b = thrust::get<2>(colors[k%6]);
+            cairo_set_source_rgb(cr, r, g, b); 
+            cairo_set_line_width(cr, 2); 
             //
             cairo_move_to(cr, line.x1, line.y1); 
             cairo_line_to(cr, line.x2, line.y2); 
