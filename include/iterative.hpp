@@ -28,7 +28,7 @@ __host__
 std::vector<Cand> candidateIterativeSearch(
     const uchar* F, size_t Fstep,
     cv::cuda::GpuMat& gpuF,
-    const std::vector<Cand>& tCandidates,
+    std::vector<Cand>& tCandidates,
     int width, int height,
     bool beamScore = true
 );

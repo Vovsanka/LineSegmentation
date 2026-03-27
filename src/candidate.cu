@@ -47,7 +47,7 @@ void computeBestPixelScores(
 }
 
 __host__ 
-std::vector<Cand> extractSortedThresholdCandidates(
+std::vector<Cand> extractThresholdCandidates(
     cv::Mat& S, 
     cv::Mat& D
 ) {
@@ -64,7 +64,6 @@ std::vector<Cand> extractSortedThresholdCandidates(
         }
     }
     //
-    std::sort(std::begin(candList), std::end(candList));
     return candList;
 }
 

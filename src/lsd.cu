@@ -69,7 +69,7 @@ namespace lsd {
         cv::Mat cpuD = downloadToCPU(D);
 
         // threshold candidates
-        std::vector<Cand> tCandidates = extractSortedThresholdCandidates(cpuS, cpuD);
+        std::vector<Cand> tCandidates = extractThresholdCandidates(cpuS, cpuD);
 
         std::cout << "Threshold candidates: amount = " << tCandidates.size() << std::endl; 
 
