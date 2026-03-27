@@ -37,47 +37,38 @@ double computeCandidateSimilarity( // [0, 1]
     Vec unitNormal1 = getUnitVector(cand1.dir);
     Vec unitNormal2 = getUnitVector(cand2.dir);
     // angles between the candidate directions and the segment direction
-    double angleCandidates = computeDirectionAngle(unitNormal1, unitNormal2);
-    double angle1 = computeDirectionAngle(unitNormal1, unitNormalSegment);
-    double angle2 = computeDirectionAngle(unitNormal2, unitNormalSegment);
+    double angle12 = computeDirectionAngle(unitNormal1, unitNormal2);
+    double angle1S = computeDirectionAngle(unitNormal1, unitNormalSegment);
+    double angle2S = computeDirectionAngle(unitNormal2, unitNormalSegment);
     // similarity based on candidate distance to the line of the other candidate
     double distToLine = min(cand1.distToLine(cand2), cand2.distToLine(cand1));
     double sim = max(0.0, 1.0 - distToLine/LINE_THICKNESS);
     // handle all cases 
-    if (angleCandidates < DISSIMILAR_DIR_ANGLE) {
-        // candidate directions are not dissimilar
-        if (min(angle1, angle2) < DISSIMILAR_DIR_ANGLE) {
-            // directions are not dissimilar
-            if (angleCandidates <= SIMILAR_DIR_ANGLE) { 
-                // similar candidate directions
-                if (angle1 <= SIMILAR_DIR_ANGLE && angle2 <= SIMILAR_DIR_ANGLE) {
-                    // candidate directions similar to the segment direction 
-                    if (checkNoGaps(candidates, cand1, cand2)) {
-                        // same line => similar
-                        return max(0.5, sim); 
-                    }
-                    // gaps => unclear similarity
-                    return 0.5;
-                }
-            }
-            // directions are not similar
+    if (angle12 <= SIMILAR_DIR_ANGLE) { 
+        // similar candidate directions
+        if (angle1S <= SIMILAR_DIR_ANGLE && angle2S <= SIMILAR_DIR_ANGLE) {
+            // candidate directions similar to the segment direction 
             if (checkNoGaps(candidates, cand1, cand2)) {
-                // not dissimilar directions => a little similar candidates;
-                return 0.6;
+                // same line => similar
+                return max(0.5, sim); 
             }
+            // gaps => unclear similarity
+            return 0.5;
         }
-        // candidate directions are different from the segment direction
+        // candidate directions differ from the segment direction
         if (isEmptySpace(candidates, cand1, cand2)) {
-            // parallel lines => similarity is based on the distance (possibly unite)
+            // parallel lines => similarity is based on the distance
             return sim; 
         }
+        // no gaps => unclear similarity
+        return 0.5;
     }
-    // directions are dissimilar
-    if (min(angle1, angle2) > SIMILAR_DIR_ANGLE && isEmptySpace(candidates, cand1, cand2)) {
+    // dissimilar candidate directions
+    if (angle1S > SIMILAR_DIR_ANGLE && angle2S > SIMILAR_DIR_ANGLE && isEmptySpace(candidates, cand1, cand2)) {
         // candidates represent different line segments => dissimilar    
         return min(0.5, sim);
     }
-    // at leastone  candidate direction similar to the segment directions => unclear similarity
+    // at least candidate direction similar to the segment directions => unclear similarity
     // dissimilar directions but no gaps => unclear similarity
     return 0.5;
 }

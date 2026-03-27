@@ -42,9 +42,8 @@ constexpr double EXPANSION_STEP = 1.5;
 
 // candidate graph for clustering
 constexpr double CONNECTION_RADIUS = 20.0;
-constexpr double LINE_THICKNESS = 5.0; 
+constexpr double LINE_THICKNESS = 6.0; 
 constexpr double SIMILAR_DIR_ANGLE = 0.15*(PI/2.0);
-constexpr double DISSIMILAR_DIR_ANGLE = 0.3*(PI/2.0);
 constexpr double LINE_TRIANGLE_FACTOR = 1.05;
 constexpr double COST_BOUND = 10;
 
