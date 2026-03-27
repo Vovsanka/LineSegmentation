@@ -627,10 +627,10 @@ namespace lsd {
         out << lines.size() << "\n";
 
         for (const Line& L : lines) {
-            out << L.y1 << " "
-                << L.x1 << " "
-                << L.y2 << " "
-                << L.x2 << "\n";
+            out << L.x1 << " "
+                << L.y1 << " "
+                << L.x2 << " "
+                << L.y2 << "\n";
         }
     }
 
