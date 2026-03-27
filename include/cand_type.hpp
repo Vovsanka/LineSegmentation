@@ -29,6 +29,8 @@ struct Cand {
     __host__ __device__
     static int dirDiff(const Cand& cand1, const Cand& cand2);
 
+    __host__ __device__
+    static bool positionComparator(const Cand& c1, const Cand& c2);
 };
 
 #endif

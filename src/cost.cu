@@ -89,6 +89,41 @@ double computeDirectionAngle(Vec unitNorm1, Vec unitNorm2) {
 }
 
 __host__
+std::vector<int> findSegmentCandidates(
+    const std::vector<Cand>& candidates,
+    const Cand& cand1,
+    const Cand& cand2
+) {
+    double y0 = min(cand1.y, cand2.y);
+    double x0 = min(cand1.x, cand2.x);
+    double y1 = max(cand1.y, cand2.y);
+    double x1 = max(cand1.x, cand2.x);
+    // find y interval [l, r) with binary search
+    auto lIter = std::lower_bound(std::begin(candidates), std::end(candidates), Cand(y0, x0, 0, 0), Cand::positionComparator);
+    auto rIter = std::upper_bound(std::begin(candidates), std::end(candidates), Cand(y1, x1, 0, 0), Cand::positionComparator);
+    //
+    int l = lIter - std::begin(candidates);
+    int r = rIter - std::begin(candidates);
+    //
+    std::vector<int> relevant;
+    double candDist = Cand::dist(cand1, cand2);
+    double maxTriangleDist = LINE_TRIANGLE_FACTOR*candDist;
+    for (int k = l; k < r; k++) {
+        double side1 = Cand::dist(cand1, candidates[k]);
+        double side2 =  Cand::dist(cand2, candidates[k]); 
+        if (
+            side1 <= candDist + TOL &&
+            side2 <= candDist + TOL && 
+            side1 + side2 <= maxTriangleDist
+        ) {
+            relevant.push_back(k);
+        }
+    }
+    //
+    return relevant;
+} 
+
+__host__
 bool checkNoGaps(
     const std::vector<Cand>& candidates,
     const Cand& cand1, 
@@ -97,19 +132,7 @@ bool checkNoGaps(
     double candDist = Cand::dist(cand1, cand2);
     if (candDist < LINE_THICKNESS) return true;
     //
-    double maxTriangleDist = LINE_TRIANGLE_FACTOR*candDist;
-    std::vector<int> segmentCandidates;
-    for (int k = 0; k < candidates.size(); k++) {
-        double side1 = Cand::dist(cand1, candidates[k]);
-        double side2 =  Cand::dist(cand2, candidates[k]); 
-        if (
-            side1 <= candDist + TOL &&
-            side2 <= candDist + TOL && 
-            side1 + side2 <= maxTriangleDist
-        ) {
-            segmentCandidates.push_back(k);
-        }
-    }
+    std::vector<int> segmentCandidates = findSegmentCandidates(candidates, cand1, cand2);
     //
     Vec lineVec(cand2.y - cand1.y, cand2.x - cand1.x);
     std::vector<double> projections;
@@ -137,17 +160,5 @@ bool isEmptySpace(
     const Cand& cand1, 
     const Cand& cand2
 ) { 
-    double candDist = Cand::dist(cand1, cand2);
-    //
-    double maxTriangleDist = LINE_TRIANGLE_FACTOR*candDist;
-    for (int k = 0; k < candidates.size(); k++) {
-        double side1 = Cand::dist(cand1, candidates[k]);
-        if (side1 > candDist || side1 < TOL) continue;
-        double side2 =  Cand::dist(cand2, candidates[k]); 
-        if (side2 > candDist || side2 < TOL) continue;
-        if (side1 + side2 <= maxTriangleDist) {
-            return false;
-        }
-    }
-    return true; 
+    return (findSegmentCandidates(candidates, cand1, cand2).size() > 2);
 }

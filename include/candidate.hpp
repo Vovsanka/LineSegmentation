@@ -1,6 +1,7 @@
 #ifndef CANDIDATE_HPP
 #define CANDIDATE_HPP
 
+#include <algorithm>
 #include <iostream>
 #include <vector>
 

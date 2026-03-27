@@ -8,7 +8,7 @@
 
 __host__
 double computeCandidateCost(
-    const std::vector<Cand>& candidates,
+    const std::vector<Cand>& candidates, // assume that the candidates are sorted by position (y, x)
     const Cand& cand1, 
     const Cand& cand2
 );
@@ -23,6 +23,12 @@ double computeCandidateSimilarity( // [0, 1]
 __host__
 double computeDirectionAngle(Vec unitNorm1, Vec unitNorm2);
 
+__host__
+std::vector<int> findSegmentCandidates(
+    const std::vector<Cand>& candidates, // assume that the candidates are sorted by position (y, x)
+    const Cand& cand1,
+    const Cand& cand2
+);
 
 __host__
 bool checkNoGaps(

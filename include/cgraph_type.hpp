@@ -1,6 +1,8 @@
 #ifndef CGRAPH_HPP
 #define CGRAPH_HPP
 
+#include <algorithm>
+
 #include "config.hpp"
 #include "cand_type.hpp"
 #include "edge_type.hpp"
@@ -15,7 +17,7 @@ struct CandidateGraph {
     CandidateGraph() = default;
 
     __host__
-    CandidateGraph(const std::vector<Cand>& candidates);
+    CandidateGraph(std::vector<Cand> candidates);
 };
 
 

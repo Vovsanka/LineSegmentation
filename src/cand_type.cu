@@ -32,3 +32,9 @@ double Cand::distToLine(const Cand& otherCand) const {
     return fabs(v.dot(u));
 }
 
+__host__ __device__
+bool Cand::positionComparator(const Cand& c1, const Cand& c2) {
+    if (c1.y == c2.y) return (c1.x < c2.x);
+    return (c1.y < c2.y);
+}
+
