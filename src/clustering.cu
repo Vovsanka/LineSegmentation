@@ -12,10 +12,11 @@ std::vector<char> solveClustering(const CandidateGraph& G) {
         graph.insertEdge(e.c1, e.c2);
         weights[k] = e.w;
     }
-    // 
+    //
     std::vector<char> edgeLabels(m);
+    multicut::greedyAdditiveEdgeContraction(graph, weights, edgeLabels);
+    // apply KL for refinement
     multicut::kernighanLin(graph, weights, edgeLabels, edgeLabels);
-    // multicut::greedyAdditiveEdgeContraction(graph, weights, edgeLabels);
     //
     return edgeLabels;
 }
