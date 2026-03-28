@@ -1,7 +1,7 @@
 #include "iterative.hpp"
 
 
-__host__ __device__
+__host__
 Cand upgradeCandidate(
     const uchar* F, size_t Fstep,
     cv::cuda::GpuMat& gpuF,

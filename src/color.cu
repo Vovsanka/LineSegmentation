@@ -181,7 +181,7 @@ thrust::tuple<uchar, uchar, uchar> hsvToRgb(double h, double s, double v) {
     return thrust::make_tuple(toU8(r), toU8(g), toU8(b));
 }
 
-__host__ __device__
+__host__
 thrust::tuple<uchar,uchar,uchar> getDirColorRgb(int dir) {
     double rad = getRad(2*dir);
     double hue = fmod(rad / (2*PI), 1.0);
@@ -189,7 +189,7 @@ thrust::tuple<uchar,uchar,uchar> getDirColorRgb(int dir) {
     return hsvToRgb(hue, 1.0, 1.0);
 }
 
-__host__ __device__
+__host__
 thrust::tuple<uchar,uchar,uchar> getDirColorLab(int dir) {
     thrust::tuple<uchar,uchar,uchar> rgb = getDirColorRgb(dir);
     // convert LAB to RGB

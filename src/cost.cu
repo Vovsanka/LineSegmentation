@@ -20,7 +20,7 @@ double computeCandidateSimilarity( // [0, 1]
     const std::vector<Cand>& candidates,
     const Cand& cand1,
     const Cand& cand2
-) {    
+) { 
     // too close candidates => unclear similarity 
     double candDist = Cand::dist(cand1, cand2);
     if (candDist <= LINE_THICKNESS) {
@@ -37,17 +37,17 @@ double computeCandidateSimilarity( // [0, 1]
     Vec unitNormal1 = getUnitVector(cand1.dir);
     Vec unitNormal2 = getUnitVector(cand2.dir);
     // angles between the candidate directions and the segment direction
-    double angle12 = computeDirectionAngle(unitNormal1, unitNormal2);
-    double angle1S = computeDirectionAngle(unitNormal1, unitNormalSegment);
-    double angle2S = computeDirectionAngle(unitNormal2, unitNormalSegment);
+    double angleCandidates = computeDirectionAngle(unitNormal1, unitNormal2);
+    double angle1 = computeDirectionAngle(unitNormal1, unitNormalSegment);
+    double angle2 = computeDirectionAngle(unitNormal2, unitNormalSegment);
     // similarity based on candidate distance to the line of the other candidate
     double distToLine = min(cand1.distToLine(cand2), cand2.distToLine(cand1));
     double sim = max(0.0, 1.0 - distToLine/LINE_THICKNESS);
     // handle all cases 
-    if (angle12 <= SIMILAR_DIR_ANGLE) { 
+    if (angleCandidates <= SIMILAR_DIR_ANGLE) { 
         // similar candidate directions
-        if (angle1S <= SIMILAR_DIR_ANGLE && angle2S <= SIMILAR_DIR_ANGLE) {
-            // candidate directions similar to the segment direction 
+        if (max(angle1, angle2) <= SIMILAR_DIR_ANGLE) {
+            // a candidate direction similar to the segment direction 
             if (checkNoGaps(candidates, cand1, cand2)) {
                 // same line => similar
                 return max(0.5, sim); 
@@ -64,7 +64,7 @@ double computeCandidateSimilarity( // [0, 1]
         return 0.5;
     }
     // dissimilar candidate directions
-    if (angle1S > SIMILAR_DIR_ANGLE && angle2S > SIMILAR_DIR_ANGLE && isEmptySpace(candidates, cand1, cand2)) {
+    if (min(angle1, angle2) > SIMILAR_DIR_ANGLE && isEmptySpace(candidates, cand1, cand2)) {
         // candidates represent different line segments => dissimilar    
         return min(0.5, sim);
     }
@@ -90,8 +90,16 @@ std::vector<int> findSegmentCandidates(
     double y1 = max(cand1.y, cand2.y);
     double x1 = max(cand1.x, cand2.x);
     // find y interval [l, r) with binary search
-    auto lIter = std::lower_bound(std::begin(candidates), std::end(candidates), Cand(y0, x0, 0, 0), Cand::positionComparator);
-    auto rIter = std::upper_bound(std::begin(candidates), std::end(candidates), Cand(y1, x1, 0, 0), Cand::positionComparator);
+    auto lIter = std::lower_bound(
+        std::begin(candidates), std::end(candidates),
+        Cand(y0, x0, 0, 0), Cand::positionComparator
+    );
+    auto rIter = std::upper_bound(
+        std::begin(candidates), std::end(candidates), 
+        Cand(y1, x1, 0, 0), [](const Cand& key, const Cand& elem) {
+            return Cand::positionComparator(key, elem); 
+        }
+    );
     //
     int l = lIter - std::begin(candidates);
     int r = rIter - std::begin(candidates);
@@ -130,13 +138,15 @@ bool checkNoGaps(
     for (int k : segmentCandidates) {
         const Cand& cand = candidates[k];
         Vec v1(cand.y - cand1.y, cand.x - cand1.x);
-        double t = v1.dot(lineVec)/lineVec.dot(lineVec);
-        double projectionDist = t*lineVec.len(); // dist from cand1 
+        double len = lineVec.len();
+        double lenSq = len*len;
+        double t = v1.dot(lineVec)/lenSq;
+        double projectionDist = t*len; // dist from cand1 
         projections.push_back(projectionDist);
     }
     // check for the gaps in the projections
     std::sort(std::begin(projections), std::end(projections));
-    int lastProj = 0;
+    double lastProj = 0;
     for (double p : projections) {
         if (p + TOL < 0  || p - TOL > candDist) continue;
         if (p - lastProj > LINE_THICKNESS) return false;

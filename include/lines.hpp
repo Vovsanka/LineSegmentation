@@ -1,6 +1,7 @@
 #ifndef LINES_HPP
 #define LINES_HPP
 
+#include <numeric>
 #include <optional>
 
 #include "cand_type.hpp"

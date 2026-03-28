@@ -19,40 +19,49 @@ std::vector<Line> extractLinesFromClusters(
     return lines;
 }
 
-__host__
-std::vector<std::vector<int>> retrieveClusters( 
+std::vector<std::vector<int>> retrieveClusters(
     const CandidateGraph& G,
     const std::vector<char>& edgeLabels
 ) {
-    std::vector<int> clusterMap(G.n, -1);
-    int clusterCount = 0;
+    int n = G.n;
+
+    // --- 1. Union-Find structure ---
+    std::vector<int> parent(n);
+    std::iota(parent.begin(), parent.end(), 0);
+
+    auto find = [&](int x) {
+        while (parent[x] != x) x = parent[x] = parent[parent[x]];
+        return x;
+    };
+
+    auto unite = [&](int a, int b) {
+        a = find(a);
+        b = find(b);
+        if (a != b) parent[b] = a;
+    };
+
+    // --- 2. Union all uncut edges ---
     for (int k = 0; k < G.edges.size(); k++) {
         if (edgeLabels[k] == 0) {
-            const Edge& e = G.edges[k]; 
-            if (clusterMap[e.c1] == -1 && clusterMap[e.c2] == -1) {
-                clusterMap[e.c1] = clusterMap[e.c2] = clusterCount++; 
-            } else if (clusterMap[e.c1] == -1) { // clusterMap[e.c2] != -1
-                clusterMap[e.c1] = clusterMap[e.c2];
-            } else if (clusterMap[e.c2] == -1) { // clusterMap[e.c1] != -1
-                clusterMap[e.c2] = clusterMap[e.c1];
-            }
+            const Edge& e = G.edges[k];
+            unite(e.c1, e.c2);
         }
     }
-    //
-    for (int node = 0; node < G.n; node++) {
-        if (clusterMap[node] == -1) {
-            clusterMap[node] = clusterCount++;
-        }
+
+    // --- 3. Build clusters ---
+    std::unordered_map<int, std::vector<int>> clustersMap;
+    for (int i = 0; i < n; i++) {
+        clustersMap[find(i)].push_back(i);
     }
-    // gather all the nodes into clusters
-    std::vector<std::vector<int>> clusters(clusterCount, std::vector<int>());
-    for (int node = 0; node < G.n; node++) {
-        if (clusterMap[node] != -1) {
-            clusters[clusterMap[node]].push_back(node);
-        }
-    }
+
+    // Convert to vector
+    std::vector<std::vector<int>> clusters;
+    for (auto& kv : clustersMap)
+        clusters.push_back(std::move(kv.second));
+
     return clusters;
 }
+
 
 __host__
 std::optional<Line> clusterToLine (
