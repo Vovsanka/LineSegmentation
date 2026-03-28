@@ -14,7 +14,7 @@
 
 using namespace andres::graph;
 
-std::vector<std::vector<int>> solveClustering(const CandidateGraph& G);
+std::vector<std::vector<int>> solveClustering(const CandidateGraph& G, std::string method = "GA+KL");
 
 
 #endif

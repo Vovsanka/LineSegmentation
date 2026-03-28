@@ -6,7 +6,7 @@
 // struct CandidateGraph { int n; std::vector<Edge> edges; };
 // using Graph = andres::graph::Graph<>;
 
-std::vector<std::vector<int>> solveClustering(const CandidateGraph& G) {
+std::vector<std::vector<int>> solveClustering(const CandidateGraph& G, std::string method) {
     using namespace andres::graph;
     using namespace andres::graph::multicut;
 
@@ -49,7 +49,29 @@ std::vector<std::vector<int>> solveClustering(const CandidateGraph& G) {
     // -------------------------------
     std::vector<char> edgeLabels(mRed);
 
+    if (method == "GA+KL") {
+        greedyAdditiveEdgeContraction(redGraph, redWeights, edgeLabels);
+        kernighanLin(redGraph, redWeights, edgeLabels, edgeLabels);
+
+    } else if (method == "MWS+KL") {
+        mutexWatershed(redGraph, redWeights, edgeLabels);
+        kernighanLin(redGraph, redWeights, edgeLabels, edgeLabels);
+
+    } else if (method == "MWS") {
+        mutexWatershed(redGraph, redWeights, edgeLabels);
+
+    } else if (method == "GA") {
+        greedyAdditiveEdgeContraction(redGraph, redWeights, edgeLabels);
+
+    } else if (method == "KL") {
+        kernighanLin(redGraph, redWeights, edgeLabels, edgeLabels);
+    } else {
+        throw std::runtime_error("Unknown clustering method!");
+    }
+
+
     // greedyAdditiveEdgeContraction(redGraph, redWeights, edgeLabels);
+
     mutexWatershed(redGraph, redWeights, edgeLabels);
     kernighanLin(redGraph, redWeights, edgeLabels, edgeLabels);
 

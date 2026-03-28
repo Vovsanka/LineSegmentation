@@ -52,7 +52,8 @@ namespace lsd { // Line Segment Detection
 
     void performClustering( // 3.1
         std::string candidateGraph_inName,
-        std::string clusters_outName
+        std::string clusters_outName,
+        std::string method = ""
     ); 
 
     void extractLines( // 3.2

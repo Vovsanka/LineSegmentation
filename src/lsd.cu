@@ -122,12 +122,19 @@ namespace lsd {
 
     void performClustering(
         std::string candidateGraph_inName,
-        std::string clusters_outName
+        std::string clusters_outName,
+        std::string method
     ) {
         // load the working state
         CandidateGraph G = loadCandidateGraph(candidateGraph_inName);
 
-        std::vector<std::vector<int>> clusters = solveClustering(G);
+        
+        std::vector<std::vector<int>> clusters;
+        if (!method.empty()) {
+            clusters = solveClustering(G, method);
+        } else {
+            clusters = solveClustering(G);
+        }
 
         std::cout << "Clustering completed: #clusters = " << clusters.size() << std::endl;
 
