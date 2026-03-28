@@ -56,7 +56,8 @@ double computeCandidateSimilarity( // [0, 1]
             return 0.5;
         }
         // candidate directions differ from the segment direction
-        if (isEmptySpace(candidates, cand1, cand2)) {
+        if (min(angle1, angle2) > SIMILAR_DIR_ANGLE && 
+            isEmptySpace(candidates, cand1, cand2)) {
             // parallel lines => similarity is based on the distance
             return sim; 
         }
@@ -64,7 +65,8 @@ double computeCandidateSimilarity( // [0, 1]
         return 0.5;
     }
     // dissimilar candidate directions
-    if (min(angle1, angle2) > SIMILAR_DIR_ANGLE && isEmptySpace(candidates, cand1, cand2)) {
+    if (min(angle1, angle2) > SIMILAR_DIR_ANGLE &&
+        isEmptySpace(candidates, cand1, cand2)) {
         // candidates represent different line segments => dissimilar    
         return min(0.5, sim);
     }
