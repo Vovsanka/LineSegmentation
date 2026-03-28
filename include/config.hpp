@@ -48,6 +48,6 @@ constexpr double LINE_TRIANGLE_FACTOR = 1.03;
 constexpr double COST_BOUND = 10;
 
 // line extraction
-constexpr int MIN_LINE_CLUSTER = 7;
+constexpr int MIN_LINE_CLUSTER = 12;
 
 #endif
