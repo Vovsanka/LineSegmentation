@@ -12,6 +12,10 @@ std::vector<char> solveClustering(const CandidateGraph& G) {
         graph.insertEdge(e.c1, e.c2);
         weights[k] = e.w;
     }
+    // reduce the graph
+    // auto reducedInstance = andres::graph::multicut::preprocessing(graph, weights);
+    // graph = std::get<0>(reducedInstance);
+    // weights = std::get<1>(reducedInstance);
     //
     std::vector<char> edgeLabels(m);
     multicut::greedyAdditiveEdgeContraction(graph, weights, edgeLabels);

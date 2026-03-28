@@ -2,6 +2,7 @@
 #define CLUSTERING_HPP
 
 #include <andres-graph/graph.hxx>
+#include <andres-graph/preprocessing.hxx>
 #include <andres-graph/greedy-additive.hxx>
 #include <andres-graph/kernighan-lin.hxx>
 

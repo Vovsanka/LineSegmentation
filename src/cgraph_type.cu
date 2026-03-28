@@ -6,13 +6,6 @@ CandidateGraph::CandidateGraph(std::vector<Cand> candidates) {
     this->n = candidates.size();
     this->edges = std::vector<Edge>();
     // construct cost edges from candidates
-    constructCostEdges(candidates);
-    // reduce the candidate graph
-    reduce();
-}
-
-__host__
-void CandidateGraph::constructCostEdges(std::vector<Cand>& candidates) {
     // sort the candidates with their index by their position (y, x)
     std::vector<std::pair<Cand,int>> candInd(n);
     for (int k = 0; k < n; k++) {
@@ -44,24 +37,4 @@ void CandidateGraph::constructCostEdges(std::vector<Cand>& candidates) {
             }
         }
     }  
-}
-
-void CandidateGraph::reduce() {
-     // transform to the library graph
-    Graph<> graph(n);
-    std::vector<double> weights(edges.size());
-    for (int k = 0; k < edges.size(); k++) {
-        const Edge& e = edges[k];
-        graph.insertEdge(e.c1, e.c2);
-        weights[k] = e.w;
-    }
-    // graph reduction
-    auto reducedInstance = andres::graph::multicut::preprocessing(graph, weights);
-    graph = std::get<0>(reducedInstance);
-    weights = std::get<1>(reducedInstance);
-    // reconstruct the reduced candidate graph
-    edges = std::vector<Edge>(graph.numberOfEdges());
-    for (size_t k = 0; k < graph.numberOfEdges(); k++) {
-        edges[k] = Edge(graph.vertexOfEdge(k, 0), graph.vertexOfEdge(k, 1), weights[k]);
-    }
 }

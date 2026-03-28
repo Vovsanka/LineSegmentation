@@ -3,16 +3,11 @@
 
 #include <algorithm>
 
-#include <andres-graph/graph.hxx>
-#include <andres-graph/preprocessing.hxx>
-
 #include "config.hpp"
 #include "cand_type.hpp"
 #include "edge_type.hpp"
 #include "cost.hpp"
 
-
-using namespace andres::graph;
 
 
 struct CandidateGraph {
@@ -23,12 +18,6 @@ struct CandidateGraph {
 
     __host__
     CandidateGraph(std::vector<Cand> candidates);
-
-    __host__
-    void constructCostEdges(std::vector<Cand>& candidates);
-
-    __host__
-    void reduce(); 
 };
 
 
