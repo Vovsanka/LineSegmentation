@@ -52,15 +52,14 @@ namespace lsd { // Line Segment Detection
 
     void performClustering( // 3.1
         std::string candidateGraph_inName,
-        std::string edgeLabels_outName
+        std::string clusters_outName
     ); 
 
     void extractLines( // 3.2
         std::string params_inName,
         std::string candidateList_inName,
-        std::string candidateGraph_inName,
-        std::string edgeLabels_inName,
-        std::string scaledLines_outName
+        std::string clusters_inName,
+        std::string lines_outName
     ); 
 
     void buildShowStateImages( // extra
@@ -84,7 +83,7 @@ namespace lsd { // Line Segment Detection
         std::string candidateGraph_inName = "",
         std::string candidateGraph_outName = "",        
         //
-        std::string edgeLabels_inName = "",
+        std::string clusters_inName = "",
         std::string clustering_outName = "",
         //
         std::string lines_inName = "",
@@ -107,7 +106,7 @@ namespace lsd { // Line Segment Detection
         int width, int height,
         const std::vector<Cand>& candidates, 
         const CandidateGraph& cgraph = CandidateGraph(),
-        const std::vector<char>& edgeLabels = std::vector<char>()
+        const std::vector<std::vector<int>>& clusters = std::vector<std::vector<int>>()
     );
 
     void buildLineImage(
@@ -140,9 +139,8 @@ namespace lsd { // Line Segment Detection
     void saveCandidateGraph(const CandidateGraph& G, std::string& name);
     CandidateGraph loadCandidateGraph(std::string& name);
 
-    void saveEdgeLabels(const std::vector<char>& edgeLabels, std::string& name);
-
-    std::vector<char> loadEdgeLabels(std::string& name);
+    void saveClusters(const std::vector<std::vector<int>>& clusters, const std::string& name);
+    std::vector<std::vector<int>> loadClusters(const std::string& name);
 
     void saveLines(const std::vector<Line>& lines, std::string& name);
 

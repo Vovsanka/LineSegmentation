@@ -31,9 +31,9 @@ int main(int argc, char* argv[]) {
     // lsd::computeIterativeCandidates("preprocessed", "t_candidates", "candidates", true);
 
     /// 3: build the candidate graph and group the candidates by line segments, extract and reconstruct the line segments
-    lsd::buildCandidateGraph("candidates", "cgraph");
-    lsd::performClustering("cgraph", "labels");
-    lsd::extractLines("params", "candidates", "cgraph", "labels", "lines");
+    // lsd::buildCandidateGraph("candidates", "cgraph");
+    // lsd::performClustering("cgraph", "clusters");
+    // lsd::extractLines("params", "candidates", "clusters", "lines");
 
     /// extra
     lsd::buildShowStateImages(
@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
         "scores", "directions", "score-direction", "t_candidates",
         "candidates", "candidates",
         "candidates", "cgraph", "cgraph",
-        "labels", "clustering",
+        "clusters", "clustering",
         "lines", "result", "original-lines"
     );
 

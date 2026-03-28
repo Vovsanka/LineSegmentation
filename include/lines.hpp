@@ -13,16 +13,9 @@
 __host__
 std::vector<Line> extractLinesFromClusters(
     const std::vector<Cand>& candidates,
-    const CandidateGraph& G,
-    const std::vector<char>& edgeLabels,
+    std::vector<std::vector<int>> clusters,
     int width, int height
 );
-
-__host__
-std::vector<std::vector<int>> retrieveClusters(
-    const CandidateGraph& G,
-    const std::vector<char>& edgeLabels
-); // omits all 1-element clusters
 
 __host__
 std::optional<Line> clusterToLine(

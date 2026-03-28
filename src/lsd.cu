@@ -122,34 +122,32 @@ namespace lsd {
 
     void performClustering(
         std::string candidateGraph_inName,
-        std::string edgeLabels_outName
+        std::string clusters_outName
     ) {
         // load the working state
         CandidateGraph G = loadCandidateGraph(candidateGraph_inName);
 
-        std::vector<char> edgeLabels = solveClustering(G);
+        std::vector<std::vector<int>> clusters = solveClustering(G);
 
-        std::cout << "Clustering completed" << std::endl;
+        std::cout << "Clustering completed: #clusters = " << clusters.size() << std::endl;
 
         // save the working state
-        saveEdgeLabels(edgeLabels, edgeLabels_outName);
+        saveClusters(clusters, clusters_outName);
     }
 
     void extractLines(
         std::string params_inName,
         std::string candidateList_inName,
-        std::string candidateGraph_inName,
-        std::string edgeLabels_inName,
+        std::string clusters_inName,
         std::string lines_outName
     ) {
         // load the working state
         int width, height;
         loadImageParams(params_inName, width, height);
         std::vector<Cand> candidates = loadCandidates(candidateList_inName);
-        CandidateGraph G = loadCandidateGraph(candidateGraph_inName);
-        std::vector<char> edgeLabels = loadEdgeLabels(edgeLabels_inName);
+        std::vector<std::vector<int>> clusters = loadClusters(clusters_inName);
         
-        std::vector<Line> lines = extractLinesFromClusters(candidates, G, edgeLabels, width, height);
+        std::vector<Line> lines = extractLinesFromClusters(candidates, clusters, width, height);
 
         std::cout << "Reconstructed lines: amount = " << lines.size() << std::endl;
 
@@ -172,7 +170,7 @@ namespace lsd {
         std::string candidateList_inName,
         std::string candidateGraph_inName,
         std::string candidateGraph_outName,
-        std::string edgeLabels_inName,
+        std::string clusters_inName,
         std::string clustering_outName,
         std::string lines_inName,
         std::string lines_outName,
@@ -231,9 +229,9 @@ namespace lsd {
                 cv::Mat cgraphF = cv::imread(workingStateDir/(candidateGraph_outName + ".png"), cv::IMREAD_COLOR);
                 showImage("Candidate graph", cgraphF);
             }
-            if (!edgeLabels_inName.empty() && !clustering_outName.empty()) {
-                std::vector<char> edgeLabels = loadEdgeLabels(edgeLabels_inName);
-                buildGraphImage(clustering_outName, width, height, candidates, cgraph, edgeLabels);
+            if (!clusters_inName.empty() && !clustering_outName.empty()) {
+                std::vector<std::vector<int>> clusters = loadClusters(clusters_inName);
+                buildGraphImage(clustering_outName, width, height, candidates, cgraph, clusters);
                 cv::Mat clusteringF = cv::imread(workingStateDir/(clustering_outName + ".png"), cv::IMREAD_COLOR);
                 showImage("Clustering", clusteringF);
             }
@@ -321,7 +319,7 @@ namespace lsd {
         int width, int height,
         const std::vector<Cand>& candidates, 
         const CandidateGraph& cgraph,
-        const std::vector<char>& edgeLabels
+        const std::vector<std::vector<int>>& clusters
     ) { 
         //
         thrust::tuple<double,double,double> colors[6] = {
@@ -334,9 +332,7 @@ namespace lsd {
         };
         //
         std::vector<thrust::tuple<double,double,double>> colorMapping(candidates.size());
-        if (!edgeLabels.empty()) {
-            //
-            std::vector<std::vector<int>> clusters = retrieveClusters(cgraph, edgeLabels);
+        if (!clusters.empty()) {
             int k = 0;
             for (const std::vector<int>& cluster : clusters) {
                 for (int node : cluster) {
@@ -361,7 +357,7 @@ namespace lsd {
                 double g = thrust::get<1>(rgb)/255.0;
                 double b = thrust::get<2>(rgb)/255.0;
                 cairo_set_source_rgb(cr, r, g, b); 
-            } else if (!edgeLabels.empty()) {
+            } else if (!clusters.empty()) {
                 double r = thrust::get<0>(colorMapping[k]);
                 double g = thrust::get<1>(colorMapping[k]);
                 double b = thrust::get<2>(colorMapping[k]);
@@ -370,13 +366,12 @@ namespace lsd {
             cairo_arc(cr, cand.x, cand.y, 1.0, 1, 2*PI);
             cairo_fill(cr);
         }
-        // draw all or labeled edges
-        cairo_set_line_width(cr, 0.2); 
-        for (int k = 0; k < cgraph.edges.size(); k++) {
-            const Edge& e = cgraph.edges[k];
-            //
-            if (edgeLabels.empty()) {
-                if (abs(e.w) < TOL) continue;
+        // draw candidate graph edges
+        if (clusters.empty()) {
+            cairo_set_line_width(cr, 0.2); 
+            for (int k = 0; k < cgraph.edges.size(); k++) {
+                const Edge& e = cgraph.edges[k];
+                //
                 if (e.w > 0) {
                     cairo_set_source_rgb(cr, 0, 0, 1.0); 
                     cairo_set_line_width(cr, 1); 
@@ -384,16 +379,14 @@ namespace lsd {
                     cairo_set_source_rgb(cr, 1.0, 0, 0); 
                     cairo_set_line_width(cr, 0.2); 
                 }
-            } else {
-                break;
+                //
+                const Cand& cand1 = candidates[e.c1];
+                const Cand& cand2 = candidates[e.c2];
+                //
+                cairo_move_to(cr, cand1.x, cand1.y); 
+                cairo_line_to(cr, cand2.x, cand2.y); 
+                cairo_stroke(cr); 
             }
-            //
-            const Cand& cand1 = candidates[e.c1];
-            const Cand& cand2 = candidates[e.c2];
-            //
-            cairo_move_to(cr, cand1.x, cand1.y); 
-            cairo_line_to(cr, cand2.x, cand2.y); 
-            cairo_stroke(cr); 
         }
         //
         cairo_surface_write_to_png(surface, (workingStateDir/(name + ".png")).string().c_str());
@@ -557,31 +550,39 @@ namespace lsd {
         return G;
     }
 
-    void saveEdgeLabels(const std::vector<char>& edgeLabels, std::string& name) {
+    void saveClusters(const std::vector<std::vector<int>>& clusters, const std::string& name) {
         std::ofstream out(workingStateDir / (name + ".txt"));
 
-        out << edgeLabels.size() << "\n";
+        out << clusters.size() << "\n";  // number of clusters
 
-        for (char c : edgeLabels) {
-            out << int(c) << "\n";   // write 0 or 1 as integer
+        for (const auto& cluster : clusters) {
+            out << cluster.size();       // number of nodes in cluster
+            for (int v : cluster) {
+                out << " " << v;
+            }
+            out << "\n";
         }
     }
 
-    std::vector<char> loadEdgeLabels(std::string& name) {
+    std::vector<std::vector<int>> loadClusters(const std::string& name) {
         std::ifstream in(workingStateDir / (name + ".txt"));
 
-        std::size_t count = 0;
-        in >> count;
+        std::size_t numClusters = 0;
+        in >> numClusters;
 
-        std::vector<char> edgeLabels(count);
+        std::vector<std::vector<int>> clusters(numClusters);
 
-        for (std::size_t i = 0; i < count; i++) {
-            int temp;
-            in >> temp;              // read 0 or 1
-            edgeLabels[i] = char(temp);
+        for (std::size_t i = 0; i < numClusters; i++) {
+            std::size_t size = 0;
+            in >> size;
+
+            clusters[i].resize(size);
+            for (std::size_t j = 0; j < size; j++) {
+                in >> clusters[i][j];
+            }
         }
 
-        return edgeLabels;
+        return clusters;
     }
 
     void saveLines(const std::vector<Line>& lines, std::string& name) {

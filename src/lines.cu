@@ -3,11 +3,9 @@
 __host__
 std::vector<Line> extractLinesFromClusters(
     const std::vector<Cand>& candidates,
-    const CandidateGraph& G,
-    const std::vector<char>& edgeLabels,
+    std::vector<std::vector<int>> clusters,
     int width, int height
 ) {
-    std::vector<std::vector<int>> clusters = retrieveClusters(G, edgeLabels);
     //
     std::vector<Line> lines;
     for (const std::vector<int>& cluster : clusters) {
@@ -18,50 +16,6 @@ std::vector<Line> extractLinesFromClusters(
     }
     return lines;
 }
-
-std::vector<std::vector<int>> retrieveClusters(
-    const CandidateGraph& G,
-    const std::vector<char>& edgeLabels
-) {
-    int n = G.n;
-
-    // --- 1. Union-Find structure ---
-    std::vector<int> parent(n);
-    std::iota(parent.begin(), parent.end(), 0);
-
-    auto find = [&](int x) {
-        while (parent[x] != x) x = parent[x] = parent[parent[x]];
-        return x;
-    };
-
-    auto unite = [&](int a, int b) {
-        a = find(a);
-        b = find(b);
-        if (a != b) parent[b] = a;
-    };
-
-    // --- 2. Union all uncut edges ---
-    for (int k = 0; k < G.edges.size(); k++) {
-        if (edgeLabels[k] == 0) {
-            const Edge& e = G.edges[k];
-            unite(e.c1, e.c2);
-        }
-    }
-
-    // --- 3. Build clusters ---
-    std::unordered_map<int, std::vector<int>> clustersMap;
-    for (int i = 0; i < n; i++) {
-        clustersMap[find(i)].push_back(i);
-    }
-
-    // Convert to vector
-    std::vector<std::vector<int>> clusters;
-    for (auto& kv : clustersMap)
-        clusters.push_back(std::move(kv.second));
-
-    return clusters;
-}
-
 
 __host__
 std::optional<Line> clusterToLine (
