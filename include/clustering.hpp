@@ -7,6 +7,7 @@
 #include <andres-graph/graph.hxx>
 #include <andres-graph/preprocessing.hxx>
 #include <andres-graph/greedy-additive.hxx>
+#include <andres-graph/mutex-watershed.hxx>
 #include <andres-graph/kernighan-lin.hxx>
 
 #include "cgraph_type.hpp"

@@ -32,8 +32,8 @@ int main(int argc, char* argv[]) {
 
     /// 3: build the candidate graph and group the candidates by line segments, extract and reconstruct the line segments
     // lsd::buildCandidateGraph("candidates", "cgraph");
-    // lsd::performClustering("cgraph", "clusters");
-    // lsd::extractLines("params", "candidates", "clusters", "lines");
+    lsd::performClustering("cgraph", "clusters");
+    lsd::extractLines("params", "candidates", "clusters", "lines");
 
     /// extra
     lsd::buildShowStateImages(

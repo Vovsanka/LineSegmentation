@@ -49,7 +49,8 @@ std::vector<std::vector<int>> solveClustering(const CandidateGraph& G) {
     // -------------------------------
     std::vector<char> edgeLabels(mRed);
 
-    greedyAdditiveEdgeContraction(redGraph, redWeights, edgeLabels);
+    // greedyAdditiveEdgeContraction(redGraph, redWeights, edgeLabels);
+    mutexWatershed(redGraph, redWeights, edgeLabels);
     kernighanLin(redGraph, redWeights, edgeLabels, edgeLabels);
 
     // -------------------------------
