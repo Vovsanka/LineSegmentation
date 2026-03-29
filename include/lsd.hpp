@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <string>
 #include <fstream>
+#include <chrono>
 
 #include "config.hpp"
 #include "operations.hpp"
@@ -12,6 +13,10 @@
 #include "iterative.hpp"
 #include "clustering.hpp"
 #include "lines.hpp"
+
+
+using namespace std::chrono;
+
 
 
 namespace lsd { // Line Segment Detection
@@ -147,7 +152,15 @@ namespace lsd { // Line Segment Detection
 
     std::vector<Line> loadLines(std::string& name);
 
+    //
+
+    std::chrono::high_resolution_clock::time_point startTimer();
     
+    std::chrono::high_resolution_clock::time_point logRestartTimer(
+        std::chrono::high_resolution_clock::time_point start,
+        std::string logLabel,
+        std::string timeLogs_outName
+    );
 
 };
 

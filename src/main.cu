@@ -1,7 +1,7 @@
 #include <iostream> 
-#include <chrono>
 
 #include "lsd.hpp"
+
 
 
 // structural settings
@@ -100,6 +100,9 @@ int main(int argc, char* argv[]) {
     std::string clustersName = prefix3 + "clusters";
     std::string linesName = prefix3 + "lines";
 
+    // start benchmarking
+    auto timer = lsd::startTimer();
+
     /// 1: load the image, convert to LAB, scale down if needed
     if (runLoadPreprocessImage) {
         lsd::loadPreprocessImage(
@@ -108,6 +111,7 @@ int main(int argc, char* argv[]) {
             "params", 
             beams
         );
+        timer = lsd::logRestartTimer(timer, prefix1 + "lp", "time-logs");
     }
 
     /// 2: compute threshold and iterative candidates (using structure tensor score function or beam score function)
@@ -117,7 +121,9 @@ int main(int argc, char* argv[]) {
             scoresName, 
             directionsName, 
             thresholdCandidatesName, 
-            beams); 
+            beams
+        ); 
+        timer = lsd::logRestartTimer(timer, prefix1 + "tc", "time-logs");
     }
     if (runComputeIterativeCandidates) {
         lsd::computeIterativeCandidates(
@@ -126,17 +132,21 @@ int main(int argc, char* argv[]) {
             iterativeCandidatesName,
             beams
         );
+        timer = lsd::logRestartTimer(timer, prefix1 + "ic", "time-logs");
     }
 
     /// 3: build the candidate graph and group the candidates by line segments, extract and reconstruct the line segments
     if (runBuildCandidateGraph) {
         lsd::buildCandidateGraph(candidatesName, cgraphName);
+        timer = lsd::logRestartTimer(timer, prefix2 + "cg", "time-logs");
     }
     if (runPerformClustering) {
         lsd::performClustering(cgraphName, clustersName);
+        timer = lsd::logRestartTimer(timer, prefix3 + "cl", "time-logs");
     }
     if (runExtractLines) {
         lsd::extractLines("params", candidatesName, clustersName, linesName);
+        timer = lsd::logRestartTimer(timer, prefix3 + "el", "time-logs");
     }
     
     /// extra

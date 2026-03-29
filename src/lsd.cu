@@ -624,7 +624,22 @@ namespace lsd {
         return lines;
     }
 
-
+    std::chrono::high_resolution_clock::time_point startTimer() {
+        return high_resolution_clock::now();
+    }
     
+    std::chrono::high_resolution_clock::time_point logRestartTimer(
+        std::chrono::high_resolution_clock::time_point start,
+        std::string logLabel,
+        std::string timeLogs_outName
+    ) {
+        auto end = high_resolution_clock::now();
+        int duration = duration_cast<milliseconds>(end - start).count(); // in ms
+        //
+        std::ofstream out(workingStateDir / (timeLogs_outName + ".txt"), std::ios::app);
+        out << logLabel << " " << 1e-6*duration << "\n";
+        //
+        return high_resolution_clock::now();
+    }
 
 }
