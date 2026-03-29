@@ -637,7 +637,7 @@ namespace lsd {
         int duration = duration_cast<milliseconds>(end - start).count(); // in ms
         //
         std::ofstream out(workingStateDir / (timeLogs_outName + ".txt"), std::ios::app);
-        out << logLabel << " " << 1e-6*duration << "\n";
+        out << logLabel << " " << 1e-3*duration << "\n";
         //
         return high_resolution_clock::now();
     }
