@@ -39,38 +39,38 @@ int main(int argc, char* argv[]) {
     // retrieve setting from CLI
     for (int k = 3; k < argc; k++) {
         // set beams
-        if (argv[k] == "--bm") beams = true;
-        if (argv[k] == "--st") beams = false;
+        if (std::string(argv[k]) == "--bm") beams = true;
+        if (std::string(argv[k]) == "--st") beams = false;
         // set iterative
-        if (argv[k] == "--it") iterative = true;
-        if (argv[k] == "--th") iterative = false;
+        if (std::string(argv[k]) == "--it") iterative = true;
+        if (std::string(argv[k]) == "--th") iterative = false;
         // set clustering method
-        if (argv[k] == "--ga-kl") clusteringMethod = "GA+KL";
-        if (argv[k] == "--mws-kl") clusteringMethod = "MWS+KL";
-        if (argv[k] == "--mws") clusteringMethod = "MWS";
-        if (argv[k] == "--ga") clusteringMethod = "GA";
-        if (argv[k] == "--kl") clusteringMethod = "KL";
+        if (std::string(argv[k]) == "--ga-kl") clusteringMethod = "GA+KL";
+        if (std::string(argv[k]) == "--mws-kl") clusteringMethod = "MWS+KL";
+        if (std::string(argv[k]) == "--mws") clusteringMethod = "MWS";
+        if (std::string(argv[k]) == "--ga") clusteringMethod = "GA";
+        if (std::string(argv[k]) == "--kl") clusteringMethod = "KL";
         // 
-        if (argv[k] == "--on-lp") runLoadPreprocessImage = true;
-        if (argv[k] == "--off-lp") runLoadPreprocessImage = false;
+        if (std::string(argv[k]) == "--on-lp") runLoadPreprocessImage = true;
+        if (std::string(argv[k]) == "--off-lp") runLoadPreprocessImage = false;
         //
-        if (argv[k] == "--on-tc") runComputeThresholdCandidates = true;
-        if (argv[k] == "--off-tc") runComputeThresholdCandidates = false;
+        if (std::string(argv[k]) == "--on-tc") runComputeThresholdCandidates = true;
+        if (std::string(argv[k]) == "--off-tc") runComputeThresholdCandidates = false;
         //
-        if (argv[k] == "--on-ic") runComputeIterativeCandidates = true;
-        if (argv[k] == "--off-ic") runComputeIterativeCandidates = false;
+        if (std::string(argv[k]) == "--on-ic") runComputeIterativeCandidates = true;
+        if (std::string(argv[k]) == "--off-ic") runComputeIterativeCandidates = false;
         //
-        if (argv[k] == "--on-cg") runBuildCandidateGraph = true;
-        if (argv[k] == "--off-cg") runBuildCandidateGraph = false;
+        if (std::string(argv[k]) == "--on-cg") runBuildCandidateGraph = true;
+        if (std::string(argv[k]) == "--off-cg") runBuildCandidateGraph = false;
         //
-        if (argv[k] == "--on-cl") runPerformClustering = true;
-        if (argv[k] == "--off-cl") runPerformClustering = false;
+        if (std::string(argv[k]) == "--on-cl") runPerformClustering = true;
+        if (std::string(argv[k]) == "--off-cl") runPerformClustering = false;
         //
-        if (argv[k] == "--on-el") runExtractLines = true;
-        if (argv[k] == "--off-el") runExtractLines = false;
+        if (std::string(argv[k]) == "--on-el") runExtractLines = true;
+        if (std::string(argv[k]) == "--off-el") runExtractLines = false;
         //
-        if (argv[k] == "--on-show") show = true;
-        if (argv[k] == "--off-show") show = false;
+        if (std::string(argv[k]) == "--on-show") show = true;
+        if (std::string(argv[k]) == "--off-show") show = false;
     }
 
     //
@@ -137,12 +137,12 @@ int main(int argc, char* argv[]) {
     if (show) {
         lsd::buildShowStateImages(
             "original", "original",
-            "params", "preprocessed", 
+            "params", preprocessedName, 
             "palette",
-            "scores", "directions", "score-direction", "t_candidates",
-            "candidates", "i_candidates",
-            "candidates", "cgraph", "cgraph",
-            "clusters", "clustering",
+            scoresName, directionsName, prefix1 + "score-direction", "th_candidates",
+            iterativeCandidatesName, "it_candidates",
+            candidatesName, cgraphName, "cgraph",
+            clustersName, "clustering",
             "lines", "result", "original-lines"
         );
     }
