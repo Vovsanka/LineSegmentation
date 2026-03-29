@@ -24,12 +24,12 @@ int main(int argc, char* argv[]) {
     }
 
     // structural settings
-    bool runLoadPreprocessImage = true; 
-    bool runComputeThresholdCandidates = true;
-    bool runComputeIterativeCandidates = true;
-    bool runBuildCandidateGraph = true;
-    bool runPerformClustering = true;
-    bool runExtractLines = true;
+    bool runLoadPreprocessImage = false; 
+    bool runComputeThresholdCandidates = false;
+    bool runComputeIterativeCandidates = false;
+    bool runBuildCandidateGraph = false;
+    bool runPerformClustering = false;
+    bool runExtractLines = false;
     bool show = false;
     // content settings
     bool beams = true; // beams score function or structure tensor score functin
@@ -52,25 +52,15 @@ int main(int argc, char* argv[]) {
         if (std::string(argv[k]) == "--kl") clusteringMethod = "KL";
         // 
         if (std::string(argv[k]) == "--on-lp") runLoadPreprocessImage = true;
-        if (std::string(argv[k]) == "--off-lp") runLoadPreprocessImage = false;
-        //
+        // 
         if (std::string(argv[k]) == "--on-tc") runComputeThresholdCandidates = true;
-        if (std::string(argv[k]) == "--off-tc") runComputeThresholdCandidates = false;
-        //
         if (std::string(argv[k]) == "--on-ic") runComputeIterativeCandidates = true;
-        if (std::string(argv[k]) == "--off-ic") runComputeIterativeCandidates = false;
         //
         if (std::string(argv[k]) == "--on-cg") runBuildCandidateGraph = true;
-        if (std::string(argv[k]) == "--off-cg") runBuildCandidateGraph = false;
-        //
         if (std::string(argv[k]) == "--on-cl") runPerformClustering = true;
-        if (std::string(argv[k]) == "--off-cl") runPerformClustering = false;
-        //
         if (std::string(argv[k]) == "--on-el") runExtractLines = true;
-        if (std::string(argv[k]) == "--off-el") runExtractLines = false;
         //
         if (std::string(argv[k]) == "--on-show") show = true;
-        if (std::string(argv[k]) == "--off-show") show = false;
     }
 
     //

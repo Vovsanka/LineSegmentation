@@ -23,7 +23,7 @@ constexpr int DIRECTIONS = 18; // even! <= 1024 // DIRECTIONS ~ PI // intention:
 // gray score function
 constexpr int G_WINDOW_RADIUS = 3; // Gaussian window size
 constexpr double G_SIGMA = 1.0; // standard deviation of the Gaussian
-constexpr double EDGE_SHARPNESS = 700.0;
+constexpr double EDGE_SHARPNESS = 20000.0;
 
 // beam score function
 constexpr int CIRCLE_COUNT = 3;
