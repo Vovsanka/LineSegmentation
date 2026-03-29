@@ -138,13 +138,13 @@ def compute_coverage(gt: LineSegment, dets: list[LineSegment]):
 
 
 # ---------------------------------------------------------
-# FINAL: Unified Wireframe/YUD evaluation (correct, not strict)
+# FINAL: Relaxed Wireframe/YUD evaluation (Block C Setup 3)
 # ---------------------------------------------------------
 
-def evaluate_segments(det_ls, gt_ls,
-                      angle_thresh=35,     # relaxed
-                      dist_thresh=15,      # relaxed
-                      cov_thresh=0.2):     # relaxed
+def evaluate_segments_relaxed(det_ls, gt_ls,
+                              angle_thresh=25,     
+                              dist_thresh=8,       
+                              cov_thresh=0.3):     
 
     used_det = set()
     TP = 0
@@ -152,9 +152,9 @@ def evaluate_segments(det_ls, gt_ls,
     localization_errors = []
 
     for g in gt_ls:
-        # DO NOT FILTER BEFORE PROJECTION
-        # Project ALL detected segments
         projections = []
+
+        # 1. Project ALL detections (no filtering yet)
         for i, d in enumerate(det_ls):
             t1, t2 = project_onto_gt(d, g)
             if t2 <= t1:
@@ -169,7 +169,7 @@ def evaluate_segments(det_ls, gt_ls,
             FN += 1
             continue
 
-        # Now filter AFTER projection
+        # 2. Apply relaxed geometric constraints AFTER projection
         valid = [(i, d, dist) for (i, d, t1, t2, ang, dist) in projections
                  if ang < angle_thresh and dist < dist_thresh]
 
@@ -177,6 +177,7 @@ def evaluate_segments(det_ls, gt_ls,
             FN += 1
             continue
 
+        # 3. Compute coverage using all valid detections
         det_segments = [d for _, d, _ in valid]
         cov = compute_coverage(g, det_segments)
 
@@ -216,7 +217,7 @@ def main():
     for prefix in ["st_th_", "st_it_", "bm_th_", "bm_it_"]:
         my_ls = read_my_line_segments(f"{ls_dir}/{prefix}lines.txt")
 
-        TP, FP, FN, P, R, F1, LE = evaluate_segments(my_ls, gt_ls)
+        TP, FP, FN, P, R, F1, LE = evaluate_segments_relaxed(my_ls, gt_ls)
 
         print(prefix)
         print("Detected:", len(my_ls))
