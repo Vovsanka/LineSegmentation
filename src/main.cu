@@ -71,6 +71,9 @@ int main(int argc, char* argv[]) {
     std::string prefix2 = prefix1;
     if (iterative) prefix2 += "it_";
     else prefix2 += "th_";
+    //
+    std::string prefix3 = prefix2;
+    if (!clusteringMethod.empty()) prefix3 += clusteringMethod + "_";
 
     //
     std::string preprocessedName = prefix1 + "preprocessed";
