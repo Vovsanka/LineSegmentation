@@ -41,15 +41,16 @@ def main():
     if len(sys.argv) != 4:
         sys.exit(1)
 
-    ls_txt: str = sys.argv[1]
+    ls_dir: str = sys.argv[1]
     gt_mat: str = sys.argv[2]
     out_csv: str = sys.argv[3]
 
-    my_ls: list[LineSegment] = read_my_line_segments(ls_txt)
     gt_ls: list[LineSegment] = read_gt_line_segments(gt_mat)
-
-    print(len(my_ls))
-    print(len(gt_ls))
+    for prefix in ["st_th_", "st_it_", "bm_th_", "bm_it_"]:
+        my_ls: list[LineSegment] = read_my_line_segments(f"{ls_dir}/{prefix}lines.txt")
+        print(len(my_ls))
+        print(len(gt_ls))
+        print()
     
 
 
