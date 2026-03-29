@@ -1,41 +1,42 @@
 #include <iostream> 
+#include <chrono>
 
 #include "lsd.hpp"
 
 
-int main(int argc, char* argv[]) {
-    
+// structural settings
+bool runLoadPreprocessImage = false; 
+bool runComputeThresholdCandidates = false;
+bool runComputeIterativeCandidates = false;
+bool runBuildCandidateGraph = false;
+bool runPerformClustering = false;
+bool runExtractLines = false;
+bool show = false;
+// content settings
+bool beams = true; // beams score function or structure tensor score functin
+bool iterative = true; // iterative candidates or threshold candidates
+std::string clusteringMethod = ""; // "GA+KL" (default), "MWS+KL", "MWS", "GA", "KL" 
+
+void checkGpu() {
     /// Check the CUDA devices (GPU support)
     int cudaCount = cv::cuda::getCudaEnabledDeviceCount();
     if (cudaCount > 0) {
         std::cout << "GPU is enabled" << std::endl;
     } else {
         std::cout << "No CUDA devices available" << std::endl;
-        return 1;
+        std::exit(1);
     }
-    
+}
+
+void setupCLI(int argc, char* argv[]) {
     /// Set image path and working state directory from program arguments
     if (argc >= 3) {
         lsd::imagePath = argv[1];
         lsd::workingStateDir = argv[2];
     } else {
         std::cout << "Error: there must be 2 CLI parameters (image path, working state folder path)" << std::endl;
-        return 1;
+        return std::exit(1);
     }
-
-    // structural settings
-    bool runLoadPreprocessImage = false; 
-    bool runComputeThresholdCandidates = false;
-    bool runComputeIterativeCandidates = false;
-    bool runBuildCandidateGraph = false;
-    bool runPerformClustering = false;
-    bool runExtractLines = false;
-    bool show = false;
-    // content settings
-    bool beams = true; // beams score function or structure tensor score functin
-    bool iterative = true; // iterative candidates or threshold candidates
-    std::string clusteringMethod = ""; // "GA+KL" (default), "MWS+KL", "MWS", "GA", "KL" 
-
     // retrieve setting from CLI
     for (int k = 3; k < argc; k++) {
         // set beams
@@ -62,7 +63,18 @@ int main(int argc, char* argv[]) {
         //
         if (std::string(argv[k]) == "--on-show") show = true;
     }
+    //
+    std::cout << "\nLine Segmentation App:\n";
+}
 
+
+
+
+int main(int argc, char* argv[]) {
+    //
+    checkGpu();
+    //
+    setupCLI(argc, argv);
     //
     std::string prefix1 = "";
     if (beams) prefix1 += "bm_";
@@ -84,8 +96,9 @@ int main(int argc, char* argv[]) {
     //
     std::string candidatesName = prefix2 + "candidates";
     std::string cgraphName = prefix2 + "cgraph";
-    std::string clustersName = prefix2 + "clusters";
-    std::string linesName = prefix2 + "lines";
+    //
+    std::string clustersName = prefix3 + "clusters";
+    std::string linesName = prefix3 + "lines";
 
     /// 1: load the image, convert to LAB, scale down if needed
     if (runLoadPreprocessImage) {
