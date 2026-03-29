@@ -143,7 +143,7 @@ int main(int argc, char* argv[]) {
             iterativeCandidatesName, "it_candidates",
             candidatesName, cgraphName, "cgraph",
             clustersName, "clustering",
-            "lines", "result", "original-lines"
+            linesName, "result", "image-result"
         );
     }
 
