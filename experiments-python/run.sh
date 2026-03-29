@@ -13,7 +13,7 @@ count=0
 for img_path in "${wireframe_src_dir}/test"/*.jpg; do
     count=$((count + 1))
     ### debug start
-    # if [ "$count" -gt 3 ]; then
+    # if [ "$count" -gt 2 ]; then
     #     break
     # fi
     ### debug end
@@ -37,7 +37,7 @@ done
 for img_path in "${wireframe_src_dir}/test"/*.jpg; do
     count=$((count + 1))
     ### debug start
-    # if [ "$count" -gt 3 ]; then
+    # if [ "$count" -gt 2 ]; then
     #     break
     # fi
     ### debug end
@@ -61,7 +61,7 @@ done
 for img_path in "${wireframe_src_dir}/test"/*.jpg; do
     count=$((count + 1))
     ### debug start
-    # if [ "$count" -gt 3 ]; then
+    # if [ "$count" -gt 2 ]; then
     #     break
     # fi
     ### debug end
