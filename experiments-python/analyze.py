@@ -142,9 +142,9 @@ def compute_coverage(gt: LineSegment, dets: list[LineSegment]):
 # ---------------------------------------------------------
 
 def evaluate_segments_relaxed(det_ls, gt_ls,
-                              angle_thresh=25,     
-                              dist_thresh=8,       
-                              cov_thresh=0.3):     
+                              angle_thresh=10,     
+                              dist_thresh=3,       
+                              cov_thresh=0.7):     
 
     used_det = set()
     TP = 0
