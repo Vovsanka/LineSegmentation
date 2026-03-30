@@ -104,7 +104,7 @@ void candidateExpand(
 ) {
     if (cand.score < LOWER_THRESHOLD || isBlocked(B, Bstep, cand.y, cand.x, width, height)) return;
     //
-    if (cand.score < prevScore) {
+    if (cand.score < 0) {
         cand = upgradeCandidate(F, Fstep, gpuF, cand, width, height, beamScore);
         if (isBlocked(B, Bstep, cand.y, cand.x, width, height)) return;
     }

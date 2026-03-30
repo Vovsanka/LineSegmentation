@@ -3,38 +3,14 @@ project_dir="${script_dir}/.."
 experiments_dir="${project_dir}/experiments-python"
 executable="${project_dir}/build/LineSegmentation"
 
-wireframe_src_dir="${project_dir}/../wireframe-dataset"
 
-# ### 1. Wireframe
+#### 1. Wireframe
+wireframe_src_dir="${project_dir}/../wireframe-dataset"
 wireframe_out_dir="${experiments_dir}/wireframe-results"
 mkdir -p "$wireframe_out_dir"
 total=$(ls "${wireframe_src_dir}/test"/*.jpg 2>/dev/null | wc -l)
 
-count=0
-# for img_path in "${wireframe_src_dir}/test"/*.jpg; do
-#     count=$((count + 1))
-#     ### debug start
-#     # if [ "$count" -gt 2 ]; then
-#     #     break
-#     # fi
-#     ### debug end
-#     base=$(basename "$img_path" .jpg)
-#     echo "Wireframe dataset: ${base} [${count} / ${total}]"
-#     working_state_dir="${wireframe_out_dir}/working-state-${base}"
-#     mkdir -p "$working_state_dir"
-#     # "$executable" "$img_path" "$working_state_dir" "--on-lp" "--on-tc" "--on-ic" "--on-cg" "--on-cl" "--on-el"
-#     "$executable" "$img_path" "$working_state_dir" "--st" "--th" "--on-lp" "--on-tc" 
-#     "$executable" "$img_path" "$working_state_dir" "--st" "--it" "--on-ic" 
-#     "$executable" "$img_path" "$working_state_dir" "--bm" "--th" "--on-lp" "--on-tc" 
-#     "$executable" "$img_path" "$working_state_dir" "--bm" "--it" "--on-ic" 
-#     ### debug start 
-#     # "$executable" "$img_path" "$working_state_dir" "--st" "--on-show" 
-#     # "$executable" "$img_path" "$working_state_dir" "--st" "--th" "--on-show" 
-#     # "$executable" "$img_path" "$working_state_dir" "--bm" "--on-show" 
-#     # "$executable" "$img_path" "$working_state_dir" "--bm" "--it" "--on-show" 
-#     ### debug end
-# done
-#
+# count=0
 # for img_path in "${wireframe_src_dir}/test"/*.jpg; do
 #     count=$((count + 1))
 #     ### debug start
@@ -47,17 +23,30 @@ count=0
 #     working_state_dir="${wireframe_out_dir}/working-state-${base}"
 #     mkdir -p "$working_state_dir"
 #     # "$executable" "$img_path" "$working_state_dir" "--on-lp" "--on-tc" "--on-ic" "--on-cg" "--on-cl" "--on-el"
-#     "$executable" "$img_path" "$working_state_dir" "--st" "--th" "--on-cg" "--on-cl" "--on-el"
-#     "$executable" "$img_path" "$working_state_dir" "--st" "--it" "--on-cg" "--on-cl" "--on-el"
-#     "$executable" "$img_path" "$working_state_dir" "--bm" "--th" "--on-cg" "--on-cl" "--on-el"
-#     "$executable" "$img_path" "$working_state_dir" "--bm" "--it" "--on-cg" "--on-cl" "--on-el"
-#     ### debug start 
-#     # "$executable" "$img_path" "$working_state_dir" "--st" "--on-show" 
-#     # "$executable" "$img_path" "$working_state_dir" "--st" "--th" "--on-show" 
-#     # "$executable" "$img_path" "$working_state_dir" "--bm" "--on-show" 
-#     # "$executable" "$img_path" "$working_state_dir" "--bm" "--it" "--on-show" 
-#     ### debug end
+#     "$executable" "$img_path" "$working_state_dir" "--st" "--th" "--on-lp" "--on-tc" 
+#     "$executable" "$img_path" "$working_state_dir" "--st" "--it" "--on-ic" 
+#     "$executable" "$img_path" "$working_state_dir" "--bm" "--th" "--on-lp" "--on-tc" 
+#     "$executable" "$img_path" "$working_state_dir" "--bm" "--it" "--on-ic" 
 # done
+
+count=0
+for img_path in "${wireframe_src_dir}/test"/*.jpg; do
+    count=$((count + 1))
+    ### debug start
+    if [ "$count" -gt 2 ]; then
+        break
+    fi
+    ### debug end
+    base=$(basename "$img_path" .jpg)
+    echo "Wireframe dataset: ${base} [${count} / ${total}]"
+    working_state_dir="${wireframe_out_dir}/working-state-${base}"
+    mkdir -p "$working_state_dir"
+    # "$executable" "$img_path" "$working_state_dir" "--on-lp" "--on-tc" "--on-ic" "--on-cg" "--on-cl" "--on-el"
+    "$executable" "$img_path" "$working_state_dir" "--st" "--th" "--on-cg" "--on-cl" "--on-el"
+    "$executable" "$img_path" "$working_state_dir" "--st" "--it" "--on-cg" "--on-cl" "--on-el"
+    "$executable" "$img_path" "$working_state_dir" "--bm" "--th" "--on-cg" "--on-cl" "--on-el"
+    "$executable" "$img_path" "$working_state_dir" "--bm" "--it" "--on-cg" "--on-cl" "--on-el"
+done
 #
 # for img_path in "${wireframe_src_dir}/test"/*.jpg; do
 #     count=$((count + 1))
@@ -81,21 +70,19 @@ count=0
 #     ### debug end
 # done
 #
-# count=0
-# for img_path in "${wireframe_src_dir}/test"/*.jpg; do
-#     count=$((count + 1))
-#     ### debug start
-#     # if [ "$count" -gt 2 ]; then
-#     #     break
-#     # fi
-#     ### debug end
-#     base=$(basename "$img_path" .jpg)
-#     echo "Wireframe dataset: ${base} [${count} / ${total}]"
-#     working_state_dir="${wireframe_out_dir}/working-state-${base}"
-#     ### debug start 
-#     "$executable" "$img_path" "$working_state_dir" "--st" "--on-show" 
-#     "$executable" "$img_path" "$working_state_dir" "--st" "--th" "--on-show" 
-#     "$executable" "$img_path" "$working_state_dir" "--bm" "--on-show" 
-#     "$executable" "$img_path" "$working_state_dir" "--bm" "--it" "--on-show" 
-#     ### debug end
-# done
+### debug start
+count=0
+for img_path in "${wireframe_src_dir}/test"/*.jpg; do
+    count=$((count + 1))
+    if [ "$count" -gt 2 ]; then
+        break
+    fi
+    base=$(basename "$img_path" .jpg)
+    echo "Wireframe dataset: ${base} [${count} / ${total}]"
+    working_state_dir="${wireframe_out_dir}/working-state-${base}"
+    "$executable" "$img_path" "$working_state_dir" "--st" "--on-show" 
+    "$executable" "$img_path" "$working_state_dir" "--st" "--th" "--on-show" 
+    "$executable" "$img_path" "$working_state_dir" "--bm" "--on-show" 
+    "$executable" "$img_path" "$working_state_dir" "--bm" "--it" "--on-show" 
+done
+### debug end

@@ -21,7 +21,7 @@ void checkGpu() {
     /// Check the CUDA devices (GPU support)
     int cudaCount = cv::cuda::getCudaEnabledDeviceCount();
     if (cudaCount > 0) {
-        std::cout << "GPU is enabled" << std::endl;
+        std::cout << "\nLine Segmentation App: GPU is enabled" << std::endl;
     } else {
         std::cout << "No CUDA devices available" << std::endl;
         std::exit(1);
@@ -63,8 +63,6 @@ void setupCLI(int argc, char* argv[]) {
         //
         if (std::string(argv[k]) == "--on-show") show = true;
     }
-    //
-    std::cout << "\nLine Segmentation App:\n";
 }
 
 
