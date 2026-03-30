@@ -159,57 +159,60 @@ __global__
 void bestPixelScoreKernelDirection(
     const uchar* F, size_t Fstep,
     double y, double x,
-    double* scores,
+    int* bestDirOut,
+    double* bestScoreOut,
     int width, int height,
     bool beamScore
 ) {
+    __shared__ double s_scores[DIRECTIONS];
+    __shared__ int s_dirs[DIRECTIONS];
+
     int dir = threadIdx.x;
     if (dir >= DIRECTIONS) return;
-    //
-    if (beamScore) {
-        scores[dir] = computeLabScore(F, Fstep, y, x, dir, width, height);
-    } else {
-        scores[dir] = computeGrayScore(F, Fstep, y, x, dir, width, height);
+
+    double score = beamScore
+        ? computeLabScore(F, Fstep, y, x, dir, width, height)
+        : computeGrayScore(F, Fstep, y, x, dir, width, height);
+
+    s_scores[dir] = score;
+    s_dirs[dir] = dir;
+    __syncthreads();
+
+    // simple reduction in shared memory
+    if (dir == 0) {
+        int bestDir = 0;
+        for (int d = 1; d < DIRECTIONS; ++d) {
+            if (s_scores[d] > s_scores[bestDir]) bestDir = d;
+        }
+        *bestDirOut = s_dirs[bestDir];
+        *bestScoreOut = s_scores[bestDir];
     }
 }
 
 __host__
-Cand computeBestPixelCandidate(
-    cv::cuda::GpuMat& F,
-    double y, double x,
-    bool beamScore
-) {
-    dim3 block(DIRECTIONS); // one thread for every direction;
-    dim3 grid(1); // one block for the one pixel
-    //
-    double* dScores;
-    cudaMalloc(&dScores, DIRECTIONS*sizeof(double));
-    //
+Cand computeBestPixelCandidate(cv::cuda::GpuMat& F, double y, double x, bool beamScore) {
+    static int* dBestDir = nullptr;
+    static double* dBestScore = nullptr;
+    if (!dBestDir) {
+        cudaMalloc(&dBestDir, sizeof(int));
+        cudaMalloc(&dBestScore, sizeof(double));
+    }
+
+    dim3 block(DIRECTIONS);
+    dim3 grid(1);
+
     bestPixelScoreKernelDirection<<<grid, block>>>(
         F.ptr<uchar>(), F.step,
         y, x,
-        dScores,
+        dBestDir, dBestScore,
         F.cols, F.rows,
         beamScore
-    ); 
-    cudaError_t err = cudaGetLastError(); 
-    cudaDeviceSynchronize();
-    //
-    double scores[DIRECTIONS];
-    cudaMemcpy(
-        scores,
-        dScores,
-        DIRECTIONS*sizeof(double),
-        cudaMemcpyDeviceToHost
     );
-    cudaFree(dScores);
-    //
-    int bestDir = 0;
-    for (int d = 1; d < DIRECTIONS; d++) {
-        if (scores[d] > scores[bestDir]) {
-            bestDir = d;
-        }
-    }
-    //
-    return Cand(y, x, bestDir, scores[bestDir]);
+
+    int bestDir;
+    double bestScore;
+    cudaMemcpy(&bestDir, dBestDir, sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&bestScore, dBestScore, sizeof(double), cudaMemcpyDeviceToHost);
+
+    return Cand(y, x, bestDir, bestScore);
 }
