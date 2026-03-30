@@ -18,7 +18,7 @@ constexpr double INF = 1e6;
 constexpr double PI = 3.141593;
 
 // computation parameters
-constexpr int DIRECTIONS = 384; // even! <= 1024 // 32k for efficiency  // DIRECTIONS ~ PI
+constexpr int DIRECTIONS = 192; // even! <= 1024 // 32k for efficiency  // DIRECTIONS ~ PI
 
 // gray score function
 constexpr int G_WINDOW_RADIUS = 3; // Gaussian window size
@@ -26,8 +26,8 @@ constexpr double G_SIGMA = 1.0; // standard deviation of the Gaussian
 constexpr double EDGE_SHARPNESS = 20000.0;
 
 // beam score function
-constexpr int CIRCLE_COUNT = 1;
-constexpr double CIRCLE_STEP = 2.5;
+constexpr int CIRCLE_COUNT = 3;
+constexpr double CIRCLE_STEP = 1.5;
 constexpr double COLOR_OFFSET = 3.0; // avoid 0-arrays & ignore some noise
 
 // threshold candidates
