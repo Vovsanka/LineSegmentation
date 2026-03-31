@@ -18,7 +18,7 @@ constexpr double INF = 1e6;
 constexpr double PI = 3.141593;
 
 // computation parameters
-constexpr int DIRECTIONS = 32; // even! <= 1024 // 32k for efficiency  // DIRECTIONS ~ PI
+constexpr int DIRECTIONS = 96; // even! <= 1024 // 32k for efficiency  // DIRECTIONS ~ PI
 
 // gray score function
 constexpr int G_WINDOW_RADIUS = 3; // Gaussian window size
@@ -27,7 +27,7 @@ constexpr double EDGE_SHARPNESS = 20000.0;
 
 // beam score function
 constexpr int CIRCLE_COUNT = 3;
-constexpr double CIRCLE_STEP = 1.8;
+constexpr double CIRCLE_STEP = 1.5;
 constexpr double COLOR_OFFSET = 3.0; // avoid 0-arrays & ignore some noise
 
 // threshold candidates
@@ -42,13 +42,13 @@ constexpr double EXPANSION_STEP = 1.5;
 constexpr double EXPANSION_UPGRADE_DELTA = 0.0; // 0 for maximal power of the iterative search
 
 // candidate graph for clustering
-constexpr double CONNECTION_RADIUS = 20.0;
-constexpr double LINE_THICKNESS = 10.0; 
-constexpr double SIMILAR_DIR_ANGLE = 0.12*(PI/2.0);
-constexpr double LINE_TRIANGLE_FACTOR = 1.03;
+constexpr double CONNECTION_RADIUS = 15.0;
+constexpr double LINE_THICKNESS = 8.0; 
+constexpr double SIMILAR_DIR_ANGLE = 0.1*(PI/2.0);
+constexpr double LINE_TRIANGLE_FACTOR = 1.05;
 constexpr double COST_BOUND = 10;
 
 // line extraction
-constexpr int MIN_LINE_CLUSTER = 12;
+constexpr int MIN_LINE_CLUSTER = 10;
 
 #endif

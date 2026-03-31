@@ -141,10 +141,10 @@ def compute_coverage(gt: LineSegment, dets: list[LineSegment]):
 # FINAL: Relaxed Wireframe/YUD evaluation (Block C Setup 3)
 # ---------------------------------------------------------
 
-def evaluate_segments_relaxed(det_ls, gt_ls,
-                              angle_thresh=10,     
-                              dist_thresh=3,       
-                              cov_thresh=0.7):     
+def evaluate_segments(det_ls, gt_ls,
+                              angle_thresh,     
+                              dist_thresh,       
+                              cov_thresh):     
 
     used_det = set()
     TP = 0
@@ -204,20 +204,23 @@ def evaluate_segments_relaxed(det_ls, gt_ls,
 # ---------------------------------------------------------
 
 def main():
-    if len(sys.argv) != 4:
-        print("Usage: python eval_segments.py <ls_dir> <gt_mat> <out_csv>")
+    if len(sys.argv) != 7:
+        print("Usage: python eval_segments.py <ls_dir> <gt_mat> <out_csv> <angle_thresh> <dist_thresh> <cov_thresh>")
         sys.exit(1)
 
     ls_dir = sys.argv[1]
     gt_mat = sys.argv[2]
     out_csv = sys.argv[3]
+    angle_thresh = float(sys.argv[4])
+    dist_thresh = float(sys.argv[5])
+    cov_thresh = float(sys.argv[6])
 
     gt_ls = read_gt_line_segments(gt_mat)
 
     for prefix in ["st_th_", "st_it_", "bm_th_", "bm_it_"]:
         my_ls = read_my_line_segments(f"{ls_dir}/{prefix}lines.txt")
 
-        TP, FP, FN, P, R, F1, LE = evaluate_segments_relaxed(my_ls, gt_ls)
+        TP, FP, FN, P, R, F1, LE = evaluate_segments(my_ls, gt_ls, angle_thresh, dist_thresh, cov_thresh)
 
         print(prefix)
         print("Detected:", len(my_ls))
