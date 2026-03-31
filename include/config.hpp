@@ -18,7 +18,7 @@ constexpr double INF = 1e6;
 constexpr double PI = 3.141593;
 
 // computation parameters
-constexpr int DIRECTIONS = 96; // even! <= 1024 // 32k for efficiency  // DIRECTIONS ~ PI
+constexpr int DIRECTIONS = 384; // even! <= 1024 // 32k for efficiency  // DIRECTIONS ~ PI
 
 // gray score function
 constexpr int G_WINDOW_RADIUS = 3; // Gaussian window size
