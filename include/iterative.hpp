@@ -40,10 +40,9 @@ void candidateExpand(
     uchar* B, size_t Bstep,
     std::vector<Cand> &chosenCand,
     Cand cand,
-    int invEdgeDir,
-    double prevScore,
     int width, int height,
-    bool beamScore = true
+    bool beamScore = true,
+    int invEdgeDir = -1, double prevScore = -1.0
 );
 
 __global__

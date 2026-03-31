@@ -81,9 +81,10 @@ std::vector<Cand> candidateIterativeSearch(
             gpuF,
             BLOCKED.ptr<uchar>(), BLOCKED.step,
             chosenCandidates,
-            startCand, -1, -1.0,
+            startCand, 
             width, height,
-            beamScore
+            beamScore,
+            -1, -1.0
         );
     }
     //
@@ -97,14 +98,13 @@ void candidateExpand(
     uchar* B, size_t Bstep,
     std::vector<Cand> &chosenCand,
     Cand cand,
-    int invEdgeDir,
-    double prevScore,
     int width, int height,
-    bool beamScore
+    bool beamScore,
+    int invEdgeDir, double prevScore
 ) {
     if (cand.score < LOWER_THRESHOLD || isBlocked(B, Bstep, cand.y, cand.x, width, height)) return;
     //
-    if (cand.score < 0) {
+    if (cand.score < prevScore - EXPANSION_UPGRADE_DELTA) {
         cand = upgradeCandidate(F, Fstep, gpuF, cand, width, height, beamScore);
         if (isBlocked(B, Bstep, cand.y, cand.x, width, height)) return;
     }
@@ -130,9 +130,9 @@ void candidateExpand(
         candidateExpand(
             F, Fstep, gpuF, B, Bstep, chosenCand,
             Cand(y1, x1, cand.dir, score1),
-            edge2, cand.score,
             width, height,
-            beamScore
+            beamScore,
+            edge2, cand.score
         );
     }
     //
@@ -148,9 +148,9 @@ void candidateExpand(
         candidateExpand(
             F, Fstep, gpuF, B, Bstep, chosenCand,
             Cand(y2, x2, cand.dir, score2),
-            edge1, cand.score, 
             width, height,
-            beamScore
+            beamScore,
+            edge1, cand.score
         );
     }
 }
