@@ -87,10 +87,13 @@ std::vector<int> findSegmentCandidates(
     const Cand& cand1,
     const Cand& cand2
 ) {
-    double y0 = min(cand1.y, cand2.y);
-    double x0 = min(cand1.x, cand2.x);
-    double y1 = max(cand1.y, cand2.y);
-    double x1 = max(cand1.x, cand2.x);
+    double candDist = Cand::dist(cand1, cand2);
+    double maxTriangleDist = LINE_TRIANGLE_FACTOR*candDist;
+    //
+    double y0 = min(cand1.y, cand2.y) - maxTriangleDist;
+    double x0 = min(cand1.x, cand2.x) - maxTriangleDist;
+    double y1 = max(cand1.y, cand2.y) + maxTriangleDist;
+    double x1 = max(cand1.x, cand2.x) + maxTriangleDist;
     // find y interval [l, r) with binary search
     auto lIter = std::lower_bound(
         std::begin(candidates), std::end(candidates),
@@ -107,8 +110,6 @@ std::vector<int> findSegmentCandidates(
     int r = rIter - std::begin(candidates);
     //
     std::vector<int> relevant;
-    double candDist = Cand::dist(cand1, cand2);
-    double maxTriangleDist = LINE_TRIANGLE_FACTOR*candDist;
     for (int k = l; k < r; k++) {
         double side1 = Cand::dist(cand1, candidates[k]);
         double side2 =  Cand::dist(cand2, candidates[k]); 
