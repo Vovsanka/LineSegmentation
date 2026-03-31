@@ -42,7 +42,7 @@ void candidateExpand(
     Cand cand,
     int width, int height,
     bool beamScore = true,
-    int invEdgeDir = -1, double prevScore = -1.0
+    int invEdgeDir = -1, double upgradeUnder = -1.0
 );
 
 __global__

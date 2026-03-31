@@ -100,13 +100,16 @@ void candidateExpand(
     Cand cand,
     int width, int height,
     bool beamScore,
-    int invEdgeDir, double prevScore
+    int invEdgeDir, double upgradeUnder
 ) {
     if (cand.score < LOWER_THRESHOLD || isBlocked(B, Bstep, cand.y, cand.x, width, height)) return;
     //
-    if (cand.score < prevScore - EXPANSION_UPGRADE_DELTA) {
+    if (cand.score < upgradeUnder) {
         cand = upgradeCandidate(F, Fstep, gpuF, cand, width, height, beamScore);
+        upgradeUnder = cand.score - EXPANSION_UPGRADE_DELTA;
         if (isBlocked(B, Bstep, cand.y, cand.x, width, height)) return;
+    } else {
+        upgradeUnder = max(upgradeUnder, cand.score - EXPANSION_UPGRADE_DELTA);
     }
     // 
     chosenCand.push_back(cand);
@@ -132,7 +135,7 @@ void candidateExpand(
             Cand(y1, x1, cand.dir, score1),
             width, height,
             beamScore,
-            edge2, cand.score
+            edge2, upgradeUnder
         );
     }
     //
@@ -150,7 +153,7 @@ void candidateExpand(
             Cand(y2, x2, cand.dir, score2),
             width, height,
             beamScore,
-            edge1, cand.score
+            edge1, upgradeUnder
         );
     }
 }
