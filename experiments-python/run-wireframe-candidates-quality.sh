@@ -24,7 +24,9 @@ for img_path in "${wireframe_src_dir}/test"/*.jpg; do
     fi
     #
     base=$(basename "$img_path" .jpg)
+    echo ""
     echo "Wireframe dataset: ${base} [${count} / ${total}]"
+    echo ""
     working_state_dir="${wireframe_out_dir}/working-state-${base}"
     mkdir -p "$working_state_dir"
     #

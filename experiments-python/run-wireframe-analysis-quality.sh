@@ -2,14 +2,12 @@ script_dir="$(cd "$(dirname "$0")" && pwd)"
 project_dir="${script_dir}/.."
 experiments_dir="${project_dir}/experiments-python"
 
-analysis_out_dir="${experiments_dir}/analysis-results"
-
 
 ### 1. Wireframe (analysis)
 wireframe_src_dir="${project_dir}/../wireframe-dataset"
-wireframe_out_dir="${experiments_dir}/wireframe-results-quality"
-analysis_wirefame_out_dir="${analysis_out_dir}/analysis-wireframe"
-mkdir -p "$analysis_out_dir"
+wireframe_results_out_dir="${experiments_dir}/wireframe-results-quality"
+wireframe_analysis_out_dir="${experiments_dir}/wireframe-analysis-quality"
+mkdir -p "$wireframe_analysis_out_dir"
 #
 total=$(ls "${wireframe_src_dir}/test"/*.jpg 2>/dev/null | wc -l)
 start_sample=0
@@ -27,10 +25,12 @@ for img_path in "${wireframe_src_dir}/test"/*.jpg; do
     fi
     #
     base=$(basename "$img_path" .jpg)
+    echo ""
     echo "Wireframe dataset: ${base} [${count} / ${total}]"
+    echo ""
     python3 "${experiments_dir}/analyze.py" \
-        "${wireframe_out_dir}/working-state-${base}" \
+        "${wireframe_results_out_dir}/working-state-${base}" \
         "${wireframe_src_dir}/line_mat/${base}_line.mat" \
-        "${analysis_wireframe_out_dir}" \
+        "$wireframe_analysis_out_dir" \
         "20" "5" "0.5"
 done

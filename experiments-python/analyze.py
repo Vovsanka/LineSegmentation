@@ -1,5 +1,7 @@
+import os
 import sys
 import math
+import csv
 
 import numpy as np
 from scipy.io import loadmat
@@ -164,22 +166,53 @@ def main():
 
     gt_ls = read_gt_line_segments(gt_mat)
 
-    for prefix in ["st_th_", "st_it_", "bm_th_", "bm_it_"]:
+    prefixes: list[str] = ["st_th_", "st_it_", "bm_th_", "bm_it_"]
+
+    # Ensure CSVs exist and have headers
+    for prefix in prefixes:
+        csv_path = os.path.join(out_dir, f"{prefix}evaluation.csv")
+
+        # Create file with header if it doesn't exist
+        if not os.path.exists(csv_path):
+            with open(csv_path, "w", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerow([
+                    "GT_count",
+                    "Detected_count",
+                    "TP",
+                    "FP",
+                    "FN",
+                    "Precision",
+                    "Recall",
+                    "F1",
+                    "LocalizationError"
+                ])
+
+    # Append one row per prefix for THIS image
+    for prefix in prefixes:
         my_ls = read_my_line_segments(f"{ls_dir}/{prefix}lines.txt")
 
-        TP, FP, FN, P, R, F1, LE = evaluate_segments(my_ls, gt_ls, angle_thresh, dist_thresh, cov_thresh)
+        TP, FP, FN, P, R, F1, LE = evaluate_segments(
+            my_ls, gt_ls, angle_thresh, dist_thresh, cov_thresh
+        )
 
-        print(prefix)
-        print("Ground truth:", len(gt_ls))
-        print("Detected:", len(my_ls))
-        print("TP:", TP)
-        print("FP:", FP)
-        print("FN:", FN)
-        print("Precision:", P)
-        print("Recall:", R)
-        print("F1:", F1)
-        print("Localization Error:", LE)
-        print()
+        csv_path = os.path.join(out_dir, f"{prefix}evaluation.csv")
+
+        with open(csv_path, "a", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                len(gt_ls),
+                len(my_ls),
+                TP,
+                FP,
+                FN,
+                float(P),
+                float(R),
+                float(F1),
+                float(LE)
+            ])
+
+    
 
 
 if __name__ == "__main__":
