@@ -4,17 +4,17 @@ experiments_dir="${project_dir}/experiments-python"
 executable="${project_dir}/build/LineSegmentation"
 
 
-#### 1. Wireframe (candidates)
-wireframe_src_dir="${project_dir}/../wireframe-dataset"
-wireframe_out_dir="${experiments_dir}/wireframe-results-quality"
-mkdir -p "$wireframe_out_dir"
+#### 1. YUD (candidates)
+yud_src_dir="${project_dir}/../yud-dataset"
+yud_out_dir="${experiments_dir}/yud-results-quality"
+mkdir -p "$yud_out_dir"
 #
-total=$(ls "${wireframe_src_dir}/test"/*.jpg 2>/dev/null | wc -l)
+total=$(find "$yud_src_dir/test" -mindepth 1 -maxdepth 1 -type d | wc -l)
 start_sample=0
 sample_count=20
 #
 count=$start_sample
-for img_path in "${wireframe_src_dir}/test"/*.jpg; do
+for img_folder in "${yud_src_dir}/*/"; do
     count=$((count + 1))
     if [ "$count" -lt "$start_sample" ]; then
         continue
@@ -23,9 +23,10 @@ for img_path in "${wireframe_src_dir}/test"/*.jpg; do
         break
     fi
     #
-    base=$(basename "$img_path" .jpg)
-    echo "Wireframe dataset: ${base} [${count} / ${total}]"
-    working_state_dir="${wireframe_out_dir}/working-state-${base}"
+    base=$(basename "$img_folder")
+    img_path="${img_folder}/${base}.jpg"
+    echo "YUD dataset: ${base} [${count} / ${total}]"
+    working_state_dir="${yud_out_dir}/working-state-${base}"
     mkdir -p "$working_state_dir"
     #
     "$executable" "$img_path" "$working_state_dir" "--st" "--on-lp" "--on-tc" "--on-ic" 
