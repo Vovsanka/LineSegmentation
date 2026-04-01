@@ -1,6 +1,7 @@
 import sys
 import math
 
+import numpy as np
 from scipy.io import loadmat
 
 from line_segment import LineSegment
@@ -35,8 +36,8 @@ def read_gt_line_segments(gt_mat: str) -> list[LineSegment]:
 
 # angle between the line segments
 def angle_diff(ls1: LineSegment, ls2: LineSegment):
-    v1 = segment_direction(ls1)
-    v2 = segment_direction(ls2)
+    v1 = ls1.direction()
+    v2 = ls2.direction()
     cosang = np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2) + 1e-9)
     cosang = np.clip(cosang, -1, 1)
     return abs(math.degrees(math.acos(cosang)))
@@ -156,7 +157,7 @@ def main():
 
     ls_dir = sys.argv[1]
     gt_mat = sys.argv[2]
-    out_csv = sys.argv[3]
+    out_dir = sys.argv[3]
     angle_thresh = float(sys.argv[4])
     dist_thresh = float(sys.argv[5])
     cov_thresh = float(sys.argv[6])
