@@ -1,25 +1,12 @@
 import sys
 import math
-import numpy as np
+
 from scipy.io import loadmat
 
-
-# ---------------------------------------------------------
-# Data structure
-# ---------------------------------------------------------
-
-class LineSegment:
-    def __init__(self, x1: float, y1: float, x2: float, y2: float):
-        self.x1 = x1
-        self.y1 = y1
-        self.x2 = x2
-        self.y2 = y2
+from line_segment import LineSegment
 
 
-# ---------------------------------------------------------
-# Reading functions
-# ---------------------------------------------------------
-
+# read detected line segments
 def read_my_line_segments(ls_txt: str) -> list[LineSegment]:
     my_ls: list[LineSegment] = []
     with open(ls_txt, "r") as f:
@@ -29,7 +16,7 @@ def read_my_line_segments(ls_txt: str) -> list[LineSegment]:
             my_ls.append(LineSegment(x1, y1, x2, y2))
     return my_ls
 
-
+# read ground truth line segments
 def read_gt_line_segments(gt_mat: str) -> list[LineSegment]:
     data = loadmat(gt_mat)
     if "lines" in data:
@@ -46,15 +33,7 @@ def read_gt_line_segments(gt_mat: str) -> list[LineSegment]:
         gt_ls.append(LineSegment(float(x1), float(y1), float(x2), float(y2)))
     return gt_ls
 
-
-# ---------------------------------------------------------
-# Geometry utilities
-# ---------------------------------------------------------
-
-def segment_direction(ls: LineSegment):
-    return np.array([ls.x2 - ls.x1, ls.y2 - ls.y1])
-
-
+# angle between the line segments
 def angle_diff(ls1: LineSegment, ls2: LineSegment):
     v1 = segment_direction(ls1)
     v2 = segment_direction(ls2)
@@ -63,41 +42,15 @@ def angle_diff(ls1: LineSegment, ls2: LineSegment):
     return abs(math.degrees(math.acos(cosang)))
 
 
-def point_to_line_dist(px, py, x1, y1, x2, y2):
-    A = px - x1
-    B = py - y1
-    C = x2 - x1
-    D = y2 - y1
-    dot = A * C + B * D
-    len_sq = C * C + D * D
-
-    if len_sq < 1e-9:
-        return math.hypot(px - x1, py - y1)
-
-    param = dot / len_sq
-    if param < 0:
-        xx, yy = x1, y1
-    elif param > 1:
-        xx, yy = x2, y2
-    else:
-        xx = x1 + param * C
-        yy = y1 + param * D
-
-    return math.hypot(px - xx, py - yy)
-
-
+# line segment distance (localization error)
 def segment_distance(ls1: LineSegment, ls2: LineSegment):
-    d1 = point_to_line_dist(ls1.x1, ls1.y1, ls2.x1, ls2.y1, ls2.x2, ls2.y2)
-    d2 = point_to_line_dist(ls1.x2, ls1.y2, ls2.x1, ls2.y1, ls2.x2, ls2.y2)
-    d3 = point_to_line_dist(ls2.x1, ls2.y1, ls1.x1, ls1.y1, ls1.x2, ls1.y2)
-    d4 = point_to_line_dist(ls2.x2, ls2.y2, ls1.x1, ls1.y1, ls1.x2, ls1.y2)
+    d1 = ls2.point_to_line_dist(ls1.x1, ls1.y1)
+    d2 = ls2.point_to_line_dist(ls1.x2, ls1.y2)
+    d3 = ls1.point_to_line_dist(ls2.x1, ls2.y1)
+    d4 = ls1.point_to_line_dist(ls2.x2, ls2.y2)
     return (d1 + d2 + d3 + d4) / 4
 
-
-# ---------------------------------------------------------
-# Projection + coverage
-# ---------------------------------------------------------
-
+# project the detected line segment onto the ground truth line segment
 def project_onto_gt(det: LineSegment, gt: LineSegment):
     gx, gy = gt.x1, gt.y1
     gdx, gdy = gt.x2 - gt.x1, gt.y2 - gt.y1
@@ -111,7 +64,7 @@ def project_onto_gt(det: LineSegment, gt: LineSegment):
     t2 = proj(det.x2, det.y2)
     return min(t1, t2), max(t1, t2)
 
-
+# compute the coverage of the ground truth line segment by projections of the detected line segments
 def compute_coverage(gt: LineSegment, dets: list[LineSegment]):
     intervals = []
     for d in dets:
@@ -137,10 +90,7 @@ def compute_coverage(gt: LineSegment, dets: list[LineSegment]):
     return sum(e - s for s, e in merged)
 
 
-# ---------------------------------------------------------
-# FINAL: Relaxed Wireframe/YUD evaluation (Block C Setup 3)
-# ---------------------------------------------------------
-
+# evaluation of the line segment detection
 def evaluate_segments(det_ls, gt_ls,
                               angle_thresh,     
                               dist_thresh,       
@@ -199,10 +149,6 @@ def evaluate_segments(det_ls, gt_ls,
     return TP, FP, FN, precision, recall, f1, loc_error
 
 
-# ---------------------------------------------------------
-# Main
-# ---------------------------------------------------------
-
 def main():
     if len(sys.argv) != 7:
         print("Usage: python eval_segments.py <ls_dir> <gt_mat> <out_csv> <angle_thresh> <dist_thresh> <cov_thresh>")
@@ -223,8 +169,8 @@ def main():
         TP, FP, FN, P, R, F1, LE = evaluate_segments(my_ls, gt_ls, angle_thresh, dist_thresh, cov_thresh)
 
         print(prefix)
-        print("Detected:", len(my_ls))
         print("Ground truth:", len(gt_ls))
+        print("Detected:", len(my_ls))
         print("TP:", TP)
         print("FP:", FP)
         print("FN:", FN)
