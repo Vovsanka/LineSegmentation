@@ -12,7 +12,7 @@ mkdir -p "$yud_out_dir"
 total=$(find "$yud_src_dir" -mindepth 1 -maxdepth 1 -type d | wc -l)
 total=$((total - 1))
 start_sample=0
-sample_count=10
+sample_count=1
 #
 count=$start_sample
 for img_folder in "${yud_src_dir}"/*/; do

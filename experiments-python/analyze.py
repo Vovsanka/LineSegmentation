@@ -212,7 +212,7 @@ def main():
     else:
         gt_ls = read_yud_plus_line_segments(gt_file)
 
-    prefixes: list[str] = ["st_th_", "st_it_"] #, "bm_th_", "bm_it_"]
+    prefixes: list[str] = ["st_th_", "st_it_", "bm_th_", "bm_it_"]
     strictness: dict[str,tuple[float,float,float]] = {
         "strict": (5.0, 1.0, 0.75),
         "moderate": (10.0, 3.0, 0.75),
