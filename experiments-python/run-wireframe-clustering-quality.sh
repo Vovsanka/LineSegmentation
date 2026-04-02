@@ -16,7 +16,7 @@ count=$start_sample
 for img_path in "${wireframe_src_dir}/test"/*.jpg; do
     count=$((count + 1))
     if [ "$count" -lt "$start_sample" ]; then
-        break
+        continue
     fi
     if [ "$count" -gt "$sample_count" ]; then
         break

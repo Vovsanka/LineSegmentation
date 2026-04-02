@@ -31,6 +31,5 @@ for img_path in "${wireframe_src_dir}/test"/*.jpg; do
     python3 "${experiments_dir}/analyze.py" \
         "${wireframe_results_out_dir}/working-state-${base}" \
         "${wireframe_src_dir}/line_mat/${base}_line.mat" \
-        "$wireframe_analysis_out_dir" \
-        "20" "5" "0.5"
+        "$wireframe_analysis_out_dir"
 done

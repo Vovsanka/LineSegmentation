@@ -8,6 +8,11 @@ from scipy.io import loadmat
 
 from line_segment import LineSegment
 
+# read candidates amount 
+def read_candidate_amount(candidates_txt: str) -> int:
+    with open(candidates_txt, "r") as f:
+        n = int(f.readline().strip())
+    return n
 
 # read detected line segments
 def read_my_line_segments(ls_txt: str) -> list[LineSegment]:
@@ -154,29 +159,32 @@ def evaluate_segments(det_ls, gt_ls,
 
 def main():
     if len(sys.argv) != 7:
-        print("Usage: python eval_segments.py <ls_dir> <gt_mat> <out_csv> <angle_thresh> <dist_thresh> <cov_thresh>")
+        print("Usage: python eval_segments.py <working_state_dir> <gt_mat> <out_csv> <angle_thresh> <dist_thresh> <cov_thresh>")
         sys.exit(1)
 
-    ls_dir = sys.argv[1]
+    working_state_dir = sys.argv[1]
     gt_mat = sys.argv[2]
     out_dir = sys.argv[3]
-    angle_thresh = float(sys.argv[4])
-    dist_thresh = float(sys.argv[5])
-    cov_thresh = float(sys.argv[6])
 
     gt_ls = read_gt_line_segments(gt_mat)
 
     prefixes: list[str] = ["st_th_", "st_it_", "bm_th_", "bm_it_"]
-
-    # Ensure CSVs exist and have headers
+    strictness: dict[str,tuple[float,float,float]] = {
+        "strict": (5.0, 1.0, 0.75),
+        "moderate": (10.0, 3.0, 0.75),
+        "loose": (20.0, 5.0, 0.5)
+    }
     for prefix in prefixes:
-        csv_path = os.path.join(out_dir, f"{prefix}evaluation.csv")
+        for eval_key in strictness.keys():
+
+        csv_path = os.path.join(out_dir, f"{prefix}{eval_key}_evaluation.csv")
 
         # Create file with header if it doesn't exist
         if not os.path.exists(csv_path):
             with open(csv_path, "w", newline="") as f:
                 writer = csv.writer(f)
                 writer.writerow([
+                    "Candidates",
                     "GT_count",
                     "Detected_count",
                     "TP",
@@ -188,29 +196,40 @@ def main():
                     "LocalizationError"
                 ])
 
-    # Append one row per prefix for THIS image
     for prefix in prefixes:
-        my_ls = read_my_line_segments(f"{ls_dir}/{prefix}lines.txt")
 
-        TP, FP, FN, P, R, F1, LE = evaluate_segments(
-            my_ls, gt_ls, angle_thresh, dist_thresh, cov_thresh
-        )
+        candidates = read_candidate_amount(f"{working_state_dir}/{prefix}candidates.txt")
 
-        csv_path = os.path.join(out_dir, f"{prefix}evaluation.csv")
+        for eval_key, eval_config in strictness.items():
 
-        with open(csv_path, "a", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerow([
-                len(gt_ls),
-                len(my_ls),
-                TP,
-                FP,
-                FN,
-                float(P),
-                float(R),
-                float(F1),
-                float(LE)
-            ])
+            csv_path = os.path.join(out_dir, f"{prefix}{eval_key}_evaluation.csv")
+
+            my_ls = read_my_line_segments(f"{working_state_dir}/{prefix}lines.txt")
+
+            angle_thresh = eval_config[0],
+            dist_thresh = eval_config[1],
+            cov_thresh = eval_config[2]
+
+            TP, FP, FN, P, R, F1, LE = evaluate_segments(
+                my_ls, gt_ls, angle_thresh, dist_thresh, cov_thresh
+            )
+
+            csv_path = os.path.join(out_dir, f"{prefix}evaluation.csv")
+
+            with open(csv_path, "a", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerow([
+                    candidates,
+                    len(gt_ls),
+                    len(my_ls),
+                    TP,
+                    FP,
+                    FN,
+                    float(P),
+                    float(R),
+                    float(F1),
+                    float(LE)
+                ])
 
     
 
