@@ -7,6 +7,7 @@ experiments_dir="${project_dir}/experiments-python"
 wireframe_src_dir="${project_dir}/../wireframe-dataset"
 wireframe_results_out_dir="${experiments_dir}/wireframe-results-quality"
 wireframe_analysis_out_dir="${experiments_dir}/wireframe-analysis-quality"
+rm -rf "$wireframe_analysis_out_dir"
 mkdir -p "$wireframe_analysis_out_dir"
 #
 total=$(ls "${wireframe_src_dir}/test"/*.jpg 2>/dev/null | wc -l)
@@ -31,5 +32,6 @@ for img_path in "${wireframe_src_dir}/test"/*.jpg; do
     python3 "${experiments_dir}/analyze.py" \
         "${wireframe_results_out_dir}/working-state-${base}" \
         "${wireframe_src_dir}/line_mat/${base}_line.mat" \
-        "$wireframe_analysis_out_dir"
+        "$wireframe_analysis_out_dir" \
+        "--wireframe"
 done

@@ -14,7 +14,7 @@ def read_candidate_amount(candidates_txt: str) -> int:
         n = int(f.readline().strip())
     return n
 
-# read detected line segments
+# read detected line segments 
 def read_my_line_segments(ls_txt: str) -> list[LineSegment]:
     my_ls: list[LineSegment] = []
     with open(ls_txt, "r") as f:
@@ -24,8 +24,39 @@ def read_my_line_segments(ls_txt: str) -> list[LineSegment]:
             my_ls.append(LineSegment(x1, y1, x2, y2))
     return my_ls
 
-# read ground truth line segments
-def read_gt_line_segments(gt_mat: str) -> list[LineSegment]:
+# read detected line segments (YUD+)
+def read_yud_plus_line_segments(gt_txt: str) -> list[LineSegment]:
+    segments: list[LineSegment] = []
+
+    with open(gt_txt, "r") as f:
+        for line in f:
+            parts = line.strip().split()
+            if len(parts) < 13:
+                continue  # skip malformed lines
+            
+            # Extract endpoints (homogeneous coords)
+            x1 = float(parts[6])
+            y1 = float(parts[7])
+            z1 = float(parts[8])
+            x2 = float(parts[9])
+            y2 = float(parts[10])
+            z2 = float(parts[11])
+            
+            # Convert from homogeneous if needed
+            if z1 != 0:
+                x1 /= z1
+                y1 /= z1
+            if z2 != 0:
+                x2 /= z2
+                y2 /= z2
+            
+            segments.append(LineSegment(x1, y1, x2, y2))
+    
+    return segments
+
+
+# read ground truth line segments (wireframe)
+def read_wireframe_line_segments(gt_mat: str) -> list[LineSegment]:
     data = loadmat(gt_mat)
     if "lines" in data:
         arr = data["lines"]
@@ -158,15 +189,25 @@ def evaluate_segments(det_ls, gt_ls,
 
 
 def main():
-    if len(sys.argv) != 7:
-        print("Usage: python eval_segments.py <working_state_dir> <gt_mat> <out_csv> <angle_thresh> <dist_thresh> <cov_thresh>")
+    if len(sys.argv) != 5:
+        print("Usage: python eval_segments.py <working_state_dir> <gt_mat> <out_csv> <angle_thresh> <dist_thresh> <cov_thresh> <dataset_flag>")
         sys.exit(1)
 
     working_state_dir = sys.argv[1]
-    gt_mat = sys.argv[2]
+    gt_file = sys.argv[2]
     out_dir = sys.argv[3]
+    
+    if sys.argv[4] == "--wireframe":
+        dataset_flag = "Wireframe"
+    elif sys.argv[4] == "--yud":
+        dataset_flag = "YUD+"
+    else:
+        raise NameError("A wrong dataset flag!")
 
-    gt_ls = read_gt_line_segments(gt_mat)
+    if dataset_flag == "Wireframe":
+        gt_ls = read_wireframe_line_segments(gt_file)
+    else:
+        gt_ls = read_yud_plus_line_segments(gt_file)
 
     prefixes: list[str] = ["st_th_", "st_it_", "bm_th_", "bm_it_"]
     strictness: dict[str,tuple[float,float,float]] = {
@@ -177,24 +218,24 @@ def main():
     for prefix in prefixes:
         for eval_key in strictness.keys():
 
-        csv_path = os.path.join(out_dir, f"{prefix}{eval_key}_evaluation.csv")
+            csv_path = os.path.join(out_dir, f"{prefix}{eval_key}_evaluation.csv")
 
-        # Create file with header if it doesn't exist
-        if not os.path.exists(csv_path):
-            with open(csv_path, "w", newline="") as f:
-                writer = csv.writer(f)
-                writer.writerow([
-                    "Candidates",
-                    "GT_count",
-                    "Detected_count",
-                    "TP",
-                    "FP",
-                    "FN",
-                    "Precision",
-                    "Recall",
-                    "F1",
-                    "LocalizationError"
-                ])
+            # Create file with header if it doesn't exist
+            if not os.path.exists(csv_path):
+                with open(csv_path, "w", newline="") as f:
+                    writer = csv.writer(f)
+                    writer.writerow([
+                        "Candidates",
+                        "GT_count",
+                        "Detected_count",
+                        "TP",
+                        "FP",
+                        "FN",
+                        "Precision",
+                        "Recall",
+                        "F1",
+                        "LocalizationError"
+                    ])
 
     for prefix in prefixes:
 
@@ -206,15 +247,13 @@ def main():
 
             my_ls = read_my_line_segments(f"{working_state_dir}/{prefix}lines.txt")
 
-            angle_thresh = eval_config[0],
-            dist_thresh = eval_config[1],
+            angle_thresh = eval_config[0]
+            dist_thresh = eval_config[1]
             cov_thresh = eval_config[2]
 
             TP, FP, FN, P, R, F1, LE = evaluate_segments(
                 my_ls, gt_ls, angle_thresh, dist_thresh, cov_thresh
             )
-
-            csv_path = os.path.join(out_dir, f"{prefix}evaluation.csv")
 
             with open(csv_path, "a", newline="") as f:
                 writer = csv.writer(f)

@@ -9,11 +9,16 @@ yud_src_dir="${project_dir}/../yud-dataset"
 yud_out_dir="${experiments_dir}/yud-results-quality"
 #
 total=$(find "$yud_src_dir" -mindepth 1 -maxdepth 1 -type d | wc -l)
+total=$((total - 1))
 start_sample=0
 sample_count=10
 #
 count=$start_sample
 for img_folder in "${yud_src_dir}"/*/; do
+    base=$(basename "$img_folder")
+    if [ "$base" = "lines" ]; then
+        continue
+    fi
     count=$((count + 1))
     if [ "$count" -lt "$start_sample" ]; then
         continue
@@ -21,7 +26,6 @@ for img_folder in "${yud_src_dir}"/*/; do
     if [ "$count" -gt "$sample_count" ]; then
         break
     fi
-    base=$(basename "$img_folder")
     img_path="${img_folder}${base}.jpg"
     echo ""
     echo "YUD dataset: ${base} [${count} / ${total}]"

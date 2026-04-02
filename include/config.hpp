@@ -42,7 +42,7 @@ constexpr double EXPANSION_STEP = 1.5;
 constexpr double EXPANSION_UPGRADE_DELTA = 0.05; // 0 for maximal power of the iterative search
 
 // candidate graph for clustering
-constexpr double CONNECTION_RADIUS = 15.0;
+constexpr double CONNECTION_RADIUS = 12.0;
 constexpr double LINE_THICKNESS = 8.0; 
 constexpr double SIMILAR_DIR_ANGLE = 0.1*(PI/2.0);
 constexpr double LINE_TRIANGLE_FACTOR = 1.05;

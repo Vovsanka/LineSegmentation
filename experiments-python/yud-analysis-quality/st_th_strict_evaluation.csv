@@ -1,0 +1,2 @@
+Candidates,GT_count,Detected_count,TP,FP,FN,Precision,Recall,F1,LocalizationError
+92593,0,465,0,465,0,0.0,0.0,0.0,0.0
