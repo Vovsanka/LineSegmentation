@@ -29,12 +29,15 @@ def read_yud_plus_line_segments(gt_txt: str) -> list[LineSegment]:
     segments: list[LineSegment] = []
 
     with open(gt_txt, "r") as f:
+        header = True
         for line in f:
-            parts = line.strip().split()
-            if len(parts) < 13:
-                continue  # skip malformed lines
+            if header:
+                header = False
+                continue
             
-            # Extract endpoints (homogeneous coords)
+            parts = line.strip().split()
+
+            # extract endpoints (homogeneous coordinates)
             x1 = float(parts[6])
             y1 = float(parts[7])
             z1 = float(parts[8])
@@ -42,7 +45,7 @@ def read_yud_plus_line_segments(gt_txt: str) -> list[LineSegment]:
             y2 = float(parts[10])
             z2 = float(parts[11])
             
-            # Convert from homogeneous if needed
+            # convert from homogeneous if needed
             if z1 != 0:
                 x1 /= z1
                 y1 /= z1
@@ -209,7 +212,7 @@ def main():
     else:
         gt_ls = read_yud_plus_line_segments(gt_file)
 
-    prefixes: list[str] = ["st_th_", "st_it_", "bm_th_", "bm_it_"]
+    prefixes: list[str] = ["st_th_", "st_it_"] #, "bm_th_", "bm_it_"]
     strictness: dict[str,tuple[float,float,float]] = {
         "strict": (5.0, 1.0, 0.75),
         "moderate": (10.0, 3.0, 0.75),
