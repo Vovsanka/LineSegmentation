@@ -193,7 +193,7 @@ def evaluate_segments(det_ls, gt_ls,
 
 def main():
     if len(sys.argv) != 5:
-        print("Usage: python eval_segments.py <working_state_dir> <gt_mat> <out_csv> <angle_thresh> <dist_thresh> <cov_thresh> <dataset_flag>")
+        print("Usage: python analyze.py <working_state_dir> <gt_mat> <out_csv> <angle_thresh> <dist_thresh> <cov_thresh> <dataset_flag>")
         sys.exit(1)
 
     working_state_dir = sys.argv[1]
@@ -212,7 +212,7 @@ def main():
     else:
         gt_ls = read_yud_plus_line_segments(gt_file)
 
-    prefixes: list[str] = ["st_th_", "st_it_", "bm_th_", "bm_it_"]
+    prefixes: list[str] = ["bm_it_", "st_it_", "st_th_", "bm_th_"]
     strictness: dict[str,tuple[float,float,float]] = {
         "strict": (5.0, 1.0, 0.75),
         "moderate": (10.0, 3.0, 0.75),
