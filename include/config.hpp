@@ -39,7 +39,7 @@ constexpr double LOWER_THRESHOLD = 0.2;
 constexpr int UP_COUNT = 10;
 constexpr double UP_STEP = 0.1;
 constexpr double EXPANSION_STEP = 1.5;
-constexpr double EXPANSION_UPGRADE_DELTA = 0.05; // 0 for maximal power of the iterative search
+constexpr double EXPANSION_UPGRADE_DELTA = 0.1; // 0 for maximal power of the iterative search
 
 // candidate graph for clustering
 constexpr double CONNECTION_RADIUS = 12.0;
