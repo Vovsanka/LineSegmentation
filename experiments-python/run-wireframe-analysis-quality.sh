@@ -35,3 +35,9 @@ for img_path in "${wireframe_src_dir}/test"/*.jpg; do
         "$wireframe_analysis_out_dir" \
         "--wireframe"
 done
+
+# run aggregation
+python3 "${experiments_dir}/aggregate.py" \
+        "$wireframe_analysis_out_dir" \
+        "wireframe-good"
+

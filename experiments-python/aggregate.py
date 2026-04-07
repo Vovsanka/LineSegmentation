@@ -4,7 +4,7 @@ import pandas as pd
 
 def main():
     if len(sys.argv) != 3:
-        print("Usage: python aggregate.py <out_dir>")
+        print("Usage: python aggregate.py <out_dir> <csv_prefix>")
         sys.exit(1)
 
     out_dir = sys.argv[1]
