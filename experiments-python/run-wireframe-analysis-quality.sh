@@ -12,7 +12,7 @@ mkdir -p "$wireframe_analysis_out_dir"
 #
 total=$(ls "${wireframe_src_dir}/test"/*.jpg 2>/dev/null | wc -l)
 start_sample=0
-sample_count=20
+sample_count=15
 #
 count=$start_sample
 count=0

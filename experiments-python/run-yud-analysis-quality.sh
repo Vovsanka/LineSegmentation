@@ -13,7 +13,7 @@ mkdir -p "$yud_analysis_out_dir"
 total=$(find "$yud_src_dir" -mindepth 1 -maxdepth 1 -type d | wc -l)
 total=$((total - 1))
 start_sample=0
-sample_count=1
+sample_count=15
 #
 count=$start_sample
 for img_folder in "${yud_src_dir}"/*/; do
@@ -38,3 +38,8 @@ for img_folder in "${yud_src_dir}"/*/; do
         "$yud_analysis_out_dir" \
         "--yud"
 done
+
+# run aggregation
+python3 "${experiments_dir}/aggregate.py" \
+        "$yud_analysis_out_dir" \
+        "yud-good"

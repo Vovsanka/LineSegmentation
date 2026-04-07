@@ -11,7 +11,7 @@ mkdir -p "$wireframe_out_dir"
 #
 total=$(ls "${wireframe_src_dir}/test"/*.jpg 2>/dev/null | wc -l)
 start_sample=0
-sample_count=20
+sample_count=15
 #
 count=$start_sample
 for img_path in "${wireframe_src_dir}/test"/*.jpg; do
