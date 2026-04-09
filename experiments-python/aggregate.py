@@ -3,19 +3,25 @@ import pandas as pd
 
 
 def main():
-    if len(sys.argv) != 3:
-        print("Usage: python aggregate.py <out_dir> <csv_prefix>")
+    if len(sys.argv) < 3:
+        print("Usage: python aggregate.py <out_dir> <csv_prefix> <clustering_flag>")
         sys.exit(1)
 
     out_dir = sys.argv[1]
     csv_prefix = sys.argv[2]
+    clustering_flag = None
+    if len(sys.argv) >= 3:
+        clustering_flag = sys.argv[3]
+    clustering_prefix = ""
+    if clustering_flag is not None:
+        clustering_prefix = f"_{clustering_flag}"
 
-    prefixes = ["bm_it_", "st_it_", "bm_th_", "st_th_"]
+    prefixes = ["bm_it", "st_it", "bm_th", "st_th"]
     prefix_names = {
-        "bm_it_": "BM-IT",
-        "st_it_": "ST-IT",
-        "bm_th_": "BM-TH",
-        "st_th_": "ST-TH"
+        "bm_it": "BM-IT",
+        "st_it": "ST-IT",
+        "bm_th": "BM-TH",
+        "st_th": "ST-TH"
     }
 
     strictness_levels = ["strict", "moderate", "loose"]
@@ -37,7 +43,7 @@ def main():
 
     for eval_key in strictness_levels:
         for prefix in prefixes:
-            df = pd.read_csv(f"{out_dir}/{prefix}{eval_key}_evaluation.csv")
+            df = pd.read_csv(f"{out_dir}/{prefix}_{eval_key}{clustering_prefix}_evaluation.csv")
             mean_vals = df.mean(numeric_only=True)
 
             method = prefix_names[prefix]
@@ -70,7 +76,7 @@ def main():
 
     for eval_key in strictness_levels:
         for prefix in prefixes:
-            df = pd.read_csv(f"{out_dir}/{prefix}{eval_key}_evaluation.csv")
+            df = pd.read_csv(f"{out_dir}/{prefix}_{eval_key}{clustering_prefix}_evaluation.csv")
 
             mean_vals = df[mean_cols].mean()
 

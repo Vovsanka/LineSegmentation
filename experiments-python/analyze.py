@@ -192,27 +192,31 @@ def evaluate_segments(det_ls, gt_ls,
 
 
 def main():
-    if len(sys.argv) != 5:
-        print("Usage: python analyze.py <working_state_dir> <gt_mat> <out_csv> <angle_thresh> <dist_thresh> <cov_thresh> <dataset_flag>")
+    if len(sys.argv) < 5:
+        print("Usage: python analyze.py <working_state_dir> <gt_file> <out_dir> <dataset_flag> <clustering_flag>")
         sys.exit(1)
 
     working_state_dir = sys.argv[1]
     gt_file = sys.argv[2]
-    out_dir = sys.argv[3]
-    
+    out_dir = sys.argv[3]   
     if sys.argv[4] == "--wireframe":
         dataset_flag = "Wireframe"
     elif sys.argv[4] == "--yud":
         dataset_flag = "YUD+"
     else:
         raise NameError("A wrong dataset flag!")
-
     if dataset_flag == "Wireframe":
         gt_ls = read_wireframe_line_segments(gt_file)
     else:
         gt_ls = read_yud_plus_line_segments(gt_file)
+    clustering_flag = None
+    if len(sys.argv) >= 6:
+        clustering_flag = sys.argv[5]
+    clustering_prefix = ""
+    if clustering_flag is not None:
+        clustering_prefix = f"_{clustering_flag}" 
 
-    prefixes: list[str] = ["bm_it_", "st_it_", "st_th_", "bm_th_"]
+    prefixes: list[str] = ["bm_it", "st_it", "st_th", "bm_th"]
     strictness: dict[str,tuple[float,float,float]] = {
         "strict": (5.0, 1.0, 0.75),
         "moderate": (10.0, 3.0, 0.75),
@@ -221,7 +225,7 @@ def main():
     for prefix in prefixes:
         for eval_key in strictness.keys():
 
-            csv_path = os.path.join(out_dir, f"{prefix}{eval_key}_evaluation.csv")
+            csv_path = os.path.join(out_dir, f"{prefix}_{eval_key}{clustering_prefix}_evaluation.csv")
 
             # Create file with header if it doesn't exist
             if not os.path.exists(csv_path):
@@ -242,13 +246,13 @@ def main():
 
     for prefix in prefixes:
 
-        candidates = read_candidate_amount(f"{working_state_dir}/{prefix}candidates.txt")
+        candidates = read_candidate_amount(f"{working_state_dir}/{prefix}_candidates.txt")
 
         for eval_key, eval_config in strictness.items():
 
-            csv_path = os.path.join(out_dir, f"{prefix}{eval_key}_evaluation.csv")
+            csv_path = os.path.join(out_dir, f"{prefix}_{eval_key}{clustering_prefix}_evaluation.csv")
 
-            my_ls = read_my_line_segments(f"{working_state_dir}/{prefix}lines.txt")
+            my_ls = read_my_line_segments(f"{working_state_dir}/{prefix}{clustering_prefix}_lines.txt")
 
             angle_thresh = eval_config[0]
             dist_thresh = eval_config[1]
