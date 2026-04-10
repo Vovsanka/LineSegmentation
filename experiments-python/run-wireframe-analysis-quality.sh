@@ -11,10 +11,9 @@ rm -rf "$wireframe_analysis_out_dir"
 mkdir -p "$wireframe_analysis_out_dir"
 #
 total=$(ls "${wireframe_src_dir}/test"/*.jpg 2>/dev/null | wc -l)
-start_sample=0
+start_sample=1
 sample_count=15
 #
-count=$start_sample
 count=0
 for img_path in "${wireframe_src_dir}/test"/*.jpg; do
     count=$((count + 1))

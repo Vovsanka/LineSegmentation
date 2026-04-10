@@ -9,10 +9,10 @@ wireframe_src_dir="${project_dir}/../wireframe-dataset"
 wireframe_out_dir="${experiments_dir}/wireframe-results-quality"
 #
 total=$(ls "${wireframe_src_dir}/test"/*.jpg 2>/dev/null | wc -l)
-start_sample=0
+start_sample=1
 sample_count=15
 #
-count=$start_sample
+count=0
 for img_path in "${wireframe_src_dir}/test"/*.jpg; do
     count=$((count + 1))
     if [ "$count" -lt "$start_sample" ]; then

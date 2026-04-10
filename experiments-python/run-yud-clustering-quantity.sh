@@ -10,10 +10,10 @@ yud_out_dir="${experiments_dir}/yud-results-quantity"
 #
 total=$(find "$yud_src_dir" -mindepth 1 -maxdepth 1 -type d | wc -l)
 total=$((total - 1))
-start_sample=0
+start_sample=1
 sample_count=102
 #
-count=$start_sample
+count=0
 for img_folder in "${yud_src_dir}"/*/; do
     base=$(basename "$img_folder")
     if [ "$base" = "lines" ]; then
