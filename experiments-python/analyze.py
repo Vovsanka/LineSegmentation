@@ -5,6 +5,7 @@ import csv
 
 import numpy as np
 from scipy.io import loadmat
+from scipy.optimize import linear_sum_assignment
 
 from line_segment import LineSegment
 
@@ -131,57 +132,124 @@ def compute_coverage(gt: LineSegment, dets: list[LineSegment]):
     merged.append((cur_s, cur_e))
     return sum(e - s for s, e in merged)
 
+# evaluation of the line segment detection
+# def evaluate_segments(det_ls, gt_ls,
+#                               angle_thresh,     
+#                               dist_thresh,       
+#                               cov_thresh):     
+
+#     used_det = set()
+#     TP = 0
+#     FN = 0
+#     localization_errors = []
+
+#     for g in gt_ls:
+#         projections = []
+
+#         # 1. Project ALL detections (no filtering yet)
+#         for i, d in enumerate(det_ls):
+#             t1, t2 = project_onto_gt(d, g)
+#             if t2 <= t1:
+#                 continue  # no overlap at all
+
+#             ang = angle_diff(g, d)
+#             dist = segment_distance(g, d)
+
+#             projections.append((i, d, t1, t2, ang, dist))
+
+#         if not projections:
+#             FN += 1
+#             continue
+
+#         # 2. Apply relaxed geometric constraints AFTER projection
+#         valid = [(i, d, dist) for (i, d, t1, t2, ang, dist) in projections
+#                  if ang < angle_thresh and dist < dist_thresh]
+
+#         if not valid:
+#             FN += 1
+#             continue
+
+#         # 3. Compute coverage using all valid detections
+#         det_segments = [d for _, d, _ in valid]
+#         cov = compute_coverage(g, det_segments)
+
+#         if cov >= cov_thresh:
+#             TP += 1
+#             for idx, d, dist in valid:
+#                 used_det.add(idx)
+#                 localization_errors.append(dist)
+#         else:
+#             FN += 1
+
+#     FP = len(det_ls) - len(used_det)
+
+#     precision = TP / (TP + FP + 1e-9)
+#     recall = TP / (TP + FN + 1e-9)
+#     f1 = 2 * precision * recall / (precision + recall + 1e-9)
+#     loc_error = np.mean(localization_errors) if localization_errors else 0.0
+
+#     return TP, FP, FN, precision, recall, f1, loc_error
+
 
 # evaluation of the line segment detection
-def evaluate_segments(det_ls, gt_ls,
-                              angle_thresh,     
-                              dist_thresh,       
-                              cov_thresh):     
+def evaluate_segments_one_to_one(det_ls, gt_ls,
+                                 angle_thresh,
+                                 dist_thresh,
+                                 cov_thresh):
 
-    used_det = set()
-    TP = 0
-    FN = 0
-    localization_errors = []
+    n_det = len(det_ls)
+    n_gt = len(gt_ls)
 
-    for g in gt_ls:
-        projections = []
+    # Large penalty for invalid matches
+    BIG = 1e6
 
-        # 1. Project ALL detections (no filtering yet)
-        for i, d in enumerate(det_ls):
-            t1, t2 = project_onto_gt(d, g)
-            if t2 <= t1:
-                continue  # no overlap at all
+    # Build cost matrix (GT x DET)
+    cost = np.full((n_gt, n_det), BIG, dtype=float)
+
+    # Precompute all distances and angles
+    for gi, g in enumerate(gt_ls):
+        for di, d in enumerate(det_ls):
 
             ang = angle_diff(g, d)
             dist = segment_distance(g, d)
 
-            projections.append((i, d, t1, t2, ang, dist))
+            if ang > angle_thresh or dist > dist_thresh:
+                continue  # keep BIG cost
 
-        if not projections:
+            # coverage check
+            cov = compute_coverage(g, [d])
+            if cov < cov_thresh:
+                continue
+
+            # valid match → cost = localization error
+            cost[gi, di] = dist
+
+    # Hungarian assignment
+    row_ind, col_ind = linear_sum_assignment(cost)
+
+    TP = 0
+    FP = 0
+    FN = 0
+    localization_errors = []
+
+    matched_det = set()
+
+    # Evaluate assignments
+    for gi, di in zip(row_ind, col_ind):
+        if cost[gi, di] >= BIG:
+            # invalid match → GT missed
             FN += 1
-            continue
-
-        # 2. Apply relaxed geometric constraints AFTER projection
-        valid = [(i, d, dist) for (i, d, t1, t2, ang, dist) in projections
-                 if ang < angle_thresh and dist < dist_thresh]
-
-        if not valid:
-            FN += 1
-            continue
-
-        # 3. Compute coverage using all valid detections
-        det_segments = [d for _, d, _ in valid]
-        cov = compute_coverage(g, det_segments)
-
-        if cov >= cov_thresh:
-            TP += 1
-            for idx, d, dist in valid:
-                used_det.add(idx)
-                localization_errors.append(dist)
         else:
-            FN += 1
+            # valid match
+            TP += 1
+            matched_det.add(di)
+            localization_errors.append(cost[gi, di])
 
-    FP = len(det_ls) - len(used_det)
+    # Unmatched GT segments
+    FN += (n_gt - len(row_ind))
+
+    # Unmatched detections
+    FP = n_det - len(matched_det)
 
     precision = TP / (TP + FP + 1e-9)
     recall = TP / (TP + FN + 1e-9)
@@ -258,7 +326,7 @@ def main():
             dist_thresh = eval_config[1]
             cov_thresh = eval_config[2]
 
-            TP, FP, FN, P, R, F1, LE = evaluate_segments(
+            TP, FP, FN, P, R, F1, LE = evaluate_segments_one_to_one(
                 my_ls, gt_ls, angle_thresh, dist_thresh, cov_thresh
             )
 
