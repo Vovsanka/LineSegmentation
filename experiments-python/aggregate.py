@@ -10,7 +10,7 @@ def main():
     out_dir = sys.argv[1]
     csv_prefix = sys.argv[2]
     clustering_flag = None
-    if len(sys.argv) >= 3:
+    if len(sys.argv) >= 4:
         clustering_flag = sys.argv[3]
     clustering_prefix = ""
     if clustering_flag is not None:
