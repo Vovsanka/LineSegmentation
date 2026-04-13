@@ -36,10 +36,12 @@ for img_folder in "${yud_src_dir}"/*/; do
         "${yud_results_out_dir}/working-state-${base}" \
         "${yud_src_dir}/lines/${base}.txt" \
         "$yud_analysis_out_dir" \
-        "--yud"
+        "--yud" \
+        "GA+KL"
 done
 
 # run aggregation
 python3 "${experiments_dir}/aggregate.py" \
         "$yud_analysis_out_dir" \
-        "yud-good"
+        "yud-good" \
+        "GA+KL"

@@ -32,11 +32,13 @@ for img_path in "${wireframe_src_dir}/test"/*.jpg; do
         "${wireframe_results_out_dir}/working-state-${base}" \
         "${wireframe_src_dir}/line_mat/${base}_line.mat" \
         "$wireframe_analysis_out_dir" \
-        "--wireframe"
+        "--wireframe" \
+        "GA+KL"
 done
 
 # run aggregation
 python3 "${experiments_dir}/aggregate.py" \
         "$wireframe_analysis_out_dir" \
-        "wireframe-good"
+        "wireframe-good" \
+        "GA+KL"
 
