@@ -40,4 +40,9 @@ for img_folder in "${yud_src_dir}"/*/; do
     # "$executable" "$img_path" "$working_state_dir" "--on-show" 
     "$executable" "$img_path" "$working_state_dir" "--bm" "--it" "--on-cg" "--on-cl" "--on-el"
     # "$executable" "$img_path" "$working_state_dir" "--on-show" 
+    "$executable" "$img_path" "$working_state_dir" "--bm" "--it" "--on-cl" "--on-el" "--mws"
+    "$executable" "$img_path" "$working_state_dir" "--bm" "--it" "--on-cl" "--on-el" "--ga"
+    "$executable" "$img_path" "$working_state_dir" "--bm" "--it" "--on-cl" "--on-el" "--kl"
+    "$executable" "$img_path" "$working_state_dir" "--bm" "--it" "--on-cl" "--on-el" "--ga-kl"
+    "$executable" "$img_path" "$working_state_dir" "--bm" "--it" "--on-cl" "--on-el" "--mws-kl"
 done

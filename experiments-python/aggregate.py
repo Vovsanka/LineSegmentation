@@ -95,6 +95,22 @@ def main():
     aggregation["Candidates"] = aggregation["Candidates"].round(0).astype(int)
     aggregation.to_csv(f"{out_dir}/{csv_prefix}-aggregation.csv")
 
+    ####
+    clustering_methods = ["MWS", "GA", "KL", "GA+KL", "MWS+KL"]
+    mean_cols = ["Precision", "Recall", "F1"]
+    rows = []
+    for clustering in clustering_methods:
+        df = pd.read_csv(f"{out_dir}/bm_it_{clustering}_loose_clustering.csv")
+        mean_vals = df[mean_cols].mean()
+        mean_vals["Clustering"] = clustering
+        rows.append(mean_vals)
+    aggregation = pd.DataFrame(rows).set_index("Clustering")
+    aggregation["Precision"] *= 100
+    aggregation["Recall"] *= 100
+    aggregation["F1"] *= 100
+    aggregation = aggregation.round(1)
+    aggregation.to_csv(f"{out_dir}/{csv_prefix}-clustering.csv")
+
 
 if __name__ == "__main__":
     main()

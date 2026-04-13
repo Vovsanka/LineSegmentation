@@ -20,11 +20,14 @@ def read_candidate_amount(candidates_txt: str) -> int:
 
 def read_my_line_segments(ls_txt: str) -> list[LineSegment]:
     segs = []
-    with open(ls_txt, "r") as f:
-        n = int(f.readline().strip())
-        for _ in range(n):
-            x1, y1, x2, y2 = map(float, f.readline().split())
-            segs.append(LineSegment(x1, y1, x2, y2))
+    try:
+        with open(ls_txt, "r") as f:
+            n = int(f.readline().strip())
+            for _ in range(n):
+                x1, y1, x2, y2 = map(float, f.readline().split())
+                segs.append(LineSegment(x1, y1, x2, y2))
+    except:
+        print(f"'{ls_txt}' file not found")
     return segs
 
 
@@ -261,7 +264,32 @@ def main():
                     float(P), float(R), float(F1),
                     float(LE)
                 ])
+    
+    # BM-IT LOO different clustering
+    clustering_methods = ["MWS", "GA", "KL", "GA+KL", "MWS+KL"]
+    for clustering in clustering_methods:
+        csv_path = os.path.join(out_dir, f"bm_it_{clustering}_loose_clustering.csv")
+        if not os.path.exists(csv_path):
+            with open(csv_path, "w", newline="") as f:
+                    writer = csv.writer(f)
+                    writer.writerow([
+                        "Precision", "Recall", "F1",
+                    ])
+    for clustering in clustering_methods:
+        csv_path = os.path.join(out_dir, f"bm_it_{clustering}_loose_clustering.csv")
+        det_ls = read_my_line_segments(
+            f"{working_state_dir}/bm_it_{clustering}_lines.txt"
+        )
 
+        TP, FP, FN, P, R, F1, LE = evaluate_segments(
+            det_ls, gt_ls, ang_t, dist_t, cov_t
+        )
+
+        with open(csv_path, "a", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                float(P), float(R), float(F1)
+            ])
 
 if __name__ == "__main__":
     main()
