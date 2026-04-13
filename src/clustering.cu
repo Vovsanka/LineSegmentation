@@ -69,12 +69,6 @@ std::vector<std::vector<int>> solveClustering(const CandidateGraph& G, std::stri
         throw std::runtime_error("Unknown clustering method!");
     }
 
-
-    // greedyAdditiveEdgeContraction(redGraph, redWeights, edgeLabels);
-
-    mutexWatershed(redGraph, redWeights, edgeLabels);
-    kernighanLin(redGraph, redWeights, edgeLabels, edgeLabels);
-
     // -------------------------------
     // 4. Edge labels -> components (union-find on reduced graph)
     // -------------------------------

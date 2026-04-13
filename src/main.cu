@@ -15,7 +15,7 @@ bool show = false;
 // content settings
 bool beams = true; // beams score function or structure tensor score functin
 bool iterative = true; // iterative candidates or threshold candidates
-std::string clusteringMethod = ""; // "GA+KL", "MWS+KL", "MWS" (default), "GA", "KL" 
+std::string clusteringMethod = ""; // "GA+KL" (default), "MWS+KL", "MWS" , "GA", "KL" 
 
 void checkGpu() {
     /// Check the CUDA devices (GPU support)
@@ -139,7 +139,7 @@ int main(int argc, char* argv[]) {
         timer = lsd::logRestartTimer(timer, prefix2 + "cg", "time-logs");
     }
     if (runPerformClustering) {
-        lsd::performClustering(cgraphName, clustersName);
+        lsd::performClustering(cgraphName, clustersName, clusteringMethod);
         timer = lsd::logRestartTimer(timer, prefix3 + "cl", "time-logs");
     }
     if (runExtractLines) {
