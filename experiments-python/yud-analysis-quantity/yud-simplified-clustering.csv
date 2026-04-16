@@ -1,0 +1,6 @@
+Clustering,Precision,Recall,F1
+MWS,13.7,7.5,9.6
+GA,0.0,0.0,0.0
+KL,0.0,0.0,0.0
+GA+KL,0.0,0.0,0.0
+MWS+KL,0.0,0.0,0.0
