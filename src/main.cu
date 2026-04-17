@@ -153,11 +153,11 @@ int main(int argc, char* argv[]) {
             "original", "original",
             "params", preprocessedName, 
             "palette",
-            scoresName, directionsName, prefix1 + "score-direction", "th_candidates",
-            iterativeCandidatesName, "it_candidates",
-            candidatesName, cgraphName, "cgraph",
-            clustersName, "clustering",
-            linesName, "result", "image-result"
+            scoresName, directionsName, prefix1 + "score-direction", prefix1 + "Tcandidates",
+            iterativeCandidatesName, prefix1 + "Icandidates",
+            candidatesName, cgraphName, prefix2 + "cgraph",
+            clustersName, prefix3 + "clustering",
+            linesName, prefix3 + "result", prefix3 + "image-result"
         );
     }
 
