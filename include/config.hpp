@@ -18,7 +18,7 @@ constexpr double INF = 1e6;
 constexpr double PI = 3.141593;
 
 // computation parameters
-constexpr int DIRECTIONS = 384; // even! <= 1024 // 32k for efficiency  // DIRECTIONS ~ PI
+constexpr int DIRECTIONS = 192; // even! <= 1024 // 32k for efficiency  // DIRECTIONS ~ PI
 
 // gray score function
 constexpr int G_WINDOW_RADIUS = 3; // Gaussian window size
@@ -39,10 +39,10 @@ constexpr double LOWER_THRESHOLD = 0.2;
 constexpr int UP_COUNT = 10;
 constexpr double UP_STEP = 0.1;
 constexpr double EXPANSION_STEP = 1.5;
-constexpr double EXPANSION_UPGRADE_DELTA = 0; // 0 for the maximal power of the iterative search
+constexpr double EXPANSION_UPGRADE_DELTA = 0.05; // 0 for the maximal power of the iterative search
 
 // candidate graph for clustering
-constexpr double CONNECTION_RADIUS = 15.0;
+constexpr double CONNECTION_RADIUS = 12.0;
 constexpr double LINE_THICKNESS = 8.0; 
 constexpr double SIMILAR_DIR_ANGLE = 0.1*(PI/2.0);
 constexpr double LINE_TRIANGLE_FACTOR = 1.05;

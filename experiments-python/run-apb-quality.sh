@@ -14,7 +14,7 @@ start_sample=1
 sample_count=6
 #
 count=0
-for img_path in "${apb_src_dir}/test"/*.jpg; do
+for img_path in "${apb_src_dir}"/*.jpg; do
     count=$((count + 1))
     if [ "$count" -lt "$start_sample" ]; then
         continue
