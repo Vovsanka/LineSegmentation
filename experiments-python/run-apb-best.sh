@@ -5,7 +5,7 @@ executable="${project_dir}/build/LineSegmentation"
 
 
 #### 3. APB
-apb_src_dir="${project_dir}/../apb-dataset"
+apb_src_dir="${project_dir}/APB-dataset"
 apb_out_dir="${experiments_dir}/apb-results"
 mkdir -p "$apb_out_dir"
 #
