@@ -68,6 +68,16 @@ def read_wireframe_line_segments(gt_mat: str) -> list[LineSegment]:
         segs.append(LineSegment(float(x1), float(y1), float(x2), float(y2)))
     return segs
 
+def read_time_data(time_logs: str) -> dict[str, float]:
+    time_data = {}
+    with open(time_logs, "r") as tl:
+        for line in tl:
+            line = line.strip()
+            if not line:
+                continue
+            stage_name, stage_time = line.split()
+            time_data[stage_name] = float(stage_time)
+    return time_data 
 
 # ============================================================
 # GEOMETRY — ORIGINAL PROTOCOL
@@ -290,6 +300,34 @@ def main():
             writer.writerow([
                 float(P), float(R), float(F1)
             ])
+
+    ### COMPUTATION TIME from time_logs
+    stages = [
+        "st_lp", "st_tc", "st_ic",
+        "bm_lp", "bm_tc", "bm_ic",
+        "st_th_cg", "st_it_cg", "bm_th_cg", "bm_it_cg",
+        "st_th_GA+KL_cl", "st_th_GA+KL_el", "st_th_MWS_cl", "st_th_MWS_el",
+        "st_it_GA+KL_cl", "st_it_GA+KL_el", "st_it_MWS_cl", "st_it_MWS_el",
+        "bm_th_GA+KL_cl", "bm_th_GA+KL_el", "bm_th_MWS_cl", "bm_th_MWS_el",
+        "bm_it_GA+KL_cl", "bm_it_GA+KL_el", "bm_it_MWS_cl", "bm_it_MWS_el",
+        "bm_it_GA_cl", "bm_it_GA_el", "bm_it_KL_cl", "bm_it_KL_el",
+        "bm_it_MWS+KL_cl", "bm_it_MWS+KL_el"
+    ]
+    time_data = read_time_data(f"{working_state_dir}/time-logs.txt")
+    csv_path = os.path.join(out_dir, "time.csv")
+    if not os.path.exists(csv_path):
+       with open(csv_path, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(stages) 
+    with open(csv_path, "a", newline="") as f:
+        writer = csv.writer(f)
+        row_data = []
+        for stage_name in stages:
+            if stage_name in time_data:
+                row_data.append(time_data[stage_name])
+            else:
+                row_data.append(0)
+        writer.writerow(row_data)
 
 if __name__ == "__main__":
     main()

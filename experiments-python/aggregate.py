@@ -111,6 +111,24 @@ def main():
     aggregation = aggregation.round(1)
     aggregation.to_csv(f"{out_dir}/{csv_prefix}-clustering.csv")
 
+    ####
+    stages = [
+        "st_lp", "st_tc", "st_ic",
+        "bm_lp", "bm_tc", "bm_ic",
+        "st_th_cg", "st_it_cg", "bm_th_cg", "bm_it_cg",
+        "st_th_GA+KL_cl", "st_th_GA+KL_el", "st_th_MWS_cl", "st_th_MWS_el",
+        "st_it_GA+KL_cl", "st_it_GA+KL_el", "st_it_MWS_cl", "st_it_MWS_el",
+        "bm_th_GA+KL_cl", "bm_th_GA+KL_el", "bm_th_MWS_cl", "bm_th_MWS_el",
+        "bm_it_GA+KL_cl", "bm_it_GA+KL_el", "bm_it_MWS_cl", "bm_it_MWS_el",
+        "bm_it_GA_cl", "bm_it_GA_el", "bm_it_KL_cl", "bm_it_KL_el",
+        "bm_it_MWS+KL_cl", "bm_it_MWS+KL_el"
+    ]
+    df = pd.read_csv(f"{out_dir}/time.csv")
+    mean_vals = df[stages].mean()
+    aggregation = pd.DataFrame([mean_vals])
+    aggregation = aggregation.round(3)
+    aggregation.to_csv(f"{out_dir}/{csv_prefix}-time.csv", index=False)
+
 
 if __name__ == "__main__":
     main()
