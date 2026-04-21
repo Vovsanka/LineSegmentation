@@ -38,14 +38,15 @@ for img_path in "${apb_src_dir}"/*.jpg; do
     "$executable" "$img_path" "$working_state_dir" "--bm" "--th" "--on-cg" 
     "$executable" "$img_path" "$working_state_dir" "--bm" "--it" "--on-cg" 
     #
-    "$executable" "$img_path" "$working_state_dir" "--st" "--th" "--on-cl" "--on-el"
-    "$executable" "$img_path" "$working_state_dir" "--st" "--it" "--on-cl" "--on-el"
-    "$executable" "$img_path" "$working_state_dir" "--bm" "--th" "--on-cl" "--on-el"
-    "$executable" "$img_path" "$working_state_dir" "--bm" "--it" "--on-cl" "--on-el"
+    "$executable" "$img_path" "$working_state_dir" "--st" "--th" "--on-cl" "--on-el" "--ga-kl"
+    "$executable" "$img_path" "$working_state_dir" "--st" "--it" "--on-cl" "--on-el" "--ga-kl"
+    "$executable" "$img_path" "$working_state_dir" "--bm" "--th" "--on-cl" "--on-el" "--ga-kl"
+    "$executable" "$img_path" "$working_state_dir" "--bm" "--it" "--on-cl" "--on-el" "--ga-kl"
     #
     "$executable" "$img_path" "$working_state_dir" "--st" "--th" "--on-show"  
     "$executable" "$img_path" "$working_state_dir" "--st" "--it" "--on-show"  
     "$executable" "$img_path" "$working_state_dir" "--bm" "--th" "--on-show"  
     "$executable" "$img_path" "$working_state_dir" "--bm" "--it" "--on-show"  
 done
+
 
