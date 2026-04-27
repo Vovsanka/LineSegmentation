@@ -91,6 +91,8 @@ pip install -r requirements.txt
 
 ### Run Experiment Scripts
 
+Adjust the dataset paths in the bash scripts before running!
+
 GOOD parameter configuration (already set):
 
 ```bash
