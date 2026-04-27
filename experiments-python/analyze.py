@@ -9,10 +9,6 @@ from scipy.io import loadmat
 from line_segment import LineSegment
 
 
-# ============================================================
-# I/O HELPERS
-# ============================================================
-
 def read_candidate_amount(candidates_txt: str) -> int:
     with open(candidates_txt, "r") as f:
         return int(f.readline().strip())
@@ -79,10 +75,6 @@ def read_time_data(time_logs: str) -> dict[str, float]:
             time_data[stage_name] = float(stage_time)
     return time_data 
 
-# ============================================================
-# GEOMETRY — ORIGINAL PROTOCOL
-# ============================================================
-
 def angle_diff(ls1: LineSegment, ls2: LineSegment) -> float:
     v1 = ls1.direction()
     v2 = ls2.direction()
@@ -91,25 +83,16 @@ def angle_diff(ls1: LineSegment, ls2: LineSegment) -> float:
     return abs(math.degrees(math.acos(cosang)))
 
 
-# ORIGINAL distance threshold:
-#   Only check det endpoints → GT line
-#   No symmetric check
-#   No max of 4 points
 def distance_threshold_original(gt: LineSegment, det: LineSegment) -> float:
     d1 = gt.point_to_line_dist(det.x1, det.y1)
     d2 = gt.point_to_line_dist(det.x2, det.y2)
     return max(d1, d2)
 
-
-# ORIGINAL localization error:
-#   Mean of det endpoints → GT line
 def localization_error_original(gt: LineSegment, det: LineSegment) -> float:
     d1 = gt.point_to_line_dist(det.x1, det.y1)
     d2 = gt.point_to_line_dist(det.x2, det.y2)
     return 0.5 * (d1 + d2)
 
-
-# Projection AFTER filtering
 def project_onto_gt(det: LineSegment, gt: LineSegment):
     gx, gy = gt.x1, gt.y1
     gdx, gdy = gt.x2 - gt.x1, gt.y2 - gt.y1
@@ -152,10 +135,6 @@ def compute_coverage(gt: LineSegment, dets: list[LineSegment]) -> float:
     return sum(e - s for s, e in merged)
 
 
-# ============================================================
-# ORIGINAL MANY-TO-ONE EVALUATION
-# ============================================================
-
 def evaluate_segments(det_ls, gt_ls, angle_thresh, dist_thresh, cov_thresh):
     used_det = set()
     TP = 0
@@ -164,7 +143,6 @@ def evaluate_segments(det_ls, gt_ls, angle_thresh, dist_thresh, cov_thresh):
 
     for g in gt_ls:
 
-        # 1. Filter detections BEFORE projection
         compatible = []
         for i, d in enumerate(det_ls):
             if angle_diff(g, d) < angle_thresh:
@@ -175,18 +153,15 @@ def evaluate_segments(det_ls, gt_ls, angle_thresh, dist_thresh, cov_thresh):
             FN += 1
             continue
 
-        # 2. Compute coverage using compatible detections
         det_segments = [d for _, d in compatible]
         cov = compute_coverage(g, det_segments)
 
         if cov >= cov_thresh:
             TP += 1
 
-            # ORIGINAL protocol: localization error = best detection
             best_err = min(localization_error_original(g, d) for _, d in compatible)
             loc_errors.append(best_err)
 
-            # Mark detections as used (many-to-one)
             for idx, _ in compatible:
                 used_det.add(idx)
 
@@ -202,10 +177,6 @@ def evaluate_segments(det_ls, gt_ls, angle_thresh, dist_thresh, cov_thresh):
 
     return TP, FP, FN, precision, recall, f1, loc_err
 
-
-# ============================================================
-# MAIN DRIVER
-# ============================================================
 
 def main():
     if len(sys.argv) < 5:
@@ -228,7 +199,6 @@ def main():
 
     prefixes = ["bm_it", "st_it", "st_th", "bm_th"]
 
-    # EXACT thresholds from Lin et al. (2024)
     strictness = {
         "strict":   (5.0, 1.0, 0.75),
         "moderate": (10.0, 3.0, 0.75),
@@ -275,7 +245,7 @@ def main():
                     float(LE)
                 ])
     
-    # BM-IT LOO different clustering
+    # BM-IT LOO clustering
     clustering_methods = ["MWS", "GA", "KL", "GA+KL", "MWS+KL"]
     for clustering in clustering_methods:
         csv_path = os.path.join(out_dir, f"bm_it_{clustering}_loose_clustering.csv")
@@ -328,6 +298,8 @@ def main():
             else:
                 row_data.append(0)
         writer.writerow(row_data)
+
+
 
 if __name__ == "__main__":
     main()

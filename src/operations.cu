@@ -12,30 +12,6 @@ cv::Mat downloadToCPU(const cv::cuda::GpuMat& gpuF) {
     return cpuF;
 }
 
-cv::Mat convertBGRtoLab(const cv::Mat& cpuF) {
-    cv::Mat labF;
-    cv::cvtColor(cpuF, labF, cv::COLOR_BGR2Lab);
-    return labF;
-}
-
-cv::Mat convertBGRtoGrayscale(const cv::Mat& cpuF) {
-    cv::Mat grayF;
-    cv::cvtColor(cpuF, grayF, cv::COLOR_BGR2GRAY);
-    return grayF;
-}
-
-
-// double computeScale(const cv::Mat& cpuF) {
-//     return std::min(1.0*MAX_SIDE/cpuF.cols, 1.0*MAX_SIDE/cpuF.rows);
-// }
-
-// cv::Mat resizeDown(const cv::Mat& cpuF, double scale) {
-//     cv::Size size(std::round(scale*cpuF.cols), std::round(scale*cpuF.rows));
-//     cv::Mat scaledF;
-//     cv::resize(cpuF, scaledF, size, 0, 0, cv::INTER_AREA); // clamp-to-edge strategy
-//     return scaledF;
-// }
-
 void showImage(std::string name, const cv::Mat& cpuF) {
     cv::imshow(name, cpuF);
     cv::waitKey(0);

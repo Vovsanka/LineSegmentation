@@ -26,14 +26,6 @@ namespace lsd {
             cpuF = convertBGRtoGrayscale(originalF);
         }
 
-        // resize the image (to the reasonable processing size)
-        // double scale = computeScale(cpuF);
-        // if (scale >= 1.0) {
-        //     scale = 1;
-        // } else {
-        //     cpuF = resizeDown(cpuF, scale);
-        // }
-
         //
         int width = cpuF.cols;
         int height = cpuF.rows;

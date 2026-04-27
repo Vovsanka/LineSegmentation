@@ -42,6 +42,11 @@ thrust::tuple<uchar,uchar,uchar> getDirColorRgb(int dir); // dir in [0, 2*DIRECT
 __host__ 
 thrust::tuple<uchar,uchar,uchar> getDirColorLab(int dir); // dir in [0, 2*DIRECTIONS)
 
+__host__
+cv::Mat convertBGRtoLab(const cv::Mat& cpuF);
+
+__host__
+cv::Mat convertBGRtoGrayscale(const cv::Mat& cpuF);
 
 
 

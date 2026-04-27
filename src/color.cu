@@ -204,5 +204,14 @@ thrust::tuple<uchar,uchar,uchar> getDirColorLab(int dir) {
     return thrust::make_tuple(pix[0], pix[1], pix[2]);
 }
 
+cv::Mat convertBGRtoLab(const cv::Mat& cpuF) {
+    cv::Mat labF;
+    cv::cvtColor(cpuF, labF, cv::COLOR_BGR2Lab);
+    return labF;
+}
 
-
+cv::Mat convertBGRtoGrayscale(const cv::Mat& cpuF) {
+    cv::Mat grayF;
+    cv::cvtColor(cpuF, grayF, cv::COLOR_BGR2GRAY);
+    return grayF;
+}
