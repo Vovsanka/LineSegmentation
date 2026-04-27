@@ -11,7 +11,8 @@ Master's Thesis by Volodymyr Drobitko, Computer Science, Technical University of
 [![CUDA](https://img.shields.io/badge/CUDA-supported-green)]()
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue)]()
 
-- The whole APB dataset is stored in the `./APB-dataset` folder.
+- The whole APB dataset is stored in the `./APB-dataset` folder
+(dataset included for academic demonstration only).
 
 - Experiment results for Wireframe, YUD+, and APB are stored in the corresponding `./experiments-python/...-analysis-...` folders.
 
